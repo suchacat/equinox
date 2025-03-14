@@ -5,6 +5,4 @@ const
   CONFIG_BASE* = staticRead "configs/config_base"
   SECCOMP_POLICY* = staticRead "configs/waydroid.seccomp"
 
-  CONFIG_SNIPPETS* = [
-    CONFIG_BASE
-  ]
+  CONFIG_SNIPPETS* = [CONFIG_BASE]

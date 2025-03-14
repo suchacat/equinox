@@ -1,12 +1,11 @@
 # Package
 
-version       = "0.1.0"
-author        = "xTrayambak"
-description   = "Waydroid approach"
-license       = "GPL-3.0-or-later"
-srcDir        = "src"
-bin           = @["equinox"]
-
+version = "0.1.0"
+author = "xTrayambak"
+description = "Waydroid approach"
+license = "GPL-3.0-or-later"
+srcDir = "src"
+bin = @["equinox"]
 
 # Dependencies
 

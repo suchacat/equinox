@@ -1,8 +1,8 @@
 import std/[os, logging]
-import ./[lxc, configuration, cpu, drivers, image_downloader]
+import ./[lxc, configuration, cpu, drivers, image_downloader, hal]
 import ../argparser
 
-proc setupConfig*: bool =
+proc setupConfig*(): bool =
   loadConfig()
   config.arch = getHost().maybeRemap()
 
@@ -19,7 +19,7 @@ proc setupConfig*: bool =
 
 proc initialize*(input: Input) =
   var status = "STOPPED"
-  
+
   if not setupConfig():
     return
 
@@ -39,7 +39,12 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.overlayRw / "vendor")
   discard existsOrCreateDir(config.work / "images")
 
-  let pair = getImages()
-  pair.downloadImages() 
+  if not input.enabled("no-img-download", "Z"):
+    let pair = getImages()
+    pair.downloadImages()
 
   setLxcConfig()
+  startLxcContainer()
+  waitForContainerBoot()
+  makeBaseProps()
+  info "Initialized Equinox successfully."

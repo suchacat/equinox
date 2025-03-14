@@ -1,28 +1,12 @@
 import std/[os, logging, posix]
 
 const
-  BINDER_DRIVERS = [
-    "anbox-binder",
-    "puddlejumper",
-    "bonder",
-    "binder"
-  ]
-  VNDBINDER_DRIVERS = [
-    "anbox-vndbinder",
-    "vndpuddlejumper",
-    "vndbonder",
-    "vndbinder"
-  ]
-  HWBINDER_DRIVERS = [
-    "anbox-hwbinder",
-    "hwpuddlejumper",
-    "hwbonder",
-    "hwbinder"
-  ]
+  BINDER_DRIVERS = ["anbox-binder", "puddlejumper", "bonder", "binder"]
+  VNDBINDER_DRIVERS = ["anbox-vndbinder", "vndpuddlejumper", "vndbonder", "vndbinder"]
+  HWBINDER_DRIVERS = ["anbox-hwbinder", "hwpuddlejumper", "hwbonder", "hwbinder"]
 
-type
-  Drivers* = object
-    binder*, vndbinder*, hwbinder*: string
+type Drivers* = object
+  binder*, vndbinder*, hwbinder*: string
 
 proc devExists*(file: string): bool =
   var sb: Stat
@@ -32,13 +16,13 @@ proc devExists*(file: string): bool =
       debug "drivers: character device found: " & file
       return true
     else:
-      warn "drivers: path exists but is NOT a character device: " & file 
+      warn "drivers: path exists but is NOT a character device: " & file
   else:
     debug "drivers: device does not exist: " & file
 
   return false
 
-proc setupBinderNodes*: Drivers =
+proc setupBinderNodes*(): Drivers =
   var hasBinder = false
   for node in BINDER_DRIVERS:
     if devExists("/dev" / node):
@@ -48,7 +32,7 @@ proc setupBinderNodes*: Drivers =
 
   if not hasBinder:
     raise newException(Defect, "Cannot find binder node \"binder\"")
-  
+
   var hasVndbinder = false
   for node in VNDBINDER_DRIVERS:
     if devExists("/dev" / node):

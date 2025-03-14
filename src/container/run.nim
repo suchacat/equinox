@@ -9,7 +9,7 @@ proc mountRootfs*(imagesDir: string) =
   debug "container/run: mounting vendor image"
   mount(imagesDir / "vendor.img", config.rootfs / "vendor")
 
-proc startAndroidRuntime* =
+proc startAndroidRuntime*() =
   debug "equinox: starting prep for android runtime"
 
   mountRootfs(config.imagesPath)

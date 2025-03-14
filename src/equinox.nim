@@ -19,7 +19,7 @@ template developerOnly(body: untyped) =
     error "This feature is only available in developer builds."
     quit(1)
 
-proc main {.inline.} =
+proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
 
@@ -33,7 +33,7 @@ proc main {.inline.} =
   let lxcVersion = getLxcVersion()
 
   debug "lxc version: " & lxcVersion
-  
+
   if not isAdmin():
     error "Please run Equinox with root privileges."
     quit(1)
@@ -50,7 +50,7 @@ proc main {.inline.} =
       if input.arguments.len < 1:
         error "Usage: `equinox shell \"your command goes here\"`"
         quit(1)
-      
+
       let output = runCmdInContainer(input.arguments[0])
       if *output:
         echo &output
@@ -61,7 +61,7 @@ proc main {.inline.} =
       if input.arguments.len < 1:
         error "Usage: `equinox get-property your.property.name`"
         quit(1)
-      
+
       if input.arguments.len == 1:
         let prop = getProp(input.arguments[0])
         if *prop:
@@ -75,12 +75,28 @@ proc main {.inline.} =
             error "No such property: " & property
             quit(1)
 
-          styledWriteLine(stdout, fgCyan, property, resetStyle, styleBright, ": ", resetStyle, fgGreen, &value, resetStyle)
+          styledWriteLine(
+            stdout,
+            fgCyan,
+            property,
+            resetStyle,
+            styleBright,
+            ": ",
+            resetStyle,
+            fgGreen,
+            &value,
+            resetStyle,
+          )
   of "fetch-image-pair":
     developerOnly:
       print getImages()
+  of "halt":
+    stopLxcContainer(
+      force = input.enabled("force", "F") or input.enabled("my-time-has-value")
+    )
   else:
     error "equinox: invalid command: " & input.command
     quit(1)
 
-when isMainModule: main()
+when isMainModule:
+  main()

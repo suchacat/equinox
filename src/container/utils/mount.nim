@@ -19,9 +19,7 @@ proc umountAllList*(prefix: string, source: string = "/proc/mounts"): seq[string
 
   let prefix = absolutePath(prefix)
 
-  for line in source
-    .readFile()
-    .splitLines():
+  for line in source.readFile().splitLines():
     if line.len < 1:
       continue
 
@@ -29,7 +27,7 @@ proc umountAllList*(prefix: string, source: string = "/proc/mounts"): seq[string
 
     if words.len < 2:
       raise newException(ValueError, "Cannot parse invalid mount information:\n" & line)
-    
+
     var mountpoint = words[1]
     if mountpoint.startsWith(prefix):
       if mountpoint.endsWith("\40(deleted)"):
@@ -44,13 +42,20 @@ proc umountAll*(folder: string) =
   for mnt in list:
     runCmd "sudo umount", mnt
 
-proc mount*(source, dest: string, createFolders: bool = true, umount: bool = false, force: bool = false, readOnly: bool = false, extra: string = "") =
+proc mount*(
+    source, dest: string,
+    createFolders: bool = true,
+    umount: bool = false,
+    force: bool = false,
+    readOnly: bool = false,
+    extra: string = "",
+) =
   if isMounted(dest):
     if umount:
       umountAll(dest)
     elif not force:
       return
-  
+
   discard existsOrCreateDir(dest)
 
   var cmd: string
