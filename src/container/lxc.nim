@@ -134,7 +134,7 @@ proc setLxcConfig*() =
   let lxcMajor = getLxcMajor()
   let lxcPath = config.lxc / "equinox"
 
-  let substituteTable = {"LXCARCH": getArchStr(), "WORKING": config.work}
+  let substituteTable = {"LXCARCH": getArchStr(), "WORKING": config.work, "WLDISPLAY": config.containerWaylandDisplay}
 
   var configs = @[CONFIG_BASE.multiReplace(substituteTable)]
   if lxcMajor <= 2:
