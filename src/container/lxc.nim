@@ -220,7 +220,7 @@ proc getLxcStatus*: string =
   &readOutput("lxc-info", "-P " & config.lxc & " -n equinox -sH")
 
 proc startLxcContainer* =
-  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & " -F -n equinox -- /init")
+  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & " -n equinox -- /init")
 
 proc runCmdInContainer*(cmd: string): Option[string] =
   readOutput("sudo lxc-attach", "-P " & config.lxc & " -n equinox -- " & cmd)
