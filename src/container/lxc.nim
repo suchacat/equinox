@@ -87,6 +87,7 @@ proc generateNodesLxcConfig*(): seq[string] =
   let node = &noded
 
   entry node.dev, some("dev/dri/renderD128")
+  entry node.gpu, some("dev/dri/card0") 
 
   for node in glob("/dev/fb*").walkGlob:
     entry node
@@ -269,7 +270,7 @@ proc waitForContainerBoot*(maxAttempts: uint64 = 32'u64) =
     raise newException(
       Defect,
       "The container did not start after " & $maxAttempts &
-        " iterations. It might be deadlocked.\nConsider running the following command to forcefully kill it:\nsudo equinox halt -F",
+        " iterations. It might be deadlocked.\nConsider running the following command to forcefully kill it:\nsudo equinox halt -F\n",
     )
 
   info "lxc: container booted up after " & $attempts & " attempts."
