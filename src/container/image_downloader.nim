@@ -86,9 +86,9 @@ proc getImages*(): ImagePair =
     ')'
   pair.system = latestSystem
 
-  let deviceCodename = &getProp("ro.product.device")
+  # let deviceCodename = &getProp("ro.product.device")
 
-  for vendor in [deviceCodename, getVendorType()]:
+  for vendor in [getVendorType()]:
     let vendorReq =
       httpGet(config.vendorOta & "/waydroid_" & config.arch & '/' & vendor & ".json")
     if vendorReq.code == 200:
