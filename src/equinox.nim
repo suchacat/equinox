@@ -19,6 +19,27 @@ template developerOnly(body: untyped) =
     error "This feature is only available in developer builds."
     quit(1)
 
+proc showHelp(code: int = 0) {.noReturn.} =
+  echo """
+Usage: equinox [mode] [arguments] ...
+
+equinox is a runtime for Roblox on Linux that uses LXC containers.
+All commands need root access.
+
+Legal Disclaimer: The Equinox developers do not make ANY monetary profit from this tool. It does not facilitate any forbidden modifications to the Roblox software. Equinox comes with zero warranty and does not have official support. The EquinoxHQ team has no affiliation with Roblox Corporation, or any of its associated entities. "Roblox" is a registered trademark of the Roblox Corporation.
+
+Modes:
+  init                 Initialize Equinox. Download the Android runtime images and Roblox.
+  run                  Start the Equinox container with Roblox.
+  halt                 Stop the Equinox container.
+
+Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
+  fetch-image-pair     Fetch a suitable image pair (system+vendor) from the Waydroid OTA server
+  shell                Run a shell command in the Android container
+  get-property         Fetch propert(y/ies) from the Android container
+"""
+  quit(code)
+
 proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
@@ -56,6 +77,8 @@ proc main() {.inline.} =
         echo &output
       else:
         info "Command returned no output."
+  of "help":
+    showHelp()
   of "get-property":
     developerOnly:
       if input.arguments.len < 1:
