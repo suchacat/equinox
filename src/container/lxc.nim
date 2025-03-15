@@ -238,12 +238,11 @@ proc getLxcStatus*(): string =
 proc startLxcContainer*(input: Input) =
   debug "lxc: starting container"
   
-  var debugLog = "/tmp/equinox.log"
-  if (let val = input.flag("log-file"); *val):
-    debugLog = &val
+  var debugLog = input.flag("log-file")
 
-  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & " -o " & debugLog & " -n equinox -- /init")
-  runCmd("sudo chown", "1000 " & debugLog)
+  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") & " -n equinox -- /init")
+  if *debugLog:
+    runCmd("sudo chown", "1000 " & &debugLog)
 
 proc stopLxcContainer*(force: bool = false) =
   debug "lxc: stopping container"

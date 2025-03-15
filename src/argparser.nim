@@ -51,10 +51,8 @@ proc parseInput*(): Input {.inline.} =
         debug "argparser: found argument: " & parser.key
         input.arguments &= parser.key
 
-  if input.command.len < 1 and not getAppFilename().contains("lucemd") and
-      not getAppFilename().contains("lucem_overlay"):
-    # lucemd and lucem_overlay don't need a command
-    error "lucem: expected command, got none. Run `lucem help` for more information."
+  if input.command.len < 1:
+    error "equinox: expected command, got none. Run `equinox help` for more information."
     quit(1)
 
   input
