@@ -44,7 +44,7 @@ proc main() {.inline.} =
     initialize(input)
   of "run":
     startAndroidRuntime()
-    startLxcContainer()
+    startLxcContainer(input)
   of "shell":
     developerOnly:
       if input.arguments.len < 1:

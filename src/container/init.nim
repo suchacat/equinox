@@ -44,7 +44,7 @@ proc initialize*(input: Input) =
     pair.downloadImages()
 
   setLxcConfig()
-  startLxcContainer()
+  startLxcContainer(input)
   waitForContainerBoot()
   makeBaseProps()
   info "Initialized Equinox successfully."

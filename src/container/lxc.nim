@@ -1,6 +1,7 @@
 import std/[os, options, logging, strutils, tables, times, posix]
 import pkg/[glob]
 import utils/exec
+import ../argparser
 import ./[lxc_config, sugar, cpu, gpu, configuration, drivers]
 
 type BinaryNotFound* = object of Defect
@@ -234,9 +235,15 @@ proc generateSessionLxcConfig*() =
 proc getLxcStatus*(): string =
   &readOutput("lxc-info", "-P " & config.lxc & " -n equinox -sH")
 
-proc startLxcContainer*() =
+proc startLxcContainer*(input: Input) =
   debug "lxc: starting container"
-  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & " -n equinox -- /init")
+  
+  var debugLog = "/tmp/equinox.log"
+  if (let val = input.flag("log-file"); *val):
+    debugLog = &val
+
+  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & " -o " & debugLog & " -n equinox -- /init")
+  runCmd("sudo chown", "1000 " & debugLog)
 
 proc stopLxcContainer*(force: bool = false) =
   debug "lxc: stopping container"
