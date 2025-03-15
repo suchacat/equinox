@@ -122,7 +122,8 @@ proc generateNodesLxcConfig*(): seq[string] =
   entry "/dev/MTK_SMI"
   entry "/dev/mdp_sync"
   entry "/dev/mtk_cmdq"
-
+  
+  entry "tmpfs", some("mnt_extra"), "tmpfs", "nodev 0 0", false
   entry "tmpfs", some("tmp"), "tmpfs", "nodev 0 0", false
   entry "tmpfs", some("var"), "tmpfs", "nodev 0 0", false
   entry "tmpfs", some("run"), "tmpfs", "nodev 0 0", false
@@ -228,7 +229,7 @@ proc generateSessionLxcConfig*() =
   for node in nodes:
     buffer &= node & '\n'
 
-  buffer &= "lxc.environment = WAYLAND_DISPLAY=wayland-1"
+  buffer &= "lxc.environment=WAYLAND_DISPLAY=" & config.containerWaylandDisplay
 
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
 

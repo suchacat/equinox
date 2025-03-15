@@ -1,6 +1,5 @@
 lxc.uts.name = equinox
 
-lxc.apparmor.profile = unconfined
 lxc.seccomp.profile = WORKING/lxc/equinox/equinox.seccomp
 
 lxc.no_new_privs = 1

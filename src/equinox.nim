@@ -55,9 +55,9 @@ proc main() {.inline.} =
 
   debug "lxc version: " & lxcVersion
 
-  if not isAdmin():
+  #[ if not isAdmin():
     error "Please run Equinox with root privileges."
-    quit(1)
+    quit(1) ]#
 
   # var pair = getImages()
   case input.command

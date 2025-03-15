@@ -97,7 +97,7 @@ proc makeBaseProps*() =
     debug "hal: build fingerprint: " & &propFp
     props &= (key: "ro.build.fingerprint", value: &propFp)
   
-  props &= (key: "waydroid.wayland_display", value: "/run/user/1000/wayland-1")
+  props &= (key: "waydroid.wayland_display", value: "wayland-0")
   props &= (key: "waydroid.background_start", value: "false")
 
   var builder: string

@@ -45,7 +45,7 @@ proc loadConfig*() {.sideEffect.} =
     suspendAction: "freeze",
     mountOverlays: "true",
     containerXdgRuntimeDir: "/run/user/1000", # FIXME: plox unhardcode
-    containerWaylandDisplay: "wayland-1",
+    containerWaylandDisplay: getEnv("WAYLAND_DISPLAY", "wayland-0"),
   )
   config.imagesPath = config.work / "images"
   config.rootfs = config.work / "rootfs"
