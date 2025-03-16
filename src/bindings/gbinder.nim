@@ -68,6 +68,33 @@ proc gbinder_client_transact_sync_reply*(
   req: ptr GBinderLocalRequest,
   status: ptr int32
 ): ptr GBinderRemoteReply
+proc gbinder_client_cancel*(client: ptr GBinderClient, id: uint32)
+proc gbinder_client_rpc_header*(client: ptr GBinderClient, code: uint32): cstring
+proc gbinder_client_interface*(client: ptr GBinderClient): cstring
+proc gbinder_client_interface2*(client: ptr GBinderClient, code: uint32): cstring
+proc gbinder_client_ref*(client: ptr GBinderClient): ptr GBinderClient
+proc gbinder_client_unref*(client: ptr GBinderClient)
+proc gbinder_reader_at_end*(reader: ptr GBinderReader): bool
+proc gbinder_reader_read_byte*(reader: ptr GBinderReader, value: ptr uint8): bool
+proc gbinder_reader_read_int8*(reader: ptr GBinderReader, value: ptr int8): bool
+proc gbinder_reader_read_uint8*(reader: ptr GBinderReader, value: ptr uint8): bool
+proc gbinder_reader_read_int16*(reader: ptr GBinderReader, value: ptr int16): bool
+proc gbinder_reader_read_uint16*(reader: ptr GBinderReader, value: ptr uint16): bool
+proc gbinder_reader_read_int32*(reader: ptr GBinderReader, value: ptr int32): bool
+proc gbinder_reader_read_uint32*(reader: ptr GBinderReader, value: ptr uint32): bool
+proc gbinder_reader_read_int64*(reader: ptr GBinderReader, value: ptr int64): bool
+proc gbinder_reader_read_uint64*(reader: ptr GBinderReader, value: ptr uint64): bool
+proc gbinder_reader_read_float*(reader: ptr GBinderReader, value: ptr float32): bool
+proc gbinder_reader_read_double*(reader: ptr GBinderReader, value: ptr float): bool
+proc gbinder_reader_read_fd*(reader: ptr GBinderReader): int32
+proc gbinder_reader_read_dup_fd*(reader: ptr GBinderReader): int32
+proc gbinder_reader_read_nullable_object*(reader: ptr GBinderReader, obj: ptr ptr GBinderRemoteObject): bool
+proc gbinder_reader_read_object*(reader: ptr GBinderReader): ptr GBinderRemoteObject
+proc gbinder_reader_read_buffer*(reader: ptr GBinderReader): ptr GBinderBuffer
+proc gbinder_reader_read_parcelable*(reader: ptr GBinderReader, size: ptr uint64): pointer
+proc gbinder_reader_skip_buffer*(reader: ptr GBinderReader): bool
+proc gbinder_reader_read_string8*(reader: ptr GBinderReader): cstring
+proc gbinder_reader_read_nullable_string*(reader: ptr GBinderReader, output: ptr cstring, outLen: ptr uint64): bool
 
 proc gbinder_servicemanager_get_service_sync*(sm: ptr GBinderServiceManager, name: cstring, status: ptr int32): ptr GBinderRemoteObject
 
