@@ -35,7 +35,7 @@ proc makeBaseProps*(input: Input) =
 
   let
     gralloc = "default"
-    egl = "swiftshader"
+    egl = "mesa"
 
   #[ var gralloc = findHal "gralloc"
   if not *gralloc:

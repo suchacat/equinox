@@ -1,7 +1,7 @@
 import std/[os, logging, terminal, random]
 import pkg/[colored_logger, pretty, noise]
 import ./argparser
-import container/[trayperion, lxc, image_downloader, configuration, init, run, sugar, properties]
+import container/[trayperion, lxc, image_downloader, configuration, init, run, sugar, properties, app_manager]
 
 const
   Splashes = [
@@ -54,10 +54,7 @@ Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
   quit(code)
 
 proc main() {.inline.} =
-  randomize()
-  echo "Splash: " & sample(Splashes)
-
-  setLenuninit()
+  setLenUninit()
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
 
@@ -79,7 +76,17 @@ proc main() {.inline.} =
   case input.command
   of "init":
     initialize(input)
+  of "install-apk":
+    if input.arguments.len < 1:
+      error "equinox: expected 1 argument, got none."
+      error "equinox: Run equinox --help for more information."
+      quit(1)
+
+    installRobloxClient(input.arguments[0])
   of "run":
+    randomize()
+    echo "Splash: " & sample(Splashes)
+
     startAndroidRuntime(input)
     setLenUninit()
     startLxcContainer(input)
