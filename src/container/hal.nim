@@ -34,8 +34,8 @@ proc makeBaseProps*(input: Input) =
   let node = getDriNode()
 
   let
-    gralloc = "gbm"
-    egl = "mesa"
+    gralloc = "default"
+    egl = "swiftshader"
 
   #[ var gralloc = findHal "gralloc"
   if not *gralloc:
