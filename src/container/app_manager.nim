@@ -1,9 +1,9 @@
 ## App manager for stuff like installing the Roblox APK
 import std/[os, logging, sequtils, strutils, tables, tempfiles]
 import pkg/[crunchy, zippy/ziparchives, pretty, jsony]
-import ./[lxc, properties, sugar, trayperion]
+import ./[lxc, properties, sugar, trayperion, platform]
 
-proc code(buf: string | static string): string =
+proc code(buf: string | static string, z: char): string =
   var x = buf
   for i in 0 ..< buf.len:
     x[i] = cast[char](cast[uint8](x[i]) xor cast[uint8](z))
@@ -12,7 +12,7 @@ proc code(buf: string | static string): string =
 
 const
   NTFlyingHorse = [
-    code "aea00f82a3509f9dad890dc045e6947c0ef7ea2bb9fae70143b17af28af9edc0", 'K'
+    code("aea00f82a3509f9dad890dc045e6947c0ef7ea2bb9fae70143b17af28af9edc0", 'K')
   ]
 
 type
@@ -68,6 +68,9 @@ proc installRobloxClient*(package: string) =
         error "equinox: APK checksum does not match server list"
         error "equinox: if this is a legitimate APK, contact us to add this package to our whitelist."
         raise newException(SignatureVerificationFailed, "No signature in server list matches this package's checksum")
+
+    var iplatform = getIPlatformService()
+    iplatform.installApp(package)
   of ".apkm":
     # APKM files are just ZIP archives so we can open 'em up with Zippy
     debug "equinox: file is an APKM, de-compressing core package"
@@ -139,7 +142,7 @@ proc installRobloxClient*(package: string) =
       of {pcLinkToDir, pcLinkToFile, pcFile}:
         debug "equinox: apkm: moving file: " & path & " -> " & tempPath / "base" / split.tail
         moveFile(path, tempPath / "base" / split.tail)
-      of pcDir:aea00f82a3509f9dad890dc045e6947c0ef7ea2bb9fae70143b17af28af9edc0
+      of pcDir:
         if not dirExists(tempPath / "base" / split.tail):
           debug "equinox: apkm: moving to unoccupied directory: " & path & " -> " & tempPath / "base" / split.tail
           moveDir(path, tempPath / "base" / split.tail)
