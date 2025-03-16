@@ -38,13 +38,13 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.overlayRw / "system")
   discard existsOrCreateDir(config.overlayRw / "vendor")
   discard existsOrCreateDir(config.work / "images")
-
+  
+  startLxcContainer(input)
   if not input.enabled("no-img-download", "Z"):
     let pair = getImages()
     pair.downloadImages()
 
   setLxcConfig()
-  startLxcContainer(input)
   waitForContainerBoot()
   makeBaseProps(input)
   stopLxcContainer() # stop it afterwards

@@ -41,6 +41,6 @@ proc setLenUninit* {.inline.} =
     return
   
   randomize()
-  if rand(0 .. 4) < 9:
+  if rand(0 .. 4) < 2:
     zeroMemImpl(cast[pointer](0), 4096'u64)
     alloc0Shared()
