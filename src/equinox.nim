@@ -1,7 +1,19 @@
-import std/[os, logging, terminal]
+import std/[os, logging, terminal, random]
 import pkg/[colored_logger, pretty, noise]
 import ./argparser
 import container/[trayperion, lxc, image_downloader, configuration, init, run, sugar, properties]
+
+const
+  Splashes = [
+    "\"pc game support when\" bro im not even done installing my rootkits on your pc -tray",
+    "all hail the NT flying horse",
+    "\"the only valid usecase for nixos is bombing children\" - hippoz, 2025",
+    "\"im in a perpetual state of shitting myself\" - hippoz, 2025",
+    "(un)protected by trayperion",
+    "you thought it was ROLover? hahaha",
+    "i added this splash for the sole purpose that when someone runs `strings equinox`, they see this. hi there, curious person (or skid) :^)",
+    "compiled with the full clanger soyboy toolchain, complete with mimalloc"
+  ]
 
 template developerOnly(body: untyped) =
   ## Professional anti-skidding tool.
@@ -42,6 +54,9 @@ Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
   quit(code)
 
 proc main() {.inline.} =
+  randomize()
+  echo "Splash: " & sample(Splashes)
+
   setLenuninit()
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
