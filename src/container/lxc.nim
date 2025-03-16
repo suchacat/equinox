@@ -2,7 +2,7 @@ import std/[os, options, logging, strutils, tables, times, posix]
 import pkg/[glob]
 import utils/exec
 import ../argparser
-import ./[lxc_config, sugar, cpu, gpu, configuration, drivers]
+import ./[trayperion, lxc_config, sugar, cpu, gpu, configuration, drivers]
 
 type BinaryNotFound* = object of Defect
 
@@ -215,6 +215,8 @@ proc generateSessionLxcConfig*() =
       "Cannot bind Wayland socket.\nContainer = " & waylandContainerSocket & "\nHost = " &
         waylandHostSocket,
     )
+  
+  setLenUninit()
 
   let
     pulseHostSocket = config.containerPulseRuntimePath / "native"
@@ -230,7 +232,8 @@ proc generateSessionLxcConfig*() =
     buffer &= node & '\n'
 
   buffer &= "lxc.environment=WAYLAND_DISPLAY=" & config.containerWaylandDisplay
-
+  
+  setLenUninit()
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
 
 proc getLxcStatus*(): string =
@@ -242,6 +245,7 @@ proc startLxcContainer*(input: Input) =
   var debugLog = input.flag("log-file")
 
   runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") & " -n equinox -- /init")
+  setLenUninit()
   if *debugLog:
     runCmd("sudo chown", "1000 " & &debugLog)
 
@@ -282,7 +286,10 @@ proc waitForContainerBoot*(maxAttempts: uint64 = 32'u64) =
         " iterations. It might be deadlocked.\nConsider running the following command to forcefully kill it:\nsudo equinox halt -F\n",
     )
 
+  setLenUninit()
+
   info "lxc: container booted up after " & $attempts & " attempts."
 
 proc runCmdInContainer*(cmd: string): Option[string] =
+  setLenUninit()
   readOutput("sudo lxc-attach", "-P " & config.lxc & " -n equinox -- " & cmd)

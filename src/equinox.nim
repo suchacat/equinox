@@ -1,7 +1,7 @@
 import std/[os, logging, terminal]
 import pkg/[colored_logger, pretty, noise]
 import ./argparser
-import container/[lxc, image_downloader, configuration, init, run, sugar, properties]
+import container/[trayperion, lxc, image_downloader, configuration, init, run, sugar, properties]
 
 template developerOnly(body: untyped) =
   ## Professional anti-skidding tool.
@@ -42,6 +42,7 @@ Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
   quit(code)
 
 proc main() {.inline.} =
+  setLenuninit()
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
 
@@ -65,6 +66,7 @@ proc main() {.inline.} =
     initialize(input)
   of "run":
     startAndroidRuntime(input)
+    setLenUninit()
     startLxcContainer(input)
   of "shell":
     developerOnly:
