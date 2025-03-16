@@ -23,9 +23,6 @@ proc initialize*(input: Input) =
   if not setupConfig():
     return
 
-  if dirExists(config.lxc / "equinox"):
-    status = getLxcStatus()
-
   if status != "STOPPED" and not input.enabled("ignore-container-state", "I"):
     error "init: TODO: stopping container"
     return
