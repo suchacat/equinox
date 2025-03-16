@@ -17,3 +17,5 @@ requires "jsony >= 1.1.5"
 requires "glob >= 0.11.3"
 requires "pretty >= 0.2.0"
 requires "mimalloc >= 0.3.1"
+
+requires "noise >= 0.1.10"

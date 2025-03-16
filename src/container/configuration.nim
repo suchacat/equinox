@@ -44,8 +44,8 @@ proc loadConfig*() {.sideEffect.} =
     preinstalledImagePaths: @["/var" / "lib" / "equinox" / "images"],
     suspendAction: "freeze",
     mountOverlays: "true",
-    containerXdgRuntimeDir: "/run/user/1000", # FIXME: plox unhardcode
-    containerWaylandDisplay: getEnv("WAYLAND_DISPLAY", "wayland-0"),
+    containerXdgRuntimeDir: "/run/user/1000",
+    containerWaylandDisplay: getEnv("WAYLAND_DISPLAY", "wayland-0")
   )
   config.imagesPath = config.work / "images"
   config.rootfs = config.work / "rootfs"

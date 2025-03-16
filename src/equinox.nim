@@ -1,5 +1,5 @@
 import std/[os, logging, terminal]
-import pkg/[colored_logger, pretty]
+import pkg/[colored_logger, pretty, noise]
 import ./argparser
 import container/[lxc, image_downloader, configuration, init, run, sugar, properties]
 
@@ -34,8 +34,9 @@ Modes:
   halt                 Stop the Equinox container.
 
 Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
-  fetch-image-pair     Fetch a suitable image pair (system+vendor) from the Waydroid OTA server
+  fetch-image-pair     Fetch a suitable image pair (system+vendor) from the Waydroid OTA
   shell                Run a shell command in the Android container
+  sh                   Run a shell REPL in the Android container
   get-property         Fetch propert(y/ies) from the Android container
 """
   quit(code)
@@ -64,7 +65,7 @@ proc main() {.inline.} =
   of "init":
     initialize(input)
   of "run":
-    startAndroidRuntime()
+    startAndroidRuntime(input)
     startLxcContainer(input)
   of "shell":
     developerOnly:
@@ -117,6 +118,22 @@ proc main() {.inline.} =
     stopLxcContainer(
       force = input.enabled("force", "F") or input.enabled("my-time-has-value")
     )
+  of "sh":
+    developerOnly:
+      var noise = Noise.init()
+      let prompt = Styler.init(fgGreen, "sh", resetStyle, "> ")
+      noise.setPrompt(prompt)
+
+      while true:
+        let ok = noise.readLine()
+        if not ok: break
+
+        let line = noise.getLine()
+        if line == ".quit":
+          break
+        else:
+          let output = runCmdInContainer(line)
+          if *output: echo &output
   else:
     error "equinox: invalid command: " & input.command
     quit(1)

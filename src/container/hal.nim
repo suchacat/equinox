@@ -1,6 +1,7 @@
 ## Hardware abstraction layer utilities
 import std/[os, logging, strutils]
-import ./[configuration, properties, filesystem, sugar, gpu]
+import ../argparser
+import ./[configuration, properties, filesystem, sugar, gpu, lxc]
 
 proc findHal*(hardware: string): Option[string] =
   debug "lxc: finding hardware abstraction layer for hardware: " & hardware
@@ -22,7 +23,7 @@ proc findHal*(hardware: string): Option[string] =
       if containerHasFile(halFile):
         return prop
 
-proc makeBaseProps*() =
+proc makeBaseProps*(input: Input) =
   var props: seq[tuple[key, value: string]]
 
   if not fileExists("/dev/ashmem"):
@@ -32,8 +33,9 @@ proc makeBaseProps*() =
   debug "hal: finding EGL and gralloc HAL"
   let node = getDriNode()
 
-  let gralloc = "gbm"
-  let egl = "mesa"
+  let
+    gralloc = "gbm"
+    egl = "mesa"
 
   #[ var gralloc = findHal "gralloc"
   if not *gralloc:
@@ -48,7 +50,8 @@ proc makeBaseProps*() =
       warn "hal: this can happen if you have a Nvidia GPU. If you have an AMD/Intel GPU, please open a bug report."
       gralloc = some("default")
       egl = some("swiftshader") ]#
-
+  
+  props &= (key: "ro.hardware.gralloc", value: gralloc)
   props &= (key: "debug.stagefright.ccodec", value: "0")
 
   info "hal: using gralloc implementation: " & gralloc
@@ -69,13 +72,12 @@ proc makeBaseProps*() =
 
   # TODO: camera support
 
-  var opengles = getProp("ro.opengles.version")
+  #[ var opengles = getProp("ro.opengles.version")
   if not *opengles:
     debug "hal: ro.opengles.version not set, setting it."
-    opengles = some("196609")
+    opengles = some("196609") ]#
 
-  props &= (key: "ro.opengles.version", value: &opengles)
-
+  props &= (key: "ro.opengles.version", value: "196609")
   props &= (key: "ro.vndk.lite", value: "false")
 
   for product in ["brand", "device", "manufacturer", "model", "name"]:
@@ -97,8 +99,20 @@ proc makeBaseProps*() =
     debug "hal: build fingerprint: " & &propFp
     props &= (key: "ro.build.fingerprint", value: &propFp)
   
-  props &= (key: "waydroid.wayland_display", value: "wayland-0")
+  for arg in ["wayland-display", "xdg-runtime-dir", "gid", "uid", "user"]:
+    if not *input.flag(arg):
+      error "equinox: did not get required argument: " & arg
+      stopLxcContainer()
+      quit(1)
+
+  props &= (key: "waydroid.wayland_display", value: &input.flag("wayland-display"))
+  props &= (key: "waydroid.open_windows", value: "1")
+  props &= (key: "waydroid.xdg_runtime_dir", value: &input.flag("xdg-runtime-dir"))
   props &= (key: "waydroid.background_start", value: "false")
+  props &= (key: "waydroid.host.gid", value: &input.flag("gid"))
+  props &= (key: "waydroid.host.uid", value: &input.flag("uid"))
+  props &= (key: "waydroid.host.user", value: &input.flag("user"))
+  props &= (key: "waydroid.keyboard_layout", value: "english")
 
   var builder: string
   for prop in props:

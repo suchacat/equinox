@@ -46,5 +46,5 @@ proc initialize*(input: Input) =
   setLxcConfig()
   startLxcContainer(input)
   waitForContainerBoot()
-  makeBaseProps()
+  makeBaseProps(input)
   info "Initialized Equinox successfully."
