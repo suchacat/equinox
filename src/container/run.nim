@@ -4,6 +4,8 @@ import ../argparser
 import ./utils/mount
 
 proc mountRootfs*(input: Input, imagesDir: string) =
+  info "equinox: mounting rootfs"
+
   debug "container/run: mounting system image"
   mount(imagesDir / "system.img", config.rootfs, umount = true)
 
@@ -14,6 +16,7 @@ proc mountRootfs*(input: Input, imagesDir: string) =
   mountFile(config.work / "equinox.prop", config.rootfs / "vendor" / "waydroid.prop")
 
 proc startAndroidRuntime*(input: Input) =
+  info "equinox: starting android runtime"
   debug "equinox: starting prep for android runtime"
 
   mountRootfs(input, config.imagesPath)

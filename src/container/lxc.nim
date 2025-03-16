@@ -260,6 +260,8 @@ proc stopLxcContainer*(force: bool = false) =
     "sudo lxc-stop", "-P " & config.lxc & " -n equinox" & (if force: " -k" else: "")
   )
 
+  info "equinox: stopped container."
+
 proc waitForContainerBoot*(maxAttempts: uint64 = 32'u64) =
   ## Block this thread until the container boots up.
   debug "lxc: waiting for container to boot up"

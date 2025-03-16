@@ -45,7 +45,6 @@ proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
 
-  info "Equinox starting up."
   loadConfig()
 
   var input = parseInput()
