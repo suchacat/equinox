@@ -65,7 +65,6 @@ proc main() {.inline.} =
     setLogFilter(lvlAll)
 
   let lxcVersion = getLxcVersion()
-
   debug "lxc version: " & lxcVersion
 
   #[ if not isAdmin():

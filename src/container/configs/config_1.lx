@@ -3,7 +3,8 @@ lxc.utsname = equinox
 lxc.init_cmd = /init
 
 lxc.aa_profile = unconfined
-lxc.seccomp = WORKING/lxc/equinox/equinox.seccomp
+lxc.seccomp = unconfined # WORKING/lxc/equinox/equinox.seccomp
+androidboot.selinux=disabled
 
 # lxc.network.type = veth
 # lxc.network.flags = up

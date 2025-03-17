@@ -62,7 +62,7 @@ proc getIPlatformService*: IPlatform =
   config.vndbinder = driverList.vndbinder
   config.hwbinder = driverList.hwbinder
 
-  var serviceMgr = gbinder_servicemanager_new(cstring("/dev" / config.binder))
+  var serviceMgr = gbinder_servicemanager_new2(cstring("/dev" / config.binder), "aidl3".cstring, "aidl3".cstring)
 
   if not gbinder_servicemanager_is_present(serviceMgr):
     info "platform: waiting for binder service manager"

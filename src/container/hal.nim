@@ -34,11 +34,10 @@ proc makeBaseProps*(input: Input) =
   let node = getDriNode()
 
   let
-    gralloc = "default"
+    gralloc = "gbm"
     egl = "mesa"
 
-  #[ var gralloc = findHal "gralloc"
-  if not *gralloc:
+  #[if not *gralloc:
     gralloc = some("android")
   else:
     if *node:
@@ -53,6 +52,9 @@ proc makeBaseProps*(input: Input) =
   
   props &= (key: "ro.hardware.gralloc", value: gralloc)
   props &= (key: "debug.stagefright.ccodec", value: "0")
+
+  debug "hal: gralloc gbm device: " & (&node).dev
+  props &= (key: "gralloc.gbm.device", value: (&node).dev)
 
   info "hal: using gralloc implementation: " & gralloc
   info "hal: you have EGL support."
@@ -72,12 +74,12 @@ proc makeBaseProps*(input: Input) =
 
   # TODO: camera support
 
-  #[ var opengles = getProp("ro.opengles.version")
+  var opengles = getProp("ro.opengles.version")
   if not *opengles:
     debug "hal: ro.opengles.version not set, setting it."
-    opengles = some("196609") ]#
+    opengles = some("196609")
 
-  props &= (key: "ro.opengles.version", value: "196609")
+  props &= (key: "ro.opengles.version", value: &opengles)
   props &= (key: "ro.vndk.lite", value: "false")
 
   for product in ["brand", "device", "manufacturer", "model", "name"]:
