@@ -94,7 +94,11 @@ proc gbinder_reader_read_buffer*(reader: ptr GBinderReader): ptr GBinderBuffer
 proc gbinder_reader_read_parcelable*(reader: ptr GBinderReader, size: ptr uint64): pointer
 proc gbinder_reader_skip_buffer*(reader: ptr GBinderReader): bool
 proc gbinder_reader_read_string8*(reader: ptr GBinderReader): cstring
+proc gbinder_reader_read_string16*(reader: ptr GBinderReader): cstring
 proc gbinder_reader_read_nullable_string*(reader: ptr GBinderReader, output: ptr cstring, outLen: ptr uint64): bool
+proc gbinder_remote_reply_unref*(reply: ptr GBinderRemoteReply)
+proc gbinder_remote_reply_init_reader*(reply: ptr GBinderRemoteReply, reader: ptr GBinderReader)
+proc gbinder_remote_reply_copy_to_local*(reply: ptr GbinderRemoteReply): ptr GBinderRemoteReply
 
 proc gbinder_servicemanager_get_service_sync*(sm: ptr GBinderServiceManager, name: cstring, status: ptr int32): ptr GBinderRemoteObject
 
