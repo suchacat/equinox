@@ -237,7 +237,12 @@ proc generateSessionLxcConfig*() =
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
 
 proc getLxcStatus*(): string =
-  &readOutput("lxc-info", "-P " & config.lxc & " -n equinox -sH")
+  let value = readOutput("sudo lxc-info", "-P " & config.lxc & " -n equinox -sH")
+
+  if not *value:
+    return "STOPPED"
+
+  &value
 
 proc startLxcContainer*(input: Input) =
   debug "lxc: starting container"
