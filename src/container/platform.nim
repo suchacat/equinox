@@ -1,4 +1,4 @@
-import std/[os, logging, strutils, times]
+import std/[os, logging, strutils, times, options]
 import ./[configuration, drivers]
 import ../bindings/[gbinder]
 
@@ -65,6 +65,47 @@ proc launchApp*(iface: var IPlatform, id: string) =
     error "platform: reply == NULL; request has failed"
   else:
     debug "platform: got reply successfully"
+
+proc setProperty*(iface: var IPlatform, name: string, prop: string) =
+  debug "platform: setting property: " & name & " = " & prop
+
+  var request = gbinder_client_new_request(cast[ptr GBinderClient](iface.client))
+  discard gbinder_local_request_append_string16(request, cstring(name))
+  discard gbinder_local_request_append_string16(request, cstring(prop))
+
+  var status: int32
+  let reply = gbinder_client_transact_sync_reply(cast[ptr GBinderClient](iface.client), uint32(Transaction.SetProp), request, status.addr)
+
+  if reply == nil:
+    error "platform: reply == NULL; request has failed! (" & $status & ')'
+
+proc getProperty*(iface: var IPlatform, name: string): Option[string] =
+  debug "platform: getting property: " & name
+
+  var request = gbinder_client_new_request(cast[ptr GBinderClient](iface.client))
+  discard gbinder_local_request_append_string16(request, cstring(name))
+
+  var status: int32
+  let reply = gbinder_client_transact_sync_reply(cast[ptr GBinderClient](iface.client), uint32(Transaction.SetProp), request, status.addr)
+
+  if reply == nil:
+    error "platform: reply == NULL; request has failed! (" & $status & ')'
+    return
+  
+  var reader: GBinderReader
+  gbinder_remote_reply_init_reader(reply, reader.addr)
+  
+  var readI32Status: int32
+  let success = gbinder_reader_read_int32(reader.addr, readI32Status.addr)
+
+  if not success:
+    error "platform: gbinder_reader_read_int32() failed."
+  
+  if readI32Status == 0'i32:
+    let prop = gbinder_reader_read_string16(reader.addr)
+    return some($prop)
+  else:
+    error "platform: reply status code was " & $readI32Status & "! Cannot fetch property."
 
 proc waitForManager*(mgr: ptr GBinderServiceManager): bool =
   for _ in 0 .. 4096:

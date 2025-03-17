@@ -89,8 +89,6 @@ proc main() {.inline.} =
     echo "Splash: " & sample(Splashes)
 
     startAndroidRuntime(input)
-    setLenUninit()
-    startLxcContainer(input)
   of "shell":
     developerOnly:
       if input.arguments.len < 1:
