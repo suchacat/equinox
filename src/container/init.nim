@@ -2,8 +2,8 @@ import std/[os, logging]
 import ./[lxc, configuration, cpu, drivers, image_downloader, hal]
 import ../argparser
 
-proc setupConfig*(): bool =
-  loadConfig()
+proc setupConfig*(input: Input): bool =
+  loadConfig(input)
   config.arch = getHost().maybeRemap()
 
   let driverList = setupBinderNodes()
@@ -20,7 +20,7 @@ proc setupConfig*(): bool =
 proc initialize*(input: Input) =
   var status = "STOPPED"
 
-  if not setupConfig():
+  if not setupConfig(input):
     return
 
   if status != "STOPPED" and not input.enabled("ignore-container-state", "I"):

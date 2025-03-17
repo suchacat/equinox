@@ -1,4 +1,6 @@
 import std/[os, sequtils]
+import ../argparser,
+       ./[sugar]
 import pkg/[glob]
 
 type Config* = object
@@ -36,7 +38,7 @@ type Config* = object
 
 var config*: Config
 
-proc loadConfig*() {.sideEffect.} =
+proc loadConfig*(input: Input) {.sideEffect.} =
   config = Config(
     arch: "x86_64",
     work: "/var" / "lib" / "equinox",
@@ -57,15 +59,9 @@ proc loadConfig*() {.sideEffect.} =
   config.hostPerms = config.work / "host-permissions"
   config.containerPulseRuntimePath = config.containerXdgRuntimeDir / "pulse"
 
-  let defEquinoxData = block:
-    var x: string
-    for k, f in walkDir("/home"):
-      if k != pcDir:
-        continue
-      x = f
-      break
-
-    x / ".local" / "share" / "equinox"
+  let defEquinoxData =
+    if *input.flag("user"): "/home" / &input.flag("user") / ".local" / "share" / "equinox"
+    else: "/"
 
   config.equinoxData = getEnv("XDG_DATA_HOME", defEquinoxData)
 
