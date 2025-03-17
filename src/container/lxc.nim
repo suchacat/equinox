@@ -257,7 +257,6 @@ proc stopLxcContainer*(force: bool = false) =
 
   if getLxcStatus() == "STOPPED":
     warn "lxc: container has already stopped"
-    warn "lxc: ur stupid"
     quit(1)
 
   runCmd(

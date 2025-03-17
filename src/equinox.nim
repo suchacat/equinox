@@ -1,7 +1,7 @@
 import std/[os, logging, terminal, random]
 import pkg/[colored_logger, pretty, noise]
 import ./argparser
-import container/[trayperion, lxc, image_downloader, configuration, init, run, sugar, properties, app_manager]
+import container/[trayperion, certification, lxc, image_downloader, configuration, init, run, sugar, properties, app_manager, platform]
 
 const
   Splashes = [
@@ -50,6 +50,8 @@ Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
   shell                Run a shell command in the Android container
   sh                   Run a shell REPL in the Android container
   get-property         Fetch propert(y/ies) from the Android container
+  get-gsf-id           Get the Google Services Framework Android ID from the container
+  launch-app           Launch an application
 """
   quit(code)
 
@@ -58,11 +60,11 @@ proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
 
-  loadConfig()
-
   var input = parseInput()
   if input.enabled("verbose", "v"):
     setLogFilter(lvlAll)
+
+  loadConfig(input)
 
   let lxcVersion = getLxcVersion()
   debug "lxc version: " & lxcVersion
@@ -156,6 +158,13 @@ proc main() {.inline.} =
         else:
           let output = runCmdInContainer(line)
           if *output: echo &output
+  of "get-gsf-id":
+    developerOnly:
+      echo getGSFAndroidID()
+  of "launch-app":
+    developerOnly:
+      var platform = getIPlatformService()
+      platform.launchApp(input.arguments[0])
   else:
     error "equinox: invalid command: " & input.command
     quit(1)
