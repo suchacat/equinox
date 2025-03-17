@@ -7,11 +7,6 @@ proc readOutput*(bin: string, cmd: string): Option[string] =
 
   let res = execCmdEx(command)
 
-  if res.exitCode != 0:
-    warn "container/utils/exec: readOutput: exit code " & $res.exitCode
-    echo res.output
-    return
-
   some(res.output.strip())
 
 proc runCmd*(bin: string, cmd: string): bool {.discardable.} =
