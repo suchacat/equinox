@@ -99,6 +99,9 @@ proc gbinder_reader_read_nullable_string*(reader: ptr GBinderReader, output: ptr
 proc gbinder_remote_reply_unref*(reply: ptr GBinderRemoteReply)
 proc gbinder_remote_reply_init_reader*(reply: ptr GBinderRemoteReply, reader: ptr GBinderReader)
 proc gbinder_remote_reply_copy_to_local*(reply: ptr GbinderRemoteReply): ptr GBinderRemoteReply
+proc gbinder_remote_object_unref*(obj: ptr GBinderRemoteObject)
+proc gbinder_remote_object_ipc*(obj: ptr GBinderRemoteObject): ptr GBinderIpc
+proc gbinder_remote_object_is_dead*(obj: ptr GBinderRemoteObject): bool
 
 proc gbinder_servicemanager_get_service_sync*(sm: ptr GBinderServiceManager, name: cstring, status: ptr int32): ptr GBinderRemoteObject
 
