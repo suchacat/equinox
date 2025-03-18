@@ -1,5 +1,5 @@
-import std/[algorithm, logging, math, os, strutils]
-import pkg/[curly, jsony]
+import std/[algorithm, logging, math, os, strutils, sequtils]
+import pkg/[curly, jsony, zip/zipfiles, pretty]
 import utils/http
 import ./[configuration, properties, sugar]
 
@@ -37,7 +37,7 @@ type
   ImageDownloadFailed* = object of CatchableError
 
 proc getVendorType*(): string =
-  let vndkStr = getProp("ro.vndk.version")
+  #[ let vndkStr = getProp("ro.vndk.version")
 
   if *vndkStr:
     let vndk = parseUint(&vndkStr)
@@ -59,7 +59,7 @@ proc getVendorType*(): string =
     if vndk == 32:
       return "HALIUM_" & $haliumVer & 'L'
     else:
-      return "HALIUM_" & $haliumVer
+      return "HALIUM_" & $haliumVer ]#
 
   return "MAINLINE"
 
@@ -134,7 +134,7 @@ proc downloadImages*(pair: ImagePair) =
     )
 
   info "container/image: downloaded system image: " &
-    $(systemReq.body.len.float / (1024'f32.pow(3))) & " GB"
+    $(systemReq.body.len.float / (2'f32.pow(30))) & " GB (compressed)"
 
   info "container/image: downloading vendor image: " & pair.vendor.url
   let vendorReq = httpGet(pair.vendor.url)
@@ -148,12 +148,20 @@ proc downloadImages*(pair: ImagePair) =
     )
 
   info "container/image: downloaded system image: " &
-    $(vendorReq.body.len.float / (1024'f32.pow(3))) & " GB"
+    $(vendorReq.body.len.float / (1024'f32.pow(3))) & " GB (compressed)"
 
   info "container/image: writing system image"
-  writeFile(config.imagesPath / "system.img", systemReq.body)
+  writeFile(config.imagesPath / "system.img.proto", systemReq.body)
+  var readerSys: ZipArchive
+  assert(readerSys.open(config.imagesPath / "system.img.proto"), "Failed to open compressed system image")
+  readerSys.extractFile("system.img", config.imagesPath / "system.img")
+  removeFile(config.imagesPath / "system.img.proto")
 
   info "container/image: writing vendor image"
-  writeFile(config.imagesPath / "vendor.img", vendorReq.body)
+  writeFile(config.imagesPath / "vendor.img.proto", vendorReq.body)
+  var readerVendor: ZipArchive
+  assert(readerVendor.open(config.imagesPath / "vendor.img.proto"), "Failed to open compressed vendor image")
+  readerVendor.extractFile("vendor.img", config.imagesPath / "vendor.img")
+  removeFile(config.imagesPath / "vendor.img.proto")
 
   info "container/image: downloaded Android container images successfully!"
