@@ -1,5 +1,5 @@
 ## Onboarding GUI
-
+import std/[logging]
 import pkg/owlkettle,
        pkg/owlkettle/[playground, adw]
 
@@ -12,6 +12,9 @@ viewable OnboardingApp:
   sensitive: bool = true
   tooltip: string = "man..."
   sizeRequest: tuple[x, y: int] = (-1, -1)
+
+  consentedTOS: bool
+  consentedPrivacy: bool
 
 method view(app: OnboardingAppState): Widget =
   result = gui:
@@ -35,12 +38,27 @@ method view(app: OnboardingAppState): Widget =
 
             ActionRow:
               title = "I Consent"
-              subtitle = "To the Equinox terms of service"
+              subtitle = "To the Equinox Terms of Service"
               Switch() {.addSuffix.}
 
-              #proc activated(active: bool) =
-              #  app.active = active
-              #  echo "Consent status: ", active
+              proc activated(active: bool) =
+                app.consentedTOS = active
+                if app.consentedTOS:
+                  debug "gui: user has consented to TOS"
+                else:
+                  debug "gui: user no longer consents to TOS"
+
+            ActionRow:
+              title = "I Consent"
+              subtitle = "To the Equinox Privacy Policy"
+              Switch() {.addSuffix.}
+
+              proc activated(active: bool) =
+                app.consentedPrivacy = active
+                if app.consentedPrivacy:
+                  debug "gui: user has consented to privacy policy"
+                else:
+                  debug "gui: user no longer consents to privacy policy"
 
           Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
             orient = OrientX
@@ -48,16 +66,18 @@ method view(app: OnboardingAppState): Widget =
 
             Button:
               style = [ButtonPill, ButtonSuggested]
-              text = "Launch"
+              text = "Start Setup"
               proc clicked() =
-                echo "clicked"
+                let consent = app.consentedPrivacy and app.consentedTOS
+                if not consent:
+                  discard
 
-            Button:
+            #[ Button:
               style = [ButtonPill]
               icon = "applications-system-symbolic"
               #tooltip = "config"
               proc clicked() =
-                echo "losing it"
+                echo "losing it" ]#
 
 proc runOnboardingApp* =
   adw.brew(gui(OnboardingApp()))
