@@ -1,24 +1,33 @@
 ## Onboarding GUI
 import std/[logging]
-import pkg/owlkettle,
-       pkg/owlkettle/[playground, adw]
+import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 
 viewable OnboardingApp:
-  description: string = "This is Equinox"
-  iconName: string = "weather-clear-symbolic"
-  title: string = "Equinox"
-  active: bool = false
-  subtitle: string = "uuuuuh"
-  sensitive: bool = true
-  tooltip: string = "man..."
-  sizeRequest: tuple[x, y: int] = (-1, -1)
+  description:
+    string = "This is Equinox"
+  iconName:
+    string = "weather-clear-symbolic"
+  title:
+    string = "Equinox"
+  active:
+    bool = false
+  subtitle:
+    string = "uuuuuh"
+  sensitive:
+    bool = true
+  tooltip:
+    string = "man..."
+  sizeRequest:
+    tuple[x, y: int] = (-1, -1)
 
-  consentedTOS: bool
-  consentedPrivacy: bool
+  consentedTOS:
+    bool
+  consentedPrivacy:
+    bool
 
 method view(app: OnboardingAppState): Widget =
   result = gui:
-    Window():
+    Window:
       defaultSize = (400, 600)
       title = app.title
       HeaderBar {.addTitlebar.}:
@@ -28,7 +37,7 @@ method view(app: OnboardingAppState): Widget =
         maximumSize = 500
         margin = 12
 
-        Box():
+        Box:
           orient = OrientY
           spacing = 12
 
@@ -77,5 +86,5 @@ method view(app: OnboardingAppState): Widget =
               proc clicked() =
                 echo "losing it" ]#
 
-proc runOnboardingApp* =
+proc runOnboardingApp*() =
   adw.brew(gui(OnboardingApp()))

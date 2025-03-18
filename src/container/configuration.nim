@@ -1,6 +1,5 @@
 import std/[os, sequtils]
-import ../argparser,
-       ./[sugar]
+import ../argparser, ./[sugar]
 import pkg/[glob]
 
 type Config* = object
@@ -47,7 +46,7 @@ proc loadConfig*(input: Input) {.sideEffect.} =
     suspendAction: "freeze",
     mountOverlays: "true",
     containerXdgRuntimeDir: "/run/user/1000",
-    containerWaylandDisplay: getEnv("WAYLAND_DISPLAY", "wayland-0")
+    containerWaylandDisplay: getEnv("WAYLAND_DISPLAY", "wayland-0"),
   )
   config.imagesPath = config.work / "images"
   config.rootfs = config.work / "rootfs"
@@ -60,8 +59,10 @@ proc loadConfig*(input: Input) {.sideEffect.} =
   config.containerPulseRuntimePath = config.containerXdgRuntimeDir / "pulse"
 
   let defEquinoxData =
-    if *input.flag("user"): "/home" / &input.flag("user") / ".local" / "share" / "equinox"
-    else: "/"
+    if *input.flag("user"):
+      "/home" / &input.flag("user") / ".local" / "share" / "equinox"
+    else:
+      "/"
 
   config.equinoxData = getEnv("XDG_DATA_HOME", defEquinoxData)
 

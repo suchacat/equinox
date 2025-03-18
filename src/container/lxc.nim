@@ -87,8 +87,8 @@ proc generateNodesLxcConfig*(): seq[string] =
 
   let node = &noded
 
-  entry node.dev# , some("dev/dri/renderD128")
-  entry node.gpu# , some("dev/dri/card1") 
+  entry node.dev # , some("dev/dri/renderD128")
+  entry node.gpu # , some("dev/dri/card1") 
 
   for node in glob("/dev/fb*").walkGlob:
     entry node
@@ -122,7 +122,7 @@ proc generateNodesLxcConfig*(): seq[string] =
   entry "/dev/MTK_SMI"
   entry "/dev/mdp_sync"
   entry "/dev/mtk_cmdq"
-  
+
   entry "tmpfs", some("mnt_extra"), "tmpfs", "nodev 0 0", false
   entry "tmpfs", some("tmp"), "tmpfs", "nodev 0 0", false
   entry "tmpfs", some("var"), "tmpfs", "nodev 0 0", false
@@ -137,7 +137,11 @@ proc setLxcConfig*() =
   let lxcMajor = getLxcMajor()
   let lxcPath = config.lxc / "equinox"
 
-  let substituteTable = {"LXCARCH": getArchStr(), "WORKING": config.work, "WLDISPLAY": config.containerWaylandDisplay}
+  let substituteTable = {
+    "LXCARCH": getArchStr(),
+    "WORKING": config.work,
+    "WLDISPLAY": config.containerWaylandDisplay,
+  }
 
   var configs = @[CONFIG_BASE.multiReplace(substituteTable)]
   if lxcMajor <= 2:
@@ -215,7 +219,7 @@ proc generateSessionLxcConfig*() =
       "Cannot bind Wayland socket.\nContainer = " & waylandContainerSocket & "\nHost = " &
         waylandHostSocket,
     )
-  
+
   setLenUninit()
 
   let
@@ -232,7 +236,7 @@ proc generateSessionLxcConfig*() =
     buffer &= node & '\n'
 
   buffer &= "lxc.environment=WAYLAND_DISPLAY=" & config.containerWaylandDisplay
-  
+
   setLenUninit()
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
 
@@ -246,10 +250,14 @@ proc getLxcStatus*(): string =
 
 proc startLxcContainer*(input: Input) =
   debug "lxc: starting container"
-  
+
   var debugLog = input.flag("log-file")
 
-  runCmd("sudo lxc-start", "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") & " -n equinox -- /init")
+  runCmd(
+    "sudo lxc-start",
+    "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") &
+      " -n equinox -- /init",
+  )
   setLenUninit()
   if *debugLog:
     runCmd("sudo chown", "1000 " & &debugLog)

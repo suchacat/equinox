@@ -11,13 +11,14 @@ proc mountRootfs*(input: Input, imagesDir: string) =
 
   debug "container/run: mounting vendor image"
   mount(imagesDir / "vendor.img", config.rootfs / "vendor")
-  
+
   makeBaseProps(input)
   mountFile(config.work / "equinox.prop", config.rootfs / "vendor" / "waydroid.prop")
 
-proc showUI* =
+proc showUI*() =
   var platform = getIPlatformService()
-  platform.setProperty("waydroid.active_apps", "Waydroid") # TODO: make it focus on rob locks not waydroid
+  platform.setProperty("waydroid.active_apps", "Waydroid")
+    # TODO: make it focus on rob locks not waydroid
   # TODO: actually make it show up :3
 
 proc startAndroidRuntime*(input: Input) =

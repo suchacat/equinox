@@ -67,10 +67,7 @@ proc mount*(
 
   runCmd "sudo mount", cmd
 
-proc mountFile*(
-  source, dest: string,
-  createFolders: bool = false
-) =
+proc mountFile*(source, dest: string, createFolders: bool = false) =
   if isMounted(dest):
     return
 
@@ -78,7 +75,7 @@ proc mountFile*(
     if createFolders:
       let dirName = dest.splitPath().head
       discard existsOrCreateDir(dirName)
-    
+
     writeFile(dest, newString(0))
 
   runCmd "sudo mount", "-o bind " & source & ' ' & dest

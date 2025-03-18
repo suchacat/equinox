@@ -153,14 +153,20 @@ proc downloadImages*(pair: ImagePair) =
   info "container/image: writing system image"
   writeFile(config.imagesPath / "system.img.proto", systemReq.body)
   var readerSys: ZipArchive
-  assert(readerSys.open(config.imagesPath / "system.img.proto"), "Failed to open compressed system image")
+  assert(
+    readerSys.open(config.imagesPath / "system.img.proto"),
+    "Failed to open compressed system image",
+  )
   readerSys.extractFile("system.img", config.imagesPath / "system.img")
   removeFile(config.imagesPath / "system.img.proto")
 
   info "container/image: writing vendor image"
   writeFile(config.imagesPath / "vendor.img.proto", vendorReq.body)
   var readerVendor: ZipArchive
-  assert(readerVendor.open(config.imagesPath / "vendor.img.proto"), "Failed to open compressed vendor image")
+  assert(
+    readerVendor.open(config.imagesPath / "vendor.img.proto"),
+    "Failed to open compressed vendor image",
+  )
   readerVendor.extractFile("vendor.img", config.imagesPath / "vendor.img")
   removeFile(config.imagesPath / "vendor.img.proto")
 

@@ -49,7 +49,7 @@ proc makeBaseProps*(input: Input) =
       warn "hal: this can happen if you have a Nvidia GPU. If you have an AMD/Intel GPU, please open a bug report."
       gralloc = some("default")
       egl = some("swiftshader") ]#
-  
+
   props &= (key: "ro.hardware.gralloc", value: gralloc)
   props &= (key: "debug.stagefright.ccodec", value: "0")
 
@@ -100,7 +100,7 @@ proc makeBaseProps*(input: Input) =
   if *propFp:
     debug "hal: build fingerprint: " & &propFp
     props &= (key: "ro.build.fingerprint", value: &propFp)
-  
+
   for arg in ["wayland-display", "xdg-runtime-dir", "gid", "uid", "user"]:
     if not *input.flag(arg):
       error "equinox: did not get required argument: " & arg
