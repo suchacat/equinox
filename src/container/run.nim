@@ -29,6 +29,7 @@ proc startAndroidRuntime*(input: Input) =
   generateSessionLxcConfig()
 
   if getLxcStatus() == "RUNNING":
-    showUI()
+    debug "equinox: container is already running"
+    warn "equinox: TODO: proper showFullUI() implementation"
   else:
     startLxcContainer(input)
