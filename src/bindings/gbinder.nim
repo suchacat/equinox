@@ -23,6 +23,48 @@ type
   GBinderServiceName* = object
   GBinderWriter* = object
   GBinderParent* = object
+
+  GBinderFds* = object
+    version* {.align: 4.}: uint32
+    num_fds* {.align: 4.}: uint32
+    num_ints* {.align: 4.}: uint32
+
+{.pop.}
+
+type
+  GBinderHidlHandleData {.union.} = object
+    value*: uint64
+    fds*: ptr UncheckedArray[GBinderFds]
+
+  GBinderHidlMemoryData {.union.} = object
+    value*: uint64
+    fds*: ptr UncheckedArray[GBinderFds]
+
+  GBinderHidlStringData {.union.} = object
+    value*: uint64
+    str*: cstring
+
+{.push importc.}
+
+type
+  GBinderHidlString* = object
+    data*: GBinderHidlStringData
+    len*: uint32
+    owns_buffer*: uint8
+    pad*: array[3, uint8]
+
+  GBinderHidlHandle* = object
+    data*: GBinderHidlHandleData
+    owns_handle*: uint8
+    pad*: array[7, uint8]
+
+  GBinderHidlMemory* = object
+    data*: GBinderHidlMemoryData
+    owns_buffer*: uint8
+    pad*: array[7, uint8]
+    size*: uint64
+    name*: GBinderHidlString
+
 {.pop.}
 
 type
@@ -37,6 +79,18 @@ type
     System = 0x0c
     Vintf = 0x3f
 
+  GBinderLocalTransactFunc* = proc(obj: ptr GBinderLocalObject, req: ptr GBinderRemoteRequest, code, flags: uint, status: ptr int32, user_data: pointer): ptr GBinderLocalReply
+
+  GBinderServiceManagerListFunc* = proc(sm: ptr GBinderServiceManager, services: ptr UncheckedArray[cstring], user_data: pointer): bool
+
+  GBinderServiceManagerGetServiceFunc* = proc(sm: ptr GBinderServiceManager, obj: ptr GBinderRemoteObject, status: int32, user_data: pointer)
+
+  GBinderServiceManagerAddServiceFunc* = proc(sm: ptr GBinderServiceManager, status: int32, user_data: pointer)
+
+  GBinderServiceManagerRegistrationFunc* = proc(sm: ptr GBinderServiceManager, name: cstring, user_data: pointer)
+
+  GBinderServiceManagerFunc* = proc(sm: ptr GBinderServiceManager, userData: pointer)
+  
 {.push importc.}
 
 var 
@@ -46,7 +100,7 @@ var
 
 proc gbinder_servicemanager_new*(dev: cstring): ptr GBinderServiceManager
 proc gbinder_servicemanager_new2*(dev: cstring, sm_protocol: cstring, rpc_protocol: cstring): ptr GBinderServiceManager
-proc gbinder_defaultservice_new*(
+proc gbinder_defaultservicemanager_new*(
   dev: cstring
 ): ptr GBinderServiceManager
 proc gbinder_hwservicemanager_new*(
@@ -56,6 +110,18 @@ proc gbinder_servicemanager_wait*(
   sm: ptr GBinderServiceManager,
   maxWaitMs: float32
 ): bool
+proc gbinder_servicemanager_get_service_sync*(sm: ptr GBinderServiceManager, name: cstring, status: ptr int32): ptr GBinderRemoteObject
+proc gbinder_servicemanager_is_present*(sm: ptr GBinderServiceManager): bool
+proc gbinder_servicemanager_list*(sm: ptr GBinderServiceManager, fn: GBinderServiceManagerListFunc, userData: pointer): uint32
+proc gbinder_servicemanager_list_sync*(sm: ptr GBinderServiceManager): ptr UncheckedArray[cstring]
+proc gbinder_servicemanager_get_service*(sm: ptr GBinderServiceManager, name: cstring, fn: GBinderServiceManagerGetServiceFunc, userData: pointer): uint32
+proc gbinder_servicemanager_add_service*(sm: ptr GBinderServiceManager, name: cstring, obj: ptr GBinderLocalObject, fn: GBinderServiceManagerAddServiceFunc, user_data: pointer): uint32
+proc gbinder_add_servicemanager_add_service_sync*(sm: ptr GBinderServiceManager, name: cstring, obj: ptr GBinderLocalObject): int32
+proc gbinder_servicemanager_cancel*(sm: ptr GBinderServiceManager, id: uint32)
+proc gbinder_servicemanager_add_presence_handler*(sm: ptr GBinderServiceManager, fn: GBinderServiceManagerFunc, userData: pointer): uint32
+proc gbinder_servicemanager_add_registration_handler*(sm: ptr GBinderServiceManager, name: cstring, fn: GBinderServiceManagerRegistrationFunc, userData: pointer): uint32
+proc gbinder_servicemanager_remove_handler*(sm: ptr GBinderServiceManager, id: uint32)
+proc gbinder_servicemanager_remove_handlers*(sm: ptr GBinderServiceManager, ids: ptr UncheckedArray[uint32], count: uint)
 proc gbinder_client_new*(obj: ptr GBinderRemoteObject, iface: cstring): ptr GBinderClient
 proc gbinder_client_new_request*(client: ptr GBinderClient): ptr GBinderLocalRequest
 proc gbinder_client_new_request2*(client: ptr GBinderClient, code: uint32): ptr GBinderLocalRequest
@@ -102,11 +168,19 @@ proc gbinder_remote_reply_copy_to_local*(reply: ptr GbinderRemoteReply): ptr GBi
 proc gbinder_remote_object_unref*(obj: ptr GBinderRemoteObject)
 proc gbinder_remote_object_ipc*(obj: ptr GBinderRemoteObject): ptr GBinderIpc
 proc gbinder_remote_object_is_dead*(obj: ptr GBinderRemoteObject): bool
-
-proc gbinder_servicemanager_get_service_sync*(sm: ptr GBinderServiceManager, name: cstring, status: ptr int32): ptr GBinderRemoteObject
-
-proc gbinder_servicemanager_is_present*(sm: ptr GBinderServiceManager): bool
-
+proc gbinder_bridge_new*(name: cstring, ifaces: ptr UncheckedArray[cstring], src, dest: ptr GBinderServiceManager): ptr GBinderBridge
+proc gbinder_bridge_new2*(
+  src_name, dest_name: cstring,
+  ifaces: ptr UncheckedArray[cstring],
+  src, dest: ptr GBinderServiceManager
+): ptr GBinderBridge
+proc gbinder_bridge_free*(bridge: ptr GBinderBridge)
+proc gbinder_local_object_new*(ipc: ptr GBinderIpc, ifaces: ptr UncheckedArray[cstring], handler: GBinderLocalTransactFunc, userData: pointer): ptr GBinderLocalObject
+proc gbinder_local_object_ref*(obj: ptr GBinderLocalObject): ptr GBinderLocalObject
+proc gbinder_local_object_unref*(obj: ptr GBinderLocalObject)
+proc gbinder_local_object_drop*(obj: ptr GBinderLocalObject)
+proc gbinder_local_object_new_reply*(obj: ptr GBinderLocalObject): ptr GBinderLocalReply
+proc gbinder_local_object_set_stability*(self: ptr GBinderLocalObject, stability: GBinderStabilityLevel)
 {.pop.}
 
 {.pop.}
