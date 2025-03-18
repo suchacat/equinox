@@ -21,3 +21,5 @@ requires "noise >= 0.1.10"
 requires "crunchy >= 0.1.11"
 requires "zippy >= 0.10.16"
 requires "zip >= 0.3.1"
+
+requires "owlkettle >= 3.0.0"
