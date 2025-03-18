@@ -1,6 +1,9 @@
-import owlkettle, owlkettle/[playground, adw]
+## Onboarding GUI
 
-viewable App:
+import pkg/owlkettle,
+       pkg/owlkettle/[playground, adw]
+
+viewable OnboardingApp:
   description: string = "This is Equinox"
   iconName: string = "weather-clear-symbolic"
   title: string = "Equinox"
@@ -10,7 +13,7 @@ viewable App:
   tooltip: string = "man..."
   sizeRequest: tuple[x, y: int] = (-1, -1)
 
-method view(app: AppState): Widget =
+method view(app: OnboardingAppState): Widget =
   result = gui:
     Window():
       defaultSize = (400, 600)
@@ -56,5 +59,5 @@ method view(app: AppState): Widget =
               proc clicked() =
                 echo "losing it"
 
-
-adw.brew(gui(App()))
+proc runOnboardingApp* =
+  adw.brew(gui(OnboardingApp()))
