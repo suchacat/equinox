@@ -39,26 +39,24 @@ method view(app: OnboardingAppState): Widget =
             ActionRow:
               title = "I Consent"
               subtitle = "To the Equinox Terms of Service"
-              Switch() {.addSuffix.}
-
-              proc activated(active: bool) =
-                app.consentedTOS = active
-                if app.consentedTOS:
-                  debug "gui: user has consented to TOS"
-                else:
-                  debug "gui: user no longer consents to TOS"
+              Switch() {.addSuffix.}:
+                proc changed(active: bool) =
+                  app.consentedTOS = active
+                  if app.consentedTOS:
+                    debug "gui: user has consented to TOS"
+                  else:
+                    debug "gui: user no longer consents to TOS"
 
             ActionRow:
               title = "I Consent"
               subtitle = "To the Equinox Privacy Policy"
-              Switch() {.addSuffix.}
-
-              proc activated(active: bool) =
-                app.consentedPrivacy = active
-                if app.consentedPrivacy:
-                  debug "gui: user has consented to privacy policy"
-                else:
-                  debug "gui: user no longer consents to privacy policy"
+              Switch() {.addSuffix.}:
+                proc changed(active: bool) =
+                  app.consentedPrivacy = active
+                  if app.consentedPrivacy:
+                    debug "gui: user has consented to privacy policy"
+                  else:
+                    debug "gui: user no longer consents to privacy policy"
 
           Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
             orient = OrientX
