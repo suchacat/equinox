@@ -4,7 +4,7 @@ import ./argparser
 import
   container/[
     trayperion, certification, lxc, image_downloader, configuration, init, run, sugar,
-    properties, app_manager, platform,
+    properties, app_manager, platform, network
   ]
 
 const Splashes = [
@@ -89,7 +89,8 @@ proc main() {.inline.} =
   of "run":
     randomize()
     echo "Splash: " & sample(Splashes)
-
+    
+    initNetworkService()
     startAndroidRuntime(input)
   of "shell":
     developerOnly:
@@ -167,6 +168,17 @@ proc main() {.inline.} =
     developerOnly:
       var platform = getIPlatformService()
       platform.launchApp(input.arguments[0])
+  of "net":
+    if input.arguments.len < 1:
+      error "equinox: `net` expects a subcommand (`start`)"
+      quit(1)
+
+    case input.arguments[0]
+    of "start":
+      initNetworkService()
+    else:
+      error "equinox: invalid subcommand for `net`: " & input.arguments[0]
+      quit(1)
   else:
     error "equinox: invalid command: " & input.command
     quit(1)

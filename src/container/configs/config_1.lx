@@ -6,10 +6,10 @@ lxc.aa_profile = unconfined
 lxc.seccomp = unconfined # WORKING/lxc/equinox/equinox.seccomp
 androidboot.selinux=disabled
 
-# lxc.network.type = veth
-# lxc.network.flags = up
-# lxc.network.link = waydroid0
-# lxc.network.name = eth0
-# lxc.network.hwaddr = 00:16:3e:f9:d3:03
-# lxc.network.mtu = 1500
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.link = equi0
+lxc.network.name = eth0
+lxc.network.hwaddr = 00:16:3e:00:00:01
+lxc.network.mtu = 1500
 
