@@ -17,9 +17,8 @@ proc mountRootfs*(input: Input, imagesDir: string) =
 
 proc showUI*() =
   var platform = getIPlatformService()
-  platform.setProperty("waydroid.active_apps", "Waydroid")
-    # TODO: make it focus on rob locks not waydroid
-  # TODO: actually make it show up :3
+  platform.launchApp("com.roblox.client")
+  platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
 proc startAndroidRuntime*(input: Input) =
   info "equinox: starting android runtime"
@@ -31,6 +30,6 @@ proc startAndroidRuntime*(input: Input) =
 
   if getLxcStatus() == "RUNNING":
     debug "equinox: container is already running"
-    warn "equinox: TODO: proper showFullUI() implementation"
+    showUI()
   else:
     startLxcContainer(input)

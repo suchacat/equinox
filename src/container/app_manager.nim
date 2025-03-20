@@ -123,67 +123,8 @@ proc installRobloxClient*(package: string) =
     let base = tempPath / "base.apk"
     let splitConfig = tempPath / "split_config." & architecture & ".apk"
 
-    debug "equinox: apkm: extracting base APK"
-    extractAll(base, tempPath / "base")
-
-    debug "equinox: apkm: extracting split APK for host arch"
-    extractAll(splitConfig, tempPath / "split")
-
-    debug "equinox: apkm: mixing packages"
-    # by "mixing", we just move the contents in `split` to `base` and then turn it into a ZIP archive and save it as an APK
-    # step 1: extract base APK
-    # step 2: extract split APK
-    # step 3: mix
-    # step 4: ?????
-    # step 5: profit
-
-    for kind, path in walkDir(tempPath / "split"):
-      let split = splitPath(path)
-      debug "equinox: apkm: split tail: " & split.tail
-      case kind
-      of {pcLinkToDir, pcLinkToFile, pcFile}:
-        debug "equinox: apkm: moving file: " & path & " -> " &
-          tempPath / "base" / split.tail
-        moveFile(path, tempPath / "base" / split.tail)
-      of pcDir:
-        if not dirExists(tempPath / "base" / split.tail):
-          debug "equinox: apkm: moving to unoccupied directory: " & path & " -> " &
-            tempPath / "base" / split.tail
-          moveDir(path, tempPath / "base" / split.tail)
-        else:
-          debug "equinox: apkm: directory is occupied, using accomodation approach"
-          for k, p in walkDir(path):
-            let split2 = splitPath(p)
-            case k
-            of {pcLinkToDir, pcLinkToFile, pcFile}:
-              debug "equinox: apkm: moving accomodated file: " & p & " -> " &
-                tempPath / "base" / split.tail / split2.tail
-              moveFile(p, tempPath / "base" / split.tail / split2.tail)
-            of pcDir:
-              debug "equinox: apkm: moving accomodated directory: " & p & " -> " &
-                tempPath / "base" / split.tail / split2.tail
-              moveDir(p, tempPath / "base" / split.tail / split2.tail)
-
-    # now, create a zip listing :3
-    var files: Table[string, string]
-    let basePath = tempPath / "base"
-    for path in walkDirRec(basePath):
-      if not fileExists(path):
-        continue
-
-      let
-        rmBase = path.split(basePath)[1]
-        fixed = rmBase[1 ..< rmBase.len]
-
-      debug "equinox: apkm: adding file to archive: " & fixed
-      files[fixed] = readFile(path)
-
-    let compressed = createZipArchive(ensureMove(files))
-      # one failed move and you copy a fucking gigabyte of shit :trolley:
-    writeFile(getTempDir() / "equinox-debundled-roblox-client.apk", compressed)
-
     removeDir(tempPath)
-    installRobloxClient(getTempDir() / "equinox-debundled-roblox-client.apk")
+    # installRobloxClient(getTempDir() / "equinox-debundled-roblox-client.apk")
   else:
     error "equinox: unknown format: " & extension
     error "equinox: please provide a APK (regular Android package) or APKM (APKMirror bundle)"
