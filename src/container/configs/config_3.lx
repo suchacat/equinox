@@ -10,7 +10,7 @@ lxc.net.0.type = veth
 lxc.net.0.flags = up
 lxc.net.0.link = equi0
 lxc.net.0.name = eth0
-lxc.net.0.hwaddr = 00:16:3e:00:00:01
+lxc.net.0.hwaddr = 00:16:3e:00:00:02
 lxc.net.0.mtu = 1500
 lxc.net.0.veth.pair = veth-equi0
 

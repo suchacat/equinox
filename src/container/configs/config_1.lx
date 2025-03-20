@@ -10,6 +10,6 @@ lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.link = equi0
 lxc.network.name = eth0
-lxc.network.hwaddr = 00:16:3e:00:00:01
+lxc.network.hwaddr = 00:16:3e:00:00:02
 lxc.network.mtu = 1500
 
