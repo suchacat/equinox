@@ -40,8 +40,6 @@ Usage: equinox [mode] [arguments] ...
 equinox is a runtime for Roblox on Linux that uses LXC containers.
 All commands need root access.
 
-Legal Disclaimer: The Equinox developers do not make ANY monetary profit from this tool. It does not facilitate any forbidden modifications to the Roblox software. Equinox comes with zero warranty and does not have official support. The EquinoxHQ team has no affiliation with Roblox Corporation, or any of its associated entities. "Roblox" is a registered trademark of the Roblox Corporation.
-
 Modes:
   init                 Initialize Equinox. Download the Android runtime images and Roblox.
   run                  Start the Equinox container with Roblox.

@@ -119,8 +119,8 @@ proc initNetworkService* =
   if not eval(
     "sudo dnsmasq --conf-file=/dev/null -u " & dnsmasqUser & " --strict-order --bind-interfaces --pid-file=" & (VarRun / "dnsmasq.pid") &
     " --listen-address " & LxcAddr & " --dhcp-range " & DhcpRange & " --dhcp-lease-max=" & DhcpMax & " --dhcp-no-override" &
-    " --except-interface=lo --interface=" & LxcBridge & " --dhcp-leasefile=/var/lib/dnsmasq." & LxcBridge & ".leases" &
-    " --no-ping"
+    " --except-interface=lo --interface=" & LxcBridge & " --dhcp-leasefile=/var/lib/misc/dnsmasq." & LxcBridge & ".leases" &
+    " --log-facility=/tmp/dnsmasq-equinox.log --log-dhcp --log-queries"
   ):
     error "net: dnsmasq failed"
     error "net: TODO: cleanup logic"
