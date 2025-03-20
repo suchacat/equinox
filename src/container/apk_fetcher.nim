@@ -67,5 +67,5 @@ proc downloadApks*(ver: string, pkg: APKVersion) =
     baseApkPath = config.equinoxData / "base.apk"
     splitApkPath = config.equinoxData / "split.apk"
   
-  runCmd "adb", "connect localhost:9782"
+  runCmd "adb", "connect 192.168.240.18:5555"
   runCmd "adb", "install-multiple " & baseApkPath & ' ' & splitApkPath

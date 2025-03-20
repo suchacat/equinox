@@ -71,8 +71,6 @@ proc startIptables* =
   exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p tcp --dport 67 -j ACCEPT")
   exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p udp --dport 53 -j ACCEPT")
   exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p tcp --dport 53 -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p udp --dport 9782 -j ACCEPT") # equinox adb controller 
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p tcp --dport 9782 -j ACCEPT") # equinox adb controller
   exec("sudo " & iptablesBin & " -w -I FORWARD -i " & LxcBridge & " -o " & device & " -j ACCEPT")
   exec("sudo " & iptablesBin & " -w -I FORWARD -i " & device & " -o " & LxcBridge & " -j ACCEPT")
   exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p udp --dport 68 -j ACCEPT")
