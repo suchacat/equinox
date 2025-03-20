@@ -1,5 +1,5 @@
 import std/[os, logging]
-import ./[lxc, configuration, cpu, drivers, hal, trayperion, platform]
+import ./[lxc, configuration, cpu, drivers, hal, trayperion, platform, network]
 import ../argparser
 import ./utils/mount
 
@@ -33,3 +33,4 @@ proc startAndroidRuntime*(input: Input) =
     showUI()
   else:
     startLxcContainer(input)
+    stopNetworkService()
