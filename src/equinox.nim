@@ -168,12 +168,14 @@ proc main() {.inline.} =
       platform.launchApp(input.arguments[0])
   of "net":
     if input.arguments.len < 1:
-      error "equinox: `net` expects a subcommand (`start`)"
+      error "equinox: `net` expects a subcommand (`start`, `stop`)"
       quit(1)
 
     case input.arguments[0]
     of "start":
       initNetworkService()
+    of "stop":
+      stopNetworkService()
     else:
       error "equinox: invalid subcommand for `net`: " & input.arguments[0]
       quit(1)

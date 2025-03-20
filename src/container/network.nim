@@ -132,3 +132,8 @@ proc stopNetworkService* =
   if not fileExists(VarRun / "network_up"):
     warn "net: service is already stopped"
     return
+
+  exec("sudo kill -TERM $(pidof dnsmasq)")
+  removeFile(VarRun / "network_up")
+  removeFile("/tmp" / "dnsmasq-equinox.log")
+  disableIf()
