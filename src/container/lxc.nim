@@ -256,7 +256,7 @@ proc startLxcContainer*(input: Input) =
   runCmd(
     "sudo lxc-start",
     "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") &
-      " -n equinox -- /init",
+      " -n equinox -F -- /init",
   )
   setLenUninit()
   if *debugLog:
