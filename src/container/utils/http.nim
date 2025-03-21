@@ -5,4 +5,8 @@ var curl {.global.} = newCurly()
 
 proc httpGet*(url: string, headers: HttpHeaders = emptyHttpHeaders()): Response =
   debug "http: GET: " & url
-  curl.get(url, headers, timeout = -1)
+  let resp = curl.get(url, headers, timeout = -1)
+
+  debug "http: got response code " & $resp.code
+
+  resp

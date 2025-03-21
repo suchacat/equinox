@@ -1,10 +1,10 @@
-import std/[os, logging, terminal, random]
+import std/[os, logging, terminal, random, rdstdin, strutils]
 import pkg/[colored_logger, pretty, noise]
 import ./argparser
 import
   container/[
     trayperion, certification, lxc, image_downloader, configuration, init, run, sugar,
-    properties, app_manager, platform, network
+    properties, app_manager, platform, network, apk_fetcher
   ]
 
 const Splashes = [
@@ -45,12 +45,17 @@ Modes:
   run                  Start the Equinox container with Roblox.
   halt                 Stop the Equinox container.
 
+  net
+    start              Start the networking bridge. This is already called by `run` upon starting up.
+    stop               Stop the networking bridge. This is already called by `run` upon exiting.
+
 Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
   fetch-image-pair     Fetch a suitable image pair (system+vendor) from the Waydroid OTA
   shell                Run a shell command in the Android container
   sh                   Run a shell REPL in the Android container
   get-property         Fetch propert(y/ies) from the Android container
   get-gsf-id           Get the Google Services Framework Android ID from the container
+  remove-app           Remove an application
   launch-app           Launch an application
 """
   quit(code)
@@ -84,6 +89,32 @@ proc main() {.inline.} =
       quit(1)
 
     installRobloxClient(input.arguments[0])
+  of "install":
+    if not input.enabled("consented", "C"):
+      echo """
+Notice: You are about to use the Google Play API to download Roblox's Android package.
+You must read the Google Play Terms of Service to continue (https://play.google.com/about/play-terms/index.html).
+EquinoxHQ is not responsible for any of your actions.
+      """
+      let consent = readLineFromStdin("Do you consent? [y/N]: ").toLowerAscii()
+      if consent != "y":
+        error "equinox: aborted."
+        quit(1)
+    
+    info "equinox: fetching Roblox " & SelectedVersion & " links from EquinoxHQ endpoint"
+    let packages = fetchRobloxApk()
+
+    info "equinox: downloading packages"
+    downloadApks(packages, input)
+  of "remove-app":
+    developerOnly:
+      if input.arguments.len < 1:
+        error "equinox: expected 1 argument, got none."
+        error "equinox: Run equinox --help for more information."
+        quit(1)
+
+      var platform = getIPlatformService()
+      platform.removeApp(input.arguments[0])
   of "run":
     randomize()
     echo "Splash: " & sample(Splashes)

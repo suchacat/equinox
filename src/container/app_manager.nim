@@ -122,9 +122,9 @@ proc installRobloxClient*(package: string) =
 
     let base = tempPath / "base.apk"
     let splitConfig = tempPath / "split_config." & architecture & ".apk"
-
+    
+    installSplitApp(base, splitConfig)
     removeDir(tempPath)
-    # installRobloxClient(getTempDir() / "equinox-debundled-roblox-client.apk")
   else:
     error "equinox: unknown format: " & extension
     error "equinox: please provide a APK (regular Android package) or APKM (APKMirror bundle)"

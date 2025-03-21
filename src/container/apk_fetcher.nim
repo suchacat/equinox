@@ -2,10 +2,11 @@
 import std/[os, tables, logging]
 import pkg/[jsony]
 import ./utils/[exec, http]
-import ./[configuration, properties, lxc]
+import ./[configuration, properties, lxc, platform]
+import ../argparser
 
 const
-  APKEndpoint* = "https://k1yrix.github.io/project-equinox-json/equinox.json"
+  APKEndpoint* = "https://equinoxhq.github.io/equinox-json/equinox.json"
   SelectedVersion* {.strdefine: "RobloxVersionTarget".} = "2.664.714"
 
 type
@@ -27,23 +28,24 @@ proc fetchRobloxApk*: APKVersion =
   
   return resp.version[SelectedVersion]
 
-proc downloadApks*(ver: string, pkg: APKVersion) =
+proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion) =
   debug "apk: downloading packages"
   
   var useCache = false
-  if dirExists(config.work / "apk" / ver):
+
+  if not input.enabled("force-no-cache", "J") and dirExists(config.work / "apk" / ver):
     debug "apk: using cached version"
     useCache = true
 
   let
     baseApk =
-      if useCache:
+      if not useCache:
         httpGet(pkg.base).body
       else:
         readFile(config.work / "apk" / ver / "base.apk")
 
     splitApk =
-      if useCache:
+      if not useCache:
         httpGet(pkg.split).body
       else:
         readFile(config.work / "apk" / ver / "split.apk")
@@ -55,17 +57,4 @@ proc downloadApks*(ver: string, pkg: APKVersion) =
   writeFile(config.work / "apk" / ver / "base.apk", baseApk)
   writeFile(config.work / "apk" / ver / "split.apk", splitApk)
 
-  debug "apk: writing to shared equinox data dir"
-  writeFile(config.equinoxData / "base.apk", baseApk)
-  writeFile(config.equinoxData / "split.apk", splitApk)
-
-  setProp("service.adb.tcp.port", "9782")
-  discard runCmdInContainer("stop adbd")
-  discard runCmdInContainer("start adbd")
-
-  let
-    baseApkPath = config.equinoxData / "base.apk"
-    splitApkPath = config.equinoxData / "split.apk"
-  
-  runCmd "adb", "connect 192.168.240.18:5555"
-  runCmd "adb", "install-multiple " & baseApkPath & ' ' & splitApkPath
+  installSplitApp(config.work / "apk" / ver / "base.apk", config.work / "apk" / ver / "split.apk") 

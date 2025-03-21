@@ -116,6 +116,7 @@ var
   GBINDER_DEFAULT_HWBINDER*: cstring
 
 proc gbinder_servicemanager_new*(dev: cstring): ptr GBinderServiceManager
+proc gbinder_servicemanager_unref*(sm: ptr GBinderServiceManager)
 proc gbinder_servicemanager_new2*(
   dev: cstring, sm_protocol: cstring, rpc_protocol: cstring
 ): ptr GBinderServiceManager

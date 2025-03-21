@@ -1,7 +1,7 @@
-import std/[os, logging]
-import ./[lxc, configuration, cpu, drivers, hal, trayperion, platform, network]
+import std/[os, logging, strutils, posix]
+import ./[lxc, configuration, cpu, drivers, hal, trayperion, platform, network, sugar]
 import ../argparser
-import ./utils/mount
+import ./utils/[exec, mount]
 
 proc mountRootfs*(input: Input, imagesDir: string) =
   info "equinox: mounting rootfs"
@@ -33,4 +33,33 @@ proc startAndroidRuntime*(input: Input) =
     showUI()
   else:
     startLxcContainer(input)
+
+    var platform = getIPlatformService()
+    platform.launchApp("com.roblox.client")
+
+    let pid = block:
+      var pidClient: uint
+
+      while true:
+        try:
+          pidClient =(&readOutput("pidof", "com.roblox.client")).strip().split(' ')[0].parseUint()  # FIXME: please fix this PEAK code to be less PEAK (it probably shits itself on non systemd distros)
+          break
+        except ValueError:
+          platform.launchApp("com.roblox.client")
+
+      pidClient
+
+    platform.setProperty("waydroid.active_apps", "com.roblox.client")
+    setLenUninit()
+  
+    debug "equinox: waiting for com.roblox.client to exit: pid=" & $pid
+    var status: cint
+    while kill(Pid(pid), 0) == 0 or errno != ESRCH:
+      sleep(100)
+
+    if WIFEXITED(status):
+      info "equinox: runtime has been stopped."
+    else:
+      warn "equinox: runtime stopped abnormally."
+
     stopNetworkService()

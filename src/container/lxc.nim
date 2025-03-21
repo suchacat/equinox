@@ -258,19 +258,9 @@ proc startLxcContainer*(input: Input) =
     "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") &
       " -n equinox -- /init",
   )
-  let pid = (&readOutput("pidof", "lxc-start")).strip().parseUint()  # FIXME: please fix this PEAK code to be less PEAK
-  setLenUninit()
 
   if *debugLog:
     runCmd("sudo chown", "1000 " & &debugLog)
-  
-  var status: cint
-  discard waitpid(Pid(pid), status, 0)
-
-  if WIFEXITED(status):
-    info "equinox: runtime has been stopped."
-  else:
-    warn "equinox: runtime stopped abnormally."
 
 proc stopLxcContainer*(force: bool = false) =
   debug "lxc: stopping container"

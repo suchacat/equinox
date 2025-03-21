@@ -1,5 +1,5 @@
 import std/[os, logging, strutils, times, options]
-import ./[configuration, drivers]
+import ./[configuration, lxc, drivers]
 import ../bindings/[gbinder]
 
 const
@@ -25,16 +25,37 @@ type
   IPlatform* = object
     client*: pointer
 
-proc `=destroy`*(platform: var IPlatform) =
+proc `=destroy`*(platform: IPlatform) =
   if platform.client == nil:
     return
 
   gbinder_client_unref(cast[ptr GBinderClient](platform.client))
 
+proc removeApp*(iface: var IPlatform, name: string) =
+  debug "platform: uninstalling app: " & name
+  var request = gbinder_client_new_request(cast[ptr GBinderClient](iface.client))
+  discard gbinder_local_request_append_string16(
+    request, cstring(name)
+  )
+
+  var status: int32
+  let reply = gbinder_client_transact_sync_reply(
+    cast[ptr GBinderClient](iface.client),
+    uint32(Transaction.RemoveApp),
+    request, status.addr
+  )
+  
+  debug "platform: gbinder_client_transact_sync_reply() returned: " & $status
+
+  if reply == nil:
+    error "platform: reply == NULL; request has failed!"
+  else:
+    debug "platform: got reply successfully"
+
 proc installApp*(iface: var IPlatform, path: string) =
   debug "platform: installing APK from: " & path
 
-  debug "platform: copying APK to data/install.apk"
+  debug "platform: copying APK to /data/install.apk"
   copyFile(path, config.equinoxData / "install.apk")
 
   var request = gbinder_client_new_request(cast[ptr GBinderClient](iface.client))
@@ -53,9 +74,21 @@ proc installApp*(iface: var IPlatform, path: string) =
   debug "platform: gbinder_client_transact_sync_reply() returned: " & $status
 
   if reply == nil:
-    error "platform: reply == NULL; request has failed"
+    error "platform: reply == NULL; request has failed!"
   else:
     debug "platform: got reply successfully"
+
+proc installSplitApp*(base, split: string) =
+  debug "platform: installing APK (base=`" & base & "`, split=`" & split & "`)"
+  
+  debug "platform: copying APKs to /data/"
+  copyFile(base, config.equinoxData / "base.apk")
+  copyFile(split, config.equinoxData / "split.apk")
+
+  discard runCmdInContainer("pm install-create")
+  discard runCmdInContainer("pm install-write 1 0 /data/base.apk")
+  discard runCmdInContainer("pm install-write 1 1 /data/split.apk")
+  discard runCmdInContainer("pm install-commit 1")
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
@@ -130,13 +163,19 @@ proc getProperty*(iface: var IPlatform, name: string): Option[string] =
     error "platform: reply status code was " & $readI32Status &
       "! Cannot fetch property."
 
-proc waitForManager*(mgr: ptr GBinderServiceManager): bool =
-  for _ in 0 .. 4096:
+proc waitForManager*(mgr: var ptr GBinderServiceManager): bool =
+  # FIXME: this is stupid
+  while true:
+    debug "platform: checking if service manager started itself"
+    if mgr != nil:
+      gbinder_servicemanager_unref(mgr)
+      mgr = gbinder_servicemanager_new2(
+        cstring("/dev" / config.binder), "aidl3".cstring, "aidl3".cstring
+      )
+
     if gbinder_servicemanager_is_present(mgr):
       debug "platform: service manager is present!"
       return true
-
-    sleep(10)
 
   false
 
@@ -172,7 +211,7 @@ proc getIPlatformService*(): IPlatform =
       raise newException(Defect, "Cannot get service: " & ServiceName)
     else:
       warn "platform: failed to get service: " & ServiceName & "; retrying"
-      sleep(1)
+      sleep(10)
       remote = gbinder_servicemanager_get_service_sync(
         serviceMgr, ServiceName.cstring, status.addr
       )
