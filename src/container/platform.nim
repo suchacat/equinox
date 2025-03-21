@@ -92,9 +92,10 @@ proc installSplitApp*(base, split: string) =
     .split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  discard runCmdInContainer("pm install-write %1 0 /data/base.apk" % [sessionId])
-  discard runCmdInContainer("pm install-write %1 1 /data/split.apk" % [sessionId])
-  discard runCmdInContainer("pm install-commit %1" % [sessionId])
+  discard runCmdInContainer("pm uninstall com.roblox.client") # just do this to prevent conflicts :3
+  discard runCmdInContainer("pm install-write $1 0 /data/base.apk" % [sessionId])
+  discard runCmdInContainer("pm install-write $1 1 /data/split.apk" % [sessionId])
+  discard runCmdInContainer("pm install-commit $1" % [sessionId])
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
