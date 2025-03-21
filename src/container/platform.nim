@@ -1,5 +1,5 @@
 import std/[os, logging, strutils, times, options]
-import ./[configuration, lxc, drivers]
+import ./[configuration, lxc, drivers, sugar]
 import ../bindings/[gbinder]
 
 const
@@ -82,13 +82,19 @@ proc installSplitApp*(base, split: string) =
   debug "platform: installing APK (base=`" & base & "`, split=`" & split & "`)"
   
   debug "platform: copying APKs to /data/"
+  echo config.equinoxData
   copyFile(base, config.equinoxData / "base.apk")
   copyFile(split, config.equinoxData / "split.apk")
 
-  discard runCmdInContainer("pm install-create")
-  discard runCmdInContainer("pm install-write 1 0 /data/base.apk")
-  discard runCmdInContainer("pm install-write 1 1 /data/split.apk")
-  discard runCmdInContainer("pm install-commit 1")
+  let sessionId =
+    (&runCmdInContainer("pm install-create"))
+    .split('[')[1]
+    .split(']')[0]
+
+  debug "platform: obtained session ID: " & sessionId
+  discard runCmdInContainer("pm install-write %1 0 /data/base.apk" % [sessionId])
+  discard runCmdInContainer("pm install-write %1 1 /data/split.apk" % [sessionId])
+  discard runCmdInContainer("pm install-commit %1" % [sessionId])
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
