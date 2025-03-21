@@ -7,12 +7,13 @@ import ../argparser
 
 const
   APKEndpoint* = "https://equinoxhq.github.io/equinox-json/equinox.json"
-  SelectedVersion* {.strdefine: "RobloxVersionTarget".} = "2.664.714"
+  SelectedVersion* {.strdefine: "RobloxVersionTarget".} = "2.665.684"
 
 type
   APKNotFound* = object of ValueError
 
   APKVersion* = object
+    expired*: bool
     base*, split*: string
 
   APKEndpointResponse* = object
@@ -30,6 +31,7 @@ proc fetchRobloxApk*: APKVersion =
 
 proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion) =
   debug "apk: downloading packages"
+  assert(not pkg.expired, "Cannot download expired APK! It'll probably just cause Roblox to not work.")
   
   var useCache = false
 
