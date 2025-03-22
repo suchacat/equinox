@@ -5,31 +5,28 @@ import std/[strutils]
 {.passL: gorge("pkg-config --libs libgbinder").strip().}
 
 {.push header: "<gbinder/gbinder.h>".}
-{.push importc.}
 type
-  GBinderServiceManager* = object
-  GBinderBridge* = object
-  GBinderBuffer* = object
-  GBinderClient* = object
-  GBinderFmq* = object
-  GBinderIpc* = object
-  GBinderLocalObject* = object
-  GBinderLocalReply* = object
-  GBinderLocalRequest* = object
-  GBinderReader* = object
-  GBinderRemoteObject* = object
-  GBinderRemoteReply* = object
-  GBinderRemoteRequest* = object
-  GBinderServiceName* = object
-  GBinderWriter* = object
-  GBinderParent* = object
+  GBinderServiceManager* {.importc.} = object
+  GBinderBridge* {.importc.} = object
+  GBinderBuffer* {.importc.} = object
+  GBinderClient* {.importc.} = object
+  GBinderFmq* {.importc.} = object
+  GBinderIpc* {.importc.} = object
+  GBinderLocalObject* {.importc.} = object
+  GBinderLocalReply* {.importc.} = object
+  GBinderLocalRequest* {.importc.} = object
+  GBinderReader* {.importc.} = object
+  GBinderRemoteObject* {.importc.} = object
+  GBinderRemoteReply* {.importc.} = object
+  GBinderRemoteRequest* {.importc.} = object
+  GBinderServiceName* {.importc.} = object
+  GBinderWriter* {.importc.} = object
+  GBinderParent* {.importc.} = object
 
-  GBinderFds* = object
+  GBinderFds* {.importc.} = object
     version* {.align: 4.}: uint32
     num_fds* {.align: 4.}: uint32
     num_ints* {.align: 4.}: uint32
-
-{.pop.}
 
 type
   GBinderHidlHandleData {.union.} = object
@@ -79,34 +76,35 @@ type
     System = 0x0c
     Vintf = 0x3f
 
+type
   GBinderLocalTransactFunc* = proc(
     obj: ptr GBinderLocalObject,
     req: ptr GBinderRemoteRequest,
-    code, flags: uint,
+    code, flags: uint32,
     status: ptr int32,
     user_data: pointer,
-  ): ptr GBinderLocalReply
+  ): ptr GBinderLocalReply {.cdecl.}
 
   GBinderServiceManagerListFunc* = proc(
     sm: ptr GBinderServiceManager,
     services: ptr UncheckedArray[cstring],
     user_data: pointer,
-  ): bool
+  ): bool {.cdecl.}
 
   GBinderServiceManagerGetServiceFunc* = proc(
     sm: ptr GBinderServiceManager,
     obj: ptr GBinderRemoteObject,
     status: int32,
     user_data: pointer,
-  )
+  ) {.cdecl.}
 
   GBinderServiceManagerAddServiceFunc* =
-    proc(sm: ptr GBinderServiceManager, status: int32, user_data: pointer)
+    proc(sm: ptr GBinderServiceManager, status: int32, user_data: pointer) {.cdecl.}
 
   GBinderServiceManagerRegistrationFunc* =
-    proc(sm: ptr GBinderServiceManager, name: cstring, user_data: pointer)
+    proc(sm: ptr GBinderServiceManager, name: cstring, user_data: pointer) {.cdecl.}
 
-  GBinderServiceManagerFunc* = proc(sm: ptr GBinderServiceManager, userData: pointer)
+  GBinderServiceManagerFunc* = proc(sm: ptr GBinderServiceManager, userData: pointer) {.cdecl.}
 
 {.push importc.}
 
@@ -117,10 +115,12 @@ var
 
 proc gbinder_servicemanager_new*(dev: cstring): ptr GBinderServiceManager
 proc gbinder_servicemanager_unref*(sm: ptr GBinderServiceManager)
+proc gbinder_servicemanager_ref*(sm: ptr GBinderServiceManager)
 proc gbinder_servicemanager_new2*(
   dev: cstring, sm_protocol: cstring, rpc_protocol: cstring
 ): ptr GBinderServiceManager
-
+proc gbinder_servicemanager_new_local_object*(sm: ptr GBinderServiceManager, iface: cstring, handler: GBinderLocalTransactFunc, userData: pointer): ptr GBinderLocalObject
+proc gbinder_servicemanager_new_local_object2*(sm: ptr GBinderServiceManager, ifaces: ptr UncheckedArray[cstring], handler: GBinderLocalTransactFunc, userData: pointer): ptr GBinderLocalObject
 proc gbinder_defaultservicemanager_new*(dev: cstring): ptr GBinderServiceManager
 proc gbinder_hwservicemanager_new*(dev: cstring): ptr GBinderServiceManager
 proc gbinder_servicemanager_wait*(
@@ -155,7 +155,7 @@ proc gbinder_servicemanager_add_service*(
   user_data: pointer,
 ): uint32
 
-proc gbinder_add_servicemanager_add_service_sync*(
+proc gbinder_servicemanager_add_service_sync*(
   sm: ptr GBinderServiceManager, name: cstring, obj: ptr GBinderLocalObject
 ): int32
 
