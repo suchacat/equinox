@@ -42,7 +42,7 @@ proc startAndroidRuntime*(input: Input) =
     # platform.setProperty("waydroid.active_apps", "com.roblox.client")
     setLenUninit()
 
-    var hwsvc = startHardwareService()
+    # var hwsvc = startHardwareService()
   
     debug "equinox: waiting for init to exit: pid=" & $pid
     var status: cint
@@ -55,4 +55,4 @@ proc startAndroidRuntime*(input: Input) =
       warn "equinox: runtime stopped abnormally."
 
     stopNetworkService()
-    deinitHardwareService(hwsvc)
+    # deinitHardwareService(hwsvc)

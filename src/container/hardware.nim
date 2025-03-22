@@ -1,6 +1,7 @@
 import std/[os, logging, locks]
 import ./[configuration]
-import ../bindings/[gbinder]
+import ./utils/[objects]
+import ../bindings/[gbinder, glib2]
 
 const
   Interface = "lineageos.waydroid.IHardware"
@@ -16,6 +17,10 @@ type
     Reboot = 4
     Upgrade = 5
     Upgrade2 = 6
+  
+  BinderPresenceData = object
+    loop*: ptr GMainLoop
+    obj*: ptr GBinderLocalObject
 
   HWService* = object
     sm*: ptr GBinderServiceManager
@@ -23,9 +28,9 @@ type
 
     thread*: Thread[ptr HWService]
     stopping*: bool = false
-    stateLock*: Lock
 
     binder*: string
+    loop*: ptr GMainLoop
 
 proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
   proc responseHandler(
@@ -36,9 +41,14 @@ proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
     user_data: pointer,
   ): ptr GBinderLocalReply {.cdecl.} =
     debug "hardware: received transaction: code=" & $code & ", flags=" & $flags
-    warn "hardware: this is stubbed! fixme plox"
 
     status[] = 0
+
+    case HardwareTransaction(code)
+    of HardwareTransaction.EnableNFC:
+      debug "hardware: set NFC state"
+    else:
+      error "hardware: unhandled IHardware transaction: " & $HardwareTransaction(code)
 
     return nil
   
@@ -53,26 +63,44 @@ proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
   )
 
   proc binderPresence(sm: ptr GBinderServiceManager, data: pointer) {.cdecl.} =
-    if not gbinder_servicemanager_is_present(sm):
-      warn "hardware: failed to attach hardware service"
-      return
+    debug "hardware: binder presence callback has been run"
+    let data = cast[ptr BinderPresenceData](data)
+    let obj = data.obj
+    let loop = data.loop
+    if gbinder_servicemanager_is_present(sm):
+      debug "hardware: adding service: " & ServiceName
+      let status = gbinder_servicemanager_add_service_sync(
+        sm,
+        ServiceName.cstring,
+        obj
+      )
 
-    debug "hardware: adding service: " & ServiceName
-    let status = gbinder_servicemanager_add_service_sync(
-      sm,
-      ServiceName.cstring,
-      cast[ptr GBinderLocalObject](data)
-    )
-
-    debug "hardware: add service sync: " & $status
+      debug "hardware: add service sync: " & $status
+      g_main_loop_quit(loop)
+    else:
+      debug "hardware: service manager is not present, cannot add service"
   
-  binderPresence(serviceManager, nil)
+  # binderPresence(serviceManager, nil)
 
   debug "hardware: adding presence handler"
-  hwService.code = gbinder_servicemanager_add_presence_handler(serviceManager, binderPresence, cast[pointer](resp))
+  var ctx = g_main_context_new()
+  g_main_context_push_thread_default(ctx)
+  assert ctx != nil
+  assert g_main_context_is_owner(ctx), "BUG: main context is not owned by this thread"
 
+  hwService.loop = g_main_loop_new(ctx, true)
+  var data = make(BinderPresenceData)
+  data.loop = hwService.loop
+  data.obj = resp
+
+  binderPresence(serviceManager, cast[pointer](data))
+  hwService.code = gbinder_servicemanager_add_presence_handler(serviceManager, binderPresence, cast[pointer](data))
+  
+  g_main_loop_run(hwService.loop)
+  debug "hardware: binder presence has run successfully; destroying service manager and removing handler"
+  gbinder_servicemanager_remove_handler(serviceManager, hwService.code)
+  gbinder_servicemanager_ref(serviceManager)
   hwService.sm = serviceManager
-  gbinder_servicemanager_ref(hwService.sm)
 
 proc stopHardwareService*(svc: var HWService) =
   debug "hardware: stopping service"
