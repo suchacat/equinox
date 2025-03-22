@@ -118,6 +118,7 @@ proc generateNodesLxcConfig*(): seq[string] =
     "defaults,mode=644,ptmxmode=666,create=dir 0 0",
     check = false
   entry "/dev/uhid"
+  entry config.hostPerms, some("vendor/etc/host-permissions"), options = "rbind,create=dir,optional 0 0"
 
   entry "/sys/module/lowmemorykiller", options = "bind,create=dir,optional 0 0"
   entry "/dev/sw_sync"

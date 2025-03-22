@@ -67,6 +67,7 @@ proc loadConfig*(input: Input) {.sideEffect.} =
   config.equinoxData = getEnv("XDG_DATA_HOME", defEquinoxData)
 
   discard existsOrCreateDir(config.equinoxData)
+  discard existsOrCreateDir(config.hostPerms)
 
   config.vendorOta = "https://ota.waydro.id/vendor"
   config.romType = "lineage"
