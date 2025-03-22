@@ -86,7 +86,7 @@ proc generateNodesLxcConfig*(): seq[string] =
     raise newException(Defect, "No suitable GPU found.")
 
   let node = &noded
-
+  
   entry node.dev # , some("dev/dri/renderD128")
   entry node.gpu # , some("dev/dri/card1") 
 
@@ -97,6 +97,9 @@ proc generateNodesLxcConfig*(): seq[string] =
     entry node
 
   for node in glob("/dev/video*").walkGlob:
+    entry node
+
+  for node in glob("/dev/dma_heap/*").walkGlob:
     entry node
 
   entry "/dev" / config.binder, some("dev/binder"), check = false
@@ -117,6 +120,8 @@ proc generateNodesLxcConfig*(): seq[string] =
   entry "/dev/uhid"
 
   entry "/sys/module/lowmemorykiller", options = "bind,create=dir,optional 0 0"
+  entry "/dev/sw_sync"
+  entry "/sys/kernel/debug", options = "rbind,create=dir,optional 0 0"
 
   entry "/dev/Vcodec"
   entry "/dev/MTK_SMI"
