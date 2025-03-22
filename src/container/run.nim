@@ -39,7 +39,7 @@ proc startAndroidRuntime*(input: Input) =
 
     let pid = (&readOutput("pidof", "init")).strip().split(' ')[0].parseUint()  # FIXME: please fix this PEAK code to be less PEAK (it probably shits itself on non systemd distros)
 
-    # platform.setProperty("waydroid.active_apps", "com.roblox.client")
+    platform.setProperty("waydroid.active_apps", "com.roblox.client")
     setLenUninit()
 
     # var hwsvc = startHardwareService()
