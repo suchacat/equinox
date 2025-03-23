@@ -17,12 +17,12 @@ var G_PRIORITY_DEFAULT_IDLE*: int32
 var G_PRIORITY_LOW*: int32
 var G_PRIORITY_LOW_IDLE*: int32
 
-proc g_main_context_new*: ptr GMainContext
+proc g_main_context_new*(): ptr GMainContext
 proc g_main_context_ref*(ctx: ptr GMainContext)
 proc g_main_context_is_owner*(ctx: ptr GMainContext): bool
-proc g_main_context_default*: ptr GMainContext
-proc g_main_context_get_thread_default*: ptr GMainContext
-proc g_main_context_ref_thread_default*: ptr GMainContext
+proc g_main_context_default*(): ptr GMainContext
+proc g_main_context_get_thread_default*(): ptr GMainContext
+proc g_main_context_ref_thread_default*(): ptr GMainContext
 proc g_main_context_push_thread_default*(ctx: ptr GMainContext)
 proc g_main_context_pop_thread_default*(ctx: ptr GMainContext)
 proc g_main_context_unref*(ctx: ptr GMainContext)

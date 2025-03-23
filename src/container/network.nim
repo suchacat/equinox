@@ -11,8 +11,7 @@ const
   DhcpMax = "253"
   VarRun = "/run/equinox-lxc"
 
-type
-  NoSuitableNetDevice* = object of OSError
+type NoSuitableNetDevice* = object of OSError
 
 proc eval*(cmd: string): bool =
   debug "eval: " & cmd
@@ -24,16 +23,16 @@ proc exec*(cmd: string) =
 
 proc netmaskToCidr(mask: string): int =
   # Assumes there's no "255." after a non-255 byte in the mask
-  let x = mask.split("255.")[^1]  # Get the part after the last "255."
+  let x = mask.split("255.")[^1] # Get the part after the last "255."
   let prefixLen = (mask.len - x.len) * 2
   let firstNon255 = x.split(".")[0] # Get the first non-255 part
-  
-  let cidrTable = { 0, 128, 192, 224, 240, 248, 252, 254 } # Equivalent bit values
-  let extraBits = cidrTable.find(parseInt(firstNon255))  # Find index in table
-  
+
+  let cidrTable = {0, 128, 192, 224, 240, 248, 252, 254} # Equivalent bit values
+  let extraBits = cidrTable.find(parseInt(firstNon255)) # Find index in table
+
   prefixLen + (if extraBits >= 0: extraBits else: 0)
 
-proc enableIf* =
+proc enableIf*() =
   debug "net: enabling interface"
   let mask = netmaskToCidr(NetMask)
   let cidrAddr = LxcAddr / $mask
@@ -42,12 +41,12 @@ proc enableIf* =
   exec("sudo ip link set dev " & LxcBridge & " address " & LxcBridgeMac)
   exec("sudo ip link set dev " & LxcBridge & " up")
 
-proc disableIf* =
+proc disableIf*() =
   debug "net: disabling interface"
   exec("sudo ip addr flush dev " & LxcBridge)
   exec("sudo ip link set dev " & LxcBridge & " down")
 
-proc startIptables* =
+proc startIptables*() =
   let
     iptablesBin = "iptables"
     ip6tablesBin = findExe("ip6tables")
@@ -56,35 +55,66 @@ proc startIptables* =
     var x: string
     for _, dev in walkDir("/sys" / "class" / "net"):
       let iface = dev.splitPath().tail
-      if iface.startsWith("eth") or iface.startsWith("wlo") or iface.startsWith("enp") or iface.startsWith("wlp"):
+      if iface.startsWith("eth") or iface.startsWith("wlo") or iface.startsWith("enp") or
+          iface.startsWith("wlp"):
         x = iface
 
     ensureMove(x)
 
   if device.len < 1:
     error "net: cannot find suitable network device!"
-    raise newException(NoSuitableNetDevice, "Cannot find a suitable network device. Is the host offline?")
+    raise newException(
+      NoSuitableNetDevice, "Cannot find a suitable network device. Is the host offline?"
+    )
 
   debug "net: target device: " & device
 
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p udp --dport 67 -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p tcp --dport 67 -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p udp --dport 53 -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p tcp --dport 53 -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I FORWARD -i " & LxcBridge & " -o " & device & " -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I FORWARD -i " & device & " -o " & LxcBridge & " -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge & " -p udp --dport 68 -j ACCEPT")
-  exec("sudo " & iptablesBin & " -w -t nat -A POSTROUTING -s " & LxcNetwork & " ! -d " & LxcNetwork & " -j MASQUERADE")
-  exec("sudo " & iptablesBin & " -w -t mangle -A POSTROUTING -o " & LxcBridge & " -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill")
+  exec(
+    "sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge &
+      " -p udp --dport 67 -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge &
+      " -p tcp --dport 67 -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge &
+      " -p udp --dport 53 -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge &
+      " -p tcp --dport 53 -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -I FORWARD -i " & LxcBridge & " -o " & device &
+      " -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -I FORWARD -i " & device & " -o " & LxcBridge &
+      " -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -I INPUT -i " & LxcBridge &
+      " -p udp --dport 68 -j ACCEPT"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -t nat -A POSTROUTING -s " & LxcNetwork & " ! -d " &
+      LxcNetwork & " -j MASQUERADE"
+  )
+  exec(
+    "sudo " & iptablesBin & " -w -t mangle -A POSTROUTING -o " & LxcBridge &
+      " -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill"
+  )
 
-proc initNetworkService* =
+proc initNetworkService*() =
   # TODO: nftables support
   debug "net: initializing service"
 
   if fileExists(VarRun / "network_up"):
-    warn "net: service is already running (if you believe this is a bug, remove: " & (VarRun / "network_up") & ')'
+    warn "net: service is already running (if you believe this is a bug, remove: " &
+      (VarRun / "network_up") & ')'
     return
-  
+
   debug "net: attaching signal handlers to: SIGKILL, SIGTERM, SIGINT, SIGHUP"
   onSignal SIGKILL, SIGTERM, SIGINT, SIGHUP:
     fatal "net: caught deadly signal; exiting"
@@ -112,13 +142,16 @@ proc initNetworkService* =
       debug "net: dnsmasq user exists: " & user
       dnsmasqUser = user
       break
-  
+
   debug "net: launching dnsmasq"
   if not eval(
-    "sudo dnsmasq --conf-file=/dev/null -u " & dnsmasqUser & " --strict-order --bind-interfaces --pid-file=" & (VarRun / "dnsmasq.pid") &
-    " --listen-address " & LxcAddr & " --dhcp-range " & DhcpRange & " --dhcp-lease-max=" & DhcpMax & " --dhcp-no-override" &
-    " --except-interface=lo --interface=" & LxcBridge & " --dhcp-leasefile=/var/lib/misc/dnsmasq." & LxcBridge & ".leases" &
-    " --log-facility=/tmp/dnsmasq-equinox.log --log-dhcp --log-queries"
+    "sudo dnsmasq --conf-file=/dev/null -u " & dnsmasqUser &
+      " --strict-order --bind-interfaces --pid-file=" & (VarRun / "dnsmasq.pid") &
+      " --listen-address " & LxcAddr & " --dhcp-range " & DhcpRange &
+      " --dhcp-lease-max=" & DhcpMax & " --dhcp-no-override" &
+      " --except-interface=lo --interface=" & LxcBridge &
+      " --dhcp-leasefile=/var/lib/misc/dnsmasq." & LxcBridge & ".leases" &
+      " --log-facility=/tmp/dnsmasq-equinox.log --log-dhcp --log-queries"
   ):
     error "net: dnsmasq failed"
     error "net: TODO: cleanup logic"
@@ -126,7 +159,7 @@ proc initNetworkService* =
   debug "net: writing lock"
   writeFile(VarRun / "network_up", newString(0))
 
-proc stopNetworkService* =
+proc stopNetworkService*() =
   if not fileExists(VarRun / "network_up"):
     warn "net: service is already stopped"
     return

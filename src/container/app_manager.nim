@@ -1,17 +1,7 @@
 ## App manager for stuff like installing the Roblox APK
 import std/[os, logging, sequtils, strutils, tables, tempfiles]
 import pkg/[crunchy, zippy/ziparchives, pretty, jsony]
-import ./[lxc, properties, sugar, trayperion, platform]
-
-proc code(buf: string | static string, z: char): string =
-  var x = buf
-  for i in 0 ..< buf.len:
-    x[i] = cast[char](cast[uint8](x[i]) xor cast[uint8](z))
-
-  ensureMove(x)
-
-const NTFlyingHorse =
-  [code("aea00f82a3509f9dad890dc045e6947c0ef7ea2bb9fae70143b17af28af9edc0", 'K')]
+import ./[lxc, properties, sugar, platform]
 
 type
   PackageInstallFailure* = object of ValueError
@@ -49,26 +39,6 @@ proc installRobloxClient*(package: string) =
   case extension
   of ".apk":
     debug "equinox: file is an APK"
-
-    when defined(release):
-      let sum = sha256sum(readFile(package)).toHex()
-      debug "equinox: package checksum: " & sum
-
-      # signature verification, powered by NTFlyingHorseExW
-      var verified = false
-      for horse in NTFlyingHorse:
-        if horse.code != sum:
-          continue
-
-        verified = true
-
-      if not verified:
-        error "equinox: APK checksum does not match server list"
-        error "equinox: if this is a legitimate APK, contact us to add this package to our whitelist."
-        raise newException(
-          SignatureVerificationFailed,
-          "No signature in server list matches this package's checksum",
-        )
 
     var iplatform = getIPlatformService()
     iplatform.installApp(package)
@@ -122,7 +92,7 @@ proc installRobloxClient*(package: string) =
 
     let base = tempPath / "base.apk"
     let splitConfig = tempPath / "split_config." & architecture & ".apk"
-    
+
     installSplitApp(base, splitConfig)
     removeDir(tempPath)
   else:

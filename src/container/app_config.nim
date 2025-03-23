@@ -3,13 +3,12 @@ import pkg/[jsony]
 import ./[fflags, sugar]
 import ../[argparser]
 
-type
-  ConfigData* = object
-    free_robucks*: bool = false
-    fflags*: FFlagList
+type ConfigData* = object
+  free_robucks*: bool = false
+  fflags*: FFlagList
 
-const
-  DefaultConfig* = """
+const DefaultConfig* =
+  """
 {
 	"free_robucks": true,
 	"fflags": {
@@ -49,13 +48,12 @@ proc loadAppConfig*(input: Input): ConfigData =
       &input.flag("config")
 
   debug "equinox: loading config from: " & path
-  
+
   if not fileExists(path):
     debug "equinox: config does not exist, overriding with default config"
     writeFile(path, DefaultConfig)
 
-  let conf = readFile(path)
-    .fromJson(ConfigData)
+  let conf = readFile(path).fromJson(ConfigData)
 
   configCache = some(conf)
   conf

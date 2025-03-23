@@ -3,10 +3,9 @@ import std/[os, tables, logging, json]
 import ./[configuration]
 import pkg/[pretty, jsony]
 
-type
-  FFlagList* = Table[string, JsonNode]
+type FFlagList* = Table[string, JsonNode]
 
-proc getRobloxStorageDir*: string =
+proc getRobloxStorageDir*(): string =
   let robloxDir = config.equinoxData / "data" / "com.roblox.client"
 
   robloxDir

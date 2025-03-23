@@ -2,7 +2,7 @@ import std/[os, options, logging, strutils, tables, times, posix]
 import pkg/[glob]
 import utils/exec
 import ../argparser
-import ./[trayperion, lxc_config, sugar, cpu, gpu, configuration, drivers]
+import ./[lxc_config, sugar, cpu, gpu, configuration, drivers]
 
 type BinaryNotFound* = object of Defect
 
@@ -86,8 +86,8 @@ proc generateNodesLxcConfig*(): seq[string] =
     raise newException(Defect, "No suitable GPU found.")
 
   let node = &noded
-  
-  entry node.dev# , some("dev/dri/renderD129") # , some("dev/dri/renderD128")
+
+  entry node.dev # , some("dev/dri/renderD129") # , some("dev/dri/renderD128")
   entry node.gpu
 
   for node in glob("/dev/fb*").walkGlob:
@@ -226,8 +226,6 @@ proc generateSessionLxcConfig*() =
         waylandHostSocket,
     )
 
-  setLenUninit()
-
   let
     pulseHostSocket = config.containerPulseRuntimePath / "native"
     pulseContainerSocket = config.containerPulseRuntimePath / "native"
@@ -241,7 +239,6 @@ proc generateSessionLxcConfig*() =
   for node in nodes:
     buffer &= node & '\n'
 
-  setLenUninit()
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
 
 proc getLxcStatus*(): string =
@@ -302,10 +299,7 @@ proc waitForContainerBoot*(maxAttempts: uint64 = 32'u64) =
         " iterations. It might be deadlocked.\nConsider running the following command to forcefully kill it:\nsudo equinox halt -F\n",
     )
 
-  setLenUninit()
-
   info "lxc: container booted up after " & $attempts & " attempts."
 
 proc runCmdInContainer*(cmd: string): Option[string] =
-  setLenUninit()
   readOutput("sudo lxc-attach", "-P " & config.lxc & " -n equinox -- " & cmd)

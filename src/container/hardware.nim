@@ -17,7 +17,7 @@ type
     Reboot = 4
     Upgrade = 5
     Upgrade2 = 6
-  
+
   BinderPresenceData = object
     loop*: ptr GMainLoop
     obj*: ptr GBinderLocalObject
@@ -34,11 +34,11 @@ type
 
 proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
   proc responseHandler(
-    obj: ptr GBinderLocalObject,
-    req: ptr GBinderRemoteRequest,
-    code, flags: uint32,
-    status: ptr int32,
-    user_data: pointer,
+      obj: ptr GBinderLocalObject,
+      req: ptr GBinderRemoteRequest,
+      code, flags: uint32,
+      status: ptr int32,
+      user_data: pointer,
   ): ptr GBinderLocalReply {.cdecl.} =
     debug "hardware: received transaction: code=" & $code & ", flags=" & $flags
 
@@ -51,15 +51,14 @@ proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
       error "hardware: unhandled IHardware transaction: " & $HardwareTransaction(code)
 
     return nil
-  
-  var serviceManager = gbinder_servicemanager_new2(cstring("/dev" / "binder"), "aidl3".cstring, "aidl3".cstring)
+
+  var serviceManager = gbinder_servicemanager_new2(
+    cstring("/dev" / "binder"), "aidl3".cstring, "aidl3".cstring
+  )
 
   debug "hardware: binding to interface: " & Interface
   var resp = gbinder_servicemanager_new_local_object(
-    serviceManager,
-    Interface.cstring,
-    responseHandler,
-    nil
+    serviceManager, Interface.cstring, responseHandler, nil
   )
 
   proc binderPresence(sm: ptr GBinderServiceManager, data: pointer) {.cdecl.} =
@@ -69,17 +68,13 @@ proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
     let loop = data.loop
     if gbinder_servicemanager_is_present(sm):
       debug "hardware: adding service: " & ServiceName
-      let status = gbinder_servicemanager_add_service_sync(
-        sm,
-        ServiceName.cstring,
-        obj
-      )
+      let status = gbinder_servicemanager_add_service_sync(sm, ServiceName.cstring, obj)
 
       debug "hardware: add service sync: " & $status
       g_main_loop_quit(loop)
     else:
       debug "hardware: service manager is not present, cannot add service"
-  
+
   # binderPresence(serviceManager, nil)
 
   debug "hardware: adding presence handler"
@@ -94,8 +89,10 @@ proc addHardwareService*(hwService: var HWService) {.gcsafe.} =
   data.obj = resp
 
   binderPresence(serviceManager, cast[pointer](data))
-  hwService.code = gbinder_servicemanager_add_presence_handler(serviceManager, binderPresence, cast[pointer](data))
-  
+  hwService.code = gbinder_servicemanager_add_presence_handler(
+    serviceManager, binderPresence, cast[pointer](data)
+  )
+
   g_main_loop_run(hwService.loop)
   debug "hardware: binder presence has run successfully; destroying service manager and removing handler"
   gbinder_servicemanager_remove_handler(serviceManager, hwService.code)

@@ -35,7 +35,7 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.overlayRw / "system")
   discard existsOrCreateDir(config.overlayRw / "vendor")
   discard existsOrCreateDir(config.work / "images")
-  
+
   mountRootfs(input, config.imagesPath)
   generateSessionLxcConfig()
   startLxcContainer(input)

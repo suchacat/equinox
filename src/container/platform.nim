@@ -34,17 +34,16 @@ proc `=destroy`*(platform: IPlatform) =
 proc removeApp*(iface: var IPlatform, name: string) =
   debug "platform: uninstalling app: " & name
   var request = gbinder_client_new_request(cast[ptr GBinderClient](iface.client))
-  discard gbinder_local_request_append_string16(
-    request, cstring(name)
-  )
+  discard gbinder_local_request_append_string16(request, cstring(name))
 
   var status: int32
   let reply = gbinder_client_transact_sync_reply(
     cast[ptr GBinderClient](iface.client),
     uint32(Transaction.RemoveApp),
-    request, status.addr
+    request,
+    status.addr,
   )
-  
+
   debug "platform: gbinder_client_transact_sync_reply() returned: " & $status
 
   if reply == nil:
@@ -80,19 +79,17 @@ proc installApp*(iface: var IPlatform, path: string) =
 
 proc installSplitApp*(base, split: string) =
   debug "platform: installing APK (base=`" & base & "`, split=`" & split & "`)"
-  
+
   debug "platform: copying APKs to /data/"
   echo config.equinoxData
   copyFile(base, config.equinoxData / "base.apk")
   copyFile(split, config.equinoxData / "split.apk")
 
-  let sessionId =
-    (&runCmdInContainer("pm install-create"))
-    .split('[')[1]
-    .split(']')[0]
+  let sessionId = (&runCmdInContainer("pm install-create")).split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  discard runCmdInContainer("pm uninstall com.roblox.client") # just do this to prevent conflicts :3
+  discard runCmdInContainer("pm uninstall com.roblox.client")
+    # just do this to prevent conflicts :3
   discard runCmdInContainer("pm install-write $1 0 /data/base.apk" % [sessionId])
   discard runCmdInContainer("pm install-write $1 1 /data/split.apk" % [sessionId])
   discard runCmdInContainer("pm install-commit $1" % [sessionId])

@@ -3,7 +3,7 @@ import pkg/[colored_logger]
 import ./[hardware, configuration]
 import ./utils/objects
 
-proc startHardwareService*: ptr HWService =
+proc startHardwareService*(): ptr HWService =
   debug "hardware_service: starting"
   var svc = make(HWService)
   svc.binder = config.binder
@@ -14,7 +14,7 @@ proc startHardwareService*: ptr HWService =
 
     #while not svc.stopping:
     addHardwareService(svc[])
-  
+
   debug "hardware_service: starting service thread"
   createThread(svc.thread, serviceThread, (svc))
   debug "hardware_service: started service thread"

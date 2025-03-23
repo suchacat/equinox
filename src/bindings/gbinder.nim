@@ -104,7 +104,8 @@ type
   GBinderServiceManagerRegistrationFunc* =
     proc(sm: ptr GBinderServiceManager, name: cstring, user_data: pointer) {.cdecl.}
 
-  GBinderServiceManagerFunc* = proc(sm: ptr GBinderServiceManager, userData: pointer) {.cdecl.}
+  GBinderServiceManagerFunc* =
+    proc(sm: ptr GBinderServiceManager, userData: pointer) {.cdecl.}
 
 {.push importc.}
 
@@ -119,8 +120,21 @@ proc gbinder_servicemanager_ref*(sm: ptr GBinderServiceManager)
 proc gbinder_servicemanager_new2*(
   dev: cstring, sm_protocol: cstring, rpc_protocol: cstring
 ): ptr GBinderServiceManager
-proc gbinder_servicemanager_new_local_object*(sm: ptr GBinderServiceManager, iface: cstring, handler: GBinderLocalTransactFunc, userData: pointer): ptr GBinderLocalObject
-proc gbinder_servicemanager_new_local_object2*(sm: ptr GBinderServiceManager, ifaces: ptr UncheckedArray[cstring], handler: GBinderLocalTransactFunc, userData: pointer): ptr GBinderLocalObject
+
+proc gbinder_servicemanager_new_local_object*(
+  sm: ptr GBinderServiceManager,
+  iface: cstring,
+  handler: GBinderLocalTransactFunc,
+  userData: pointer,
+): ptr GBinderLocalObject
+
+proc gbinder_servicemanager_new_local_object2*(
+  sm: ptr GBinderServiceManager,
+  ifaces: ptr UncheckedArray[cstring],
+  handler: GBinderLocalTransactFunc,
+  userData: pointer,
+): ptr GBinderLocalObject
+
 proc gbinder_defaultservicemanager_new*(dev: cstring): ptr GBinderServiceManager
 proc gbinder_hwservicemanager_new*(dev: cstring): ptr GBinderServiceManager
 proc gbinder_servicemanager_wait*(

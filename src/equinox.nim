@@ -3,17 +3,14 @@ import pkg/[colored_logger, pretty, noise]
 import ./argparser
 import
   container/[
-    trayperion, certification, lxc, image_downloader, configuration, init, run, sugar,
-    properties, app_manager, platform, network, apk_fetcher
+    certification, lxc, image_downloader, configuration, init, run, sugar, properties,
+    app_manager, platform, network, apk_fetcher,
   ]
 
 const Splashes = [
   "\"pc game support when\" bro im not even done installing my rootkits on your pc -tray",
   "all hail the NT flying horse",
-  "\"the only valid usecase for nixos is bombing children\" - hippoz, 2025",
   "\"im in a perpetual state of shitting myself\" - hippoz, 2025",
-  "(un)protected by trayperion", "you thought it was ROLover? hahaha",
-  "i added this splash for the sole purpose that when someone runs `strings equinox`, they see this. hi there, curious person (or skid) :^)",
   "compiled with the full clanger soyboy toolchain, complete with mimalloc",
 ]
 
@@ -61,7 +58,6 @@ Developer Modes (ONLY AVAILABLE IN INTERNAL BUILDS):
   quit(code)
 
 proc main() {.inline.} =
-  setLenUninit()
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
 
@@ -100,7 +96,7 @@ EquinoxHQ is not responsible for any of your actions.
       if consent != "y":
         error "equinox: aborted."
         quit(1)
-    
+
     info "equinox: fetching Roblox " & SelectedVersion & " links from EquinoxHQ endpoint"
     let packages = fetchRobloxApk()
 
@@ -118,7 +114,7 @@ EquinoxHQ is not responsible for any of your actions.
   of "run":
     randomize()
     echo "Splash: " & sample(Splashes)
-    
+
     initNetworkService()
     startAndroidRuntime(input)
   of "shell":
