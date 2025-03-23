@@ -15,8 +15,10 @@ proc startAndroidRuntime*(input: Input) =
   mountRootfs(input, config.imagesPath)
   
   debug "equinox: applying config"
-  let config = loadAppConfig(input)
-  setFflags(config.fflags)
+
+  if input.enabled("apply-config", "C"):
+    let config = loadAppConfig(input)
+    setFflags(config.fflags)
 
   setLenUninit()
   generateSessionLxcConfig()
