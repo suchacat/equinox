@@ -1,4 +1,4 @@
-lxc.uts.name = equinox
+lxc.uts.name = waydroid
 
 lxc.seccomp.profile = WORKING/lxc/equinox/equinox.seccomp
 

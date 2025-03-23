@@ -87,11 +87,11 @@ proc generateNodesLxcConfig*(): seq[string] =
 
   let node = &noded
   
-  entry node.dev # , some("dev/dri/renderD128")
-  entry node.gpu # , some("dev/dri/card1") 
+  entry node.dev# , some("dev/dri/renderD129") # , some("dev/dri/renderD128")
+  entry node.gpu
 
   for node in glob("/dev/fb*").walkGlob:
-    entry node
+    entry node, check = false
 
   for node in glob("/dev/graphics/fb*").walkGlob:
     entry node
@@ -99,8 +99,8 @@ proc generateNodesLxcConfig*(): seq[string] =
   for node in glob("/dev/video*").walkGlob:
     entry node
 
-  for node in glob("/dev/dma_heap/*").walkGlob:
-    entry node
+  #[ for node in glob("/dev/dma_heap/*").walkGlob:
+    entry node ]#
 
   entry "/dev" / config.binder, some("dev/binder"), check = false
   entry "/dev" / config.vndbinder, some("dev/vndbinder"), check = false
@@ -118,7 +118,7 @@ proc generateNodesLxcConfig*(): seq[string] =
     "defaults,mode=644,ptmxmode=666,create=dir 0 0",
     check = false
   entry "/dev/uhid"
-  entry config.hostPerms, some("vendor/etc/host-permissions"), options = "bind,create=dir,optional 0 0"
+  # entry config.hostPerms, some("vendor/etc/host-permissions"), options = "bind,create=dir,optional 0 0"
 
   entry "/sys/module/lowmemorykiller", options = "bind,create=dir,optional 0 0"
   entry "/dev/sw_sync"
@@ -240,8 +240,6 @@ proc generateSessionLxcConfig*() =
   var buffer: string
   for node in nodes:
     buffer &= node & '\n'
-
-  buffer &= "lxc.environment=WAYLAND_DISPLAY=" & config.containerWaylandDisplay
 
   setLenUninit()
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))

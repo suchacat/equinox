@@ -34,7 +34,7 @@ proc makeBaseProps*(input: Input) =
   let node = getDriNode()
 
   let
-    gralloc = "gbm"
+    gralloc = "minigbm_gbm_mesa"
     egl = "mesa"
 
   #[if not *gralloc:

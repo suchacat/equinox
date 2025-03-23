@@ -1,5 +1,5 @@
 import std/[os, logging]
-import ./[lxc, configuration, cpu, drivers, image_downloader, hal]
+import ./[lxc, configuration, cpu, drivers, image_downloader, hal, rootfs]
 import ../argparser
 
 proc setupConfig*(input: Input): bool =
@@ -35,7 +35,9 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.overlayRw / "system")
   discard existsOrCreateDir(config.overlayRw / "vendor")
   discard existsOrCreateDir(config.work / "images")
-
+  
+  mountRootfs(input, config.imagesPath)
+  generateSessionLxcConfig()
   startLxcContainer(input)
   if not input.enabled("no-img-download", "Z"):
     let pair = getImages()

@@ -1,19 +1,7 @@
 import std/[os, logging, strutils, posix]
-import ./[lxc, configuration, cpu, drivers, hal, trayperion, platform, network, sugar, hardware_service]
+import ./[lxc, configuration, cpu, drivers, hal, trayperion, platform, network, sugar, hardware_service, rootfs, app_config, fflags]
 import ../argparser
 import ./utils/[exec, mount]
-
-proc mountRootfs*(input: Input, imagesDir: string) =
-  info "equinox: mounting rootfs"
-
-  debug "container/run: mounting system image"
-  mount(imagesDir / "system.img", config.rootfs, umount = true)
-
-  debug "container/run: mounting vendor image"
-  mount(imagesDir / "vendor.img", config.rootfs / "vendor")
-
-  makeBaseProps(input)
-  mountFile(config.work / "equinox.prop", config.rootfs / "vendor" / "waydroid.prop")
 
 proc showUI*() =
   var platform = getIPlatformService()
@@ -23,8 +11,13 @@ proc showUI*() =
 proc startAndroidRuntime*(input: Input) =
   info "equinox: starting android runtime"
   debug "equinox: starting prep for android runtime"
-
+  
   mountRootfs(input, config.imagesPath)
+  
+  debug "equinox: applying config"
+  let config = loadAppConfig(input)
+  setFflags(config.fflags)
+
   setLenUninit()
   generateSessionLxcConfig()
 
