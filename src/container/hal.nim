@@ -119,7 +119,11 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "waydroid.host.user", value: &input.flag("user"))
   props &= (key: "waydroid.keyboard_layout", value: "english")
   props &= (key: "waydroid.stub_sensors_hal", value: "1") # we don't need any sensors
-  props &= (key: "ro.sf.lcd_density", value: "1") # TODO: fractional scaling support
+  props &= (key: "ro.sf.lcd_density", value: "180") # TODO: fractional scaling support
+  props &= (key: "waydroid.xdg_runtime_dir", value: config.containerXdgRuntimeDir)
+  props &= (key: "waydroid.wayland_display", value: config.containerWaylandDisplay)
+  props &= (key: "waydroid.pulse_runtime_path", value: config.containerPulseRuntimePath)
+  props &= (key: "waydroid.host_data_path", value: config.equinoxData / "data")
 
   var builder: string
   for prop in props:

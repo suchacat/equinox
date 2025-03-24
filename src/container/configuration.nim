@@ -25,6 +25,7 @@ type Config* = object
   hostPerms*: string
 
   containerPulseRuntimePath*: string
+  hostXdgRuntimeDir*: string
   equinoxData*: string
 
   systemOta*: string
@@ -45,7 +46,8 @@ proc loadConfig*(input: Input) {.sideEffect.} =
     preinstalledImagePaths: @["/var" / "lib" / "equinox" / "images"],
     suspendAction: "freeze",
     mountOverlays: "true",
-    containerXdgRuntimeDir: "/run/user/1000",
+    containerXdgRuntimeDir: "/run/xdg",
+    hostXdgRuntimeDir: "/run/user/1000",
     containerWaylandDisplay: getEnv("WAYLAND_DISPLAY", "wayland-0"),
   )
   config.imagesPath = config.work / "images"

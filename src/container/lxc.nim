@@ -214,7 +214,7 @@ proc generateSessionLxcConfig*() =
     waylandContainerSocket =
       absolutePath(config.containerXdgRuntimeDir / config.containerWaylandDisplay)
     waylandHostSocket =
-      absolutePath(config.containerXdgRuntimeDir / config.containerWaylandDisplay)
+      absolutePath(config.hostXdgRuntimeDir / config.containerWaylandDisplay)
 
   if not entry(
     waylandHostSocket, waylandContainerSocket[1 ..< waylandContainerSocket.len].some
@@ -227,13 +227,15 @@ proc generateSessionLxcConfig*() =
     )
 
   let
-    pulseHostSocket = config.containerPulseRuntimePath / "native"
+    pulseHostSocket = config.hostXdgRuntimeDir / "pulse" / "native"
     pulseContainerSocket = config.containerPulseRuntimePath / "native"
 
   entry pulseHostSocket, pulseContainerSocket[1 ..< pulseContainerSocket.len].some
 
   if not entry(config.equinoxData, "data".some, options = "rbind 0 0"):
     raise newException(OSError, "Failed to bind userdata")
+
+  nodes &= "lxc.environment=WAYLAND_DISPLAY=" & config.containerWaylandDisplay
 
   var buffer: string
   for node in nodes:

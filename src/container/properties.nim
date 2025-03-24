@@ -6,7 +6,6 @@ proc getProp*(prop: string): Option[string] =
     # found this command injection before release - nice try diddy
 
   if getLxcStatus() != "RUNNING":
-    error "container/properties: container is " & getLxcStatus()
     return
 
   if not *property:

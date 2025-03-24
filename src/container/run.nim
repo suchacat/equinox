@@ -2,7 +2,7 @@ import std/[os, logging, strutils, posix]
 import
   ./[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
-    rootfs, app_config, fflags,
+    rootfs, app_config, fflags, properties,
   ]
 import ../argparser
 import ./utils/[exec, mount]
@@ -10,7 +10,7 @@ import ./utils/[exec, mount]
 proc showUI*() =
   var platform = getIPlatformService()
   platform.launchApp("com.roblox.client")
-  # platform.setProperty("waydroid.active_apps", "com.roblox.client")
+  platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
 proc startAndroidRuntime*(input: Input) =
   info "equinox: starting android runtime"
@@ -33,12 +33,15 @@ proc startAndroidRuntime*(input: Input) =
     startLxcContainer(input)
 
     var platform = getIPlatformService()
-    platform.launchApp("com.roblox.client")
 
     let pid = (&readOutput("pidof", "init")).strip().split(' ')[0].parseUint()
       # FIXME: please fix this PEAK code to be less PEAK (it probably shits itself on non systemd distros)
 
     platform.setProperty("waydroid.active_apps", "com.roblox.client")
+
+    while isEmptyOrWhitespace(&readOutput("pidof", "com.roblox.client")):
+      # FIXME: please don't do this
+      platform.launchApp("com.roblox.client")
 
     # var hwsvc = startHardwareService()
 
