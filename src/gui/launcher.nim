@@ -1,8 +1,10 @@
 ## Launcher GUI
-import std/[logging, options]
+import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 
 import ../envparser
+
+const NimblePkgVersion {.strdefine.} = "???"
 
 viewable Launcher:
   description:
@@ -30,7 +32,8 @@ viewable Launcher:
 
   #my code sucks
   erm_guh:
-    string = "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
+    string =
+      "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
   runtime:
     string = "--xdg-runtime-dir:"
   wayland:
@@ -47,7 +50,8 @@ method view(app: LauncherState): Widget =
       title = app.title
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
-        insert(app.toAutoFormMenu(sizeRequest = (600, 500))) {.addRight.} # for tweaking or whatever
+        insert(app.toAutoFormMenu(sizeRequest = (600, 500))) {.addRight.}
+          # for tweaking or whatever
 
         MenuButton {.addLeft.}:
           icon = "open-menu"
@@ -80,7 +84,16 @@ method view(app: LauncherState): Widget =
               ModelButton:
                 text = "About Equinox"
                 proc clicked() =
-                  echo "WIP"
+                  discard app.open: gui:
+                    AboutDialog:
+                      programName = "Equinox"
+                      logo = "equinox"
+                      version = NimblePkgVersion
+                      credits = @{
+                        "Code": @["Trayambak (xTrayambak)"],
+                        "GUI Design": @["Adrien (AshtakaOOf)"],
+                        "APK Fetcher": @["Kirby (k1yrix)"]
+                      }
 
             Box {.name: "tools".}:
               orient = OrientY
@@ -110,8 +123,12 @@ method view(app: LauncherState): Widget =
             #description = "app.description"
 
             ActionRow:
-              title = "Make sure to follow the README instructions"
-              subtitle = "Note: This software is experimental and may break"
+              title = "Make sure to follow the README instructions."
+              subtitle = "This software is experimental and may break."
+
+            ActionRow:
+              title = "Please make sure that you agree to the EquinoxHQ Terms of Service before you begin."
+              subtitle = "The Equinox team is not responsible for any damages."
 
             Label:
               text = "Welcome to the Equinox launcher."
@@ -124,20 +141,39 @@ method view(app: LauncherState): Widget =
             Button:
               style = [ButtonPill, ButtonSuggested]
               text = "Launch Roblox"
-              tooltip = "This will start Roblox trough Equinox"
+              tooltip = "This will start Roblox through Equinox."
               proc clicked() =
-                echo "test: ", "pkexec ", "equinox run ", app.runtime,env.runtimeDir, " ", app.wayland,env.waylandDisplay, " ", app.user,env.user, " --uid:1000 --gid:1000"
-                echo "is the command correct? if not well fix it duh"
-                #execCmd todo
+                let cmd =
+                  findExe("pkexec") & ' ' & env.equinoxPath & " run --xdg-runtime-dir:" & env.runtimeDir &
+                  " --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
+                  " --uid:" & $getuid() & " --gid:" & $getgid()
+                let pid = fork()
+
+                if pid == 0:
+                  debug "launcher: we're the forked child"
+                  discard execCmd(cmd)
+                  quit(0)
+                else:
+                  debug "launcher: we're the parent"
+                  app.scheduleCloseWindow()
+                  quit(0)
 
             Button:
-              style = [ButtonPill]
-              text = "Setup Equinox"
-              tooltip = "This will also repair Equinox if it's currently broken."
+              style = [ButtonPill, ButtonDestructive]
+              text = "Stop Equinox"
+              tooltip = "Gracefully shut down the Equinox container."
               proc clicked() =
-                echo "test: ", "pkexec ", "equinox init ", app.runtime,env.runtimeDir, " ", app.wayland,env.waylandDisplay, " ", app.user,env.user, " --uid:1000 --gid:1000"
-                echo "is the command correct? if not well fix it duh"
-                #execCmd todo
+                let cmd =
+                  findExe("pkexec") & ' ' & env.equinoxPath & " halt"
+                let pid = fork()
+
+                if pid == 0:
+                  debug "launcher: we're the forked child"
+                  discard execCmd(cmd)
+                  quit(0)
+                else:
+                  debug "launcher: we're the parent"
+                  warn "launcher: TODO: add a spinner or smt"
 
 proc runLauncher*() =
   adw.brew(gui(Launcher()))

@@ -22,12 +22,12 @@ proc startAndroidRuntime*(input: Input) =
   var settings = loadAppConfig(input)
 
   debug "equinox: applying config"
-  
+
   if *settings.maxFps:
     settings.fflags["DFIntTaskSchedulerTargetFps"] = newJInt(int(&settings.maxFps))
 
   settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true)
-  
+
   setFflags(settings.fflags)
 
   generateSessionLxcConfig()

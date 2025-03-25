@@ -29,7 +29,8 @@ viewable OnboardingApp:
 
   #my code sucks
   erm_guh:
-    string = "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
+    string =
+      "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
   runtime:
     string = "--xdg-runtime-dir:"
   wayland:
@@ -91,7 +92,9 @@ method view(app: OnboardingAppState): Widget =
               proc clicked() =
                 let consent = app.consentedPrivacy and app.consentedTOS
                 #echo "blud tf is this... :", app.erm_guh
-                echo "success???: ", "equinox init ", app.runtime,env.runtimeDir, " ", app.wayland,env.waylandDisplay, " ", app.user,env.user
+                echo "success???: ",
+                  "equinox init ", app.runtime, env.runtimeDir, " ", app.wayland,
+                  env.waylandDisplay, " ", app.user, env.user
                 if not consent:
                   discard
 
