@@ -23,5 +23,4 @@ requires "zippy >= 0.10.16"
 requires "zip >= 0.3.1"
 requires "owlkettle >= 3.0.0"
 requires "gtk2 >= 1.3"
-
-requires "glfw >= 3.4.0.4"
+requires "db_connector >= 0.1.0"

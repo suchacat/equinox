@@ -4,7 +4,6 @@ import
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
     rootfs, app_config, fflags, properties,
   ]
-import pkg/glfw, pkg/pretty
 import ../argparser
 import ./utils/[exec, mount]
 
