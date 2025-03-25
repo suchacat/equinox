@@ -17,5 +17,5 @@ proc getXdgEnv*(): XdgEnv =
     runtimeDir: getEnv("XDG_RUNTIME_DIR"),
     waylandDisplay: getEnv("WAYLAND_DISPLAY"),
     user: getEnv("USER"),
-    equinoxPath: equinoxPath
+    equinoxPath: equinoxPath,
   )

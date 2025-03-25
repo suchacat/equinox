@@ -84,16 +84,18 @@ method view(app: LauncherState): Widget =
               ModelButton:
                 text = "About Equinox"
                 proc clicked() =
-                  discard app.open: gui:
-                    AboutDialog:
-                      programName = "Equinox"
-                      logo = "equinox"
-                      version = NimblePkgVersion
-                      credits = @{
-                        "Code": @["Trayambak (xTrayambak)"],
-                        "GUI Design": @["Adrien (AshtakaOOf)"],
-                        "APK Fetcher": @["Kirby (k1yrix)"]
-                      }
+                  discard app.open:
+                    gui:
+                      AboutDialog:
+                        programName = "Equinox"
+                        logo = "equinox"
+                        version = NimblePkgVersion
+                        credits =
+                          @{
+                            "Code": @["Trayambak (xTrayambak)"],
+                            "GUI Design": @["Adrien (AshtakaOOf)"],
+                            "APK Fetcher": @["Kirby (k1yrix)"],
+                          }
 
             Box {.name: "tools".}:
               orient = OrientY
@@ -127,7 +129,8 @@ method view(app: LauncherState): Widget =
               subtitle = "This software is experimental and may break."
 
             ActionRow:
-              title = "Please make sure that you agree to the EquinoxHQ Terms of Service before you begin."
+              title =
+                "Please make sure that you agree to the EquinoxHQ Terms of Service before you begin."
               subtitle = "The Equinox team is not responsible for any damages."
 
             Label:
@@ -144,9 +147,9 @@ method view(app: LauncherState): Widget =
               tooltip = "This will start Roblox through Equinox."
               proc clicked() =
                 let cmd =
-                  findExe("pkexec") & ' ' & env.equinoxPath & " run --xdg-runtime-dir:" & env.runtimeDir &
-                  " --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
-                  " --uid:" & $getuid() & " --gid:" & $getgid()
+                  findExe("pkexec") & ' ' & env.equinoxPath & " run --xdg-runtime-dir:" &
+                  env.runtimeDir & " --wayland-display:" & env.waylandDisplay &
+                  " --user:" & env.user & " --uid:" & $getuid() & " --gid:" & $getgid()
                 let pid = fork()
 
                 if pid == 0:
@@ -163,8 +166,7 @@ method view(app: LauncherState): Widget =
               text = "Stop Equinox"
               tooltip = "Gracefully shut down the Equinox container."
               proc clicked() =
-                let cmd =
-                  findExe("pkexec") & ' ' & env.equinoxPath & " halt"
+                let cmd = findExe("pkexec") & ' ' & env.equinoxPath & " halt"
                 let pid = fork()
 
                 if pid == 0:
@@ -176,7 +178,4 @@ method view(app: LauncherState): Widget =
                   warn "launcher: TODO: add a spinner or smt"
 
 proc runLauncher*() =
-  adw.brew(
-    id = "io.github.equinoxhq.equinox",
-    gui(Launcher())
-  )
+  adw.brew(id = "io.github.equinoxhq.equinox", gui(Launcher()))
