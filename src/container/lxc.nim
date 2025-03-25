@@ -251,13 +251,13 @@ proc getLxcStatus*(): string =
 
   &value
 
-proc startLxcContainer*(input: Input) =
+proc startLxcContainer*(input: Input, authAgent: string = "sudo") =
   debug "lxc: starting container"
 
   var debugLog = input.flag("log-file")
 
   runCmd(
-    "sudo lxc-start",
+    authAgent & " lxc-start",
     "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") &
       " -n equinox -- /init",
   )

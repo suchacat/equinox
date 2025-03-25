@@ -1,8 +1,11 @@
-## Onboarding GUI
-import std/[logging]
+## Onboarding GUI + Setup flow
+import std/[browsers, logging, os, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
-
-import ../envparser
+import
+  ../[argparser, envparser],
+  ../container/[lxc, sugar, certification],
+  ../container/utils/exec,
+  ./clipboard
 
 viewable OnboardingApp:
   description:
@@ -82,6 +85,11 @@ method view(app: OnboardingAppState): Widget =
                   else:
                     debug "gui: user no longer consents to privacy policy"
 
+          Label:
+            text =
+              "Welcome to Equinox. Press the button below to start the setup.\nKeep in mind that this can take upwards of 10 minutes, depending on your internet connection.\nThis application will be fully unresponsive until it is done. Do not exit it!"
+            margin = 24
+
           Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
             orient = OrientX
             spacing = 12
@@ -91,12 +99,71 @@ method view(app: OnboardingAppState): Widget =
               text = "Start Setup"
               proc clicked() =
                 let consent = app.consentedPrivacy and app.consentedTOS
-                #echo "blud tf is this... :", app.erm_guh
-                echo "success???: ",
-                  "equinox init ", app.runtime, env.runtimeDir, " ", app.wayland,
-                  env.waylandDisplay, " ", app.user, env.user
                 if not consent:
-                  discard
+                  return
+
+                # Init command
+                runCmd(
+                  "pkexec",
+                  env.equinoxPath & " init --xdg-runtime-dir:" & env.runtimeDir &
+                    " --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
+                    " --uid:" & $getuid() & " --gid:" & $getgid(),
+                )
+
+                var exception: ref Exception
+                let gsfId =
+                  &readOutput(
+                    "pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user
+                  )
+                debug "gui/onboard: gsf id = " & gsfId
+
+                openDefaultBrowser(
+                  "https://play.google.com/about/play-terms/index.html"
+                )
+                openDefaultBrowser("https://www.google.com/android/uncertified")
+                copyText(gsfId)
+
+                discard app.open:
+                  gui:
+                    Window:
+                      title = "Setup Flow"
+                      defaultSize = (300, 450)
+
+                      Clamp:
+                        maximumSize = 450
+                        margin = 12
+
+                        Box:
+                          orient = OrientY
+                          spacing = 12
+
+                          ActionRow:
+                            title =
+                              "You're about to interact with Google's Play Store, and as such, you will be subject to their terms of service."
+                            subtitle =
+                              "Make sure you've read the Google Play Terms of Service. It has just been opened in your browser."
+
+                          Label:
+                            text =
+                              "Equinox's GSF ID has been copied to your clipboard. Paste it in your browser and complete the Captcha to continue."
+                            margin = 24
+
+                          Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
+                            Button:
+                              style = [ButtonPill, ButtonSuggested]
+                              text = "Complete Setup"
+                              tooltip =
+                                "Click this button when you are done with the steps above."
+
+                              proc clicked() =
+                                startLxcContainer(default(Input), authAgent = "pkexec")
+                                warn "onboarding: FIXME: use a better way to be notified of when the container is ready"
+                                sleep(35000) # FIXME: please fix this :^(
+                                discard runCmd(
+                                  "pkexec",
+                                  env.equinoxPath & " install --consented --user:" &
+                                    env.user,
+                                )
 
             #[ Button:
               style = [ButtonPill]

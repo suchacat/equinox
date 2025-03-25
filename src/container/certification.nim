@@ -1,6 +1,6 @@
 ## obtain the heckin certifications from the keanu reeves 420 updoot kind stranger google
-import std/[os, browsers, logging]
-import pkg/db_connector/db_sqlite, pkg/pretty
+import std/[os, logging]
+import pkg/db_connector/db_sqlite
 import ./[configuration]
 
 type
