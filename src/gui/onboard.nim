@@ -106,4 +106,7 @@ method view(app: OnboardingAppState): Widget =
                 echo "losing it" ]#
 
 proc runOnboardingApp*() =
-  adw.brew(gui(OnboardingApp()))
+  adw.brew(
+    id = "io.github.equinoxhq.equinox",
+    gui(OnboardingApp())
+  )

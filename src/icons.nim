@@ -8,8 +8,14 @@ proc installIcons* =
   let icons = getHomeDir() / ".local" / "share" / "icons"
   discard existsOrCreateDir(icons)
   
-  let customDir = icons / "equinoxhq"
-  discard existsOrCreateDir(customDir)
+  let hicolorDir = icons / "hicolor"
+  discard existsOrCreateDir(hicolorDir)
+
+  let scalableDir = hicolorDir / "scalable"
+  discard existsOrCreateDir(scalableDir)
+
+  let appsDir = scalableDir / "apps"
+  discard existsOrCreateDir(appsDir)
   
   debug "icons: overwriting roblox icon as lucem's icon"
-  writeFile(customDir / "waydroid.com.roblox.client.svg", LucemIcon)
+  writeFile(appsDir / "waydroid.com.roblox.client.svg", LucemIcon)

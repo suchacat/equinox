@@ -20,10 +20,11 @@ proc showLauncher() =
 proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
-  installIcons()
   let input = parseInput()
   if input.enabled("verbose", "v"):
     setLogFilter(lvlAll)
+
+  installIcons()
 
   case input.command
   of "onboarding":

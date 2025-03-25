@@ -7,7 +7,6 @@ type
   RenderingBackend* {.pure.} = enum
     OpenGL
     Vulkan
-    CPU
 
   ConfigData* = object
     free_robucks*: bool = false
@@ -24,8 +23,6 @@ func toRenderingBackend*(
     RenderingBackend.OpenGL
   of "vulkan", "vk":
     RenderingBackend.Vulkan
-  of "cpu", "nthorsefly":
-    RenderingBackend.CPU
   else:
     raise newException(ValueError, "Invalid rendering backend: " & str)
 

@@ -176,4 +176,7 @@ method view(app: LauncherState): Widget =
                   warn "launcher: TODO: add a spinner or smt"
 
 proc runLauncher*() =
-  adw.brew(gui(Launcher()))
+  adw.brew(
+    id = "io.github.equinoxhq.equinox",
+    gui(Launcher())
+  )
