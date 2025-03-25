@@ -3,7 +3,7 @@ import std/[os, logging]
 import pkg/[colored_logger]
 import ./gui/[onboard]
 import ./gui/[launcher]
-import ./argparser
+import ./[argparser, icons]
 
 proc isFirstRun*(input: Input): bool =
   not dirExists(getHomeDir() / ".local" / "share" / "equinox") or
@@ -20,6 +20,7 @@ proc showLauncher() =
 proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
+  installIcons()
   let input = parseInput()
   if input.enabled("verbose", "v"):
     setLogFilter(lvlAll)
