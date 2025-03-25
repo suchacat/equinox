@@ -31,6 +31,7 @@ const DefaultConfig* =
         "renderer": "vulkan",
 	"fflags": {
 	  "DFFlagDisableDPIScale": true,
+	  "DFIntTaskSchedulerTargetFps": 60,
 	  "FFlagAdServiceEnabled": false,
 	  "FFlagDebugDisableTelemetryEphemeralCounter": true,
 	  "FFlagDebugDisableTelemetryEphemeralStat": true,
@@ -56,7 +57,7 @@ proc loadAppConfig*(input: Input): ConfigData =
     debug "equinox: using cached config"
     return &configCache
 
-  discard existsOrCreateDir("/home" / &input.flag("user") / ".config" / "equinox")
+  # discard existsOrCreateDir("/home" / &input.flag("user") / ".config" / "equinox")
 
   let path =
     if not *input.flag("config"):
@@ -66,11 +67,12 @@ proc loadAppConfig*(input: Input): ConfigData =
 
   debug "equinox: loading config from: " & path
 
-  if not fileExists(path):
-    debug "equinox: config does not exist, overriding with default config"
-    writeFile(path, DefaultConfig)
-
-  let conf = readFile(path).fromJson(ConfigData)
+  let conf =
+    if not fileExists(path):
+      debug "equinox: config does not exist, overriding with default config"
+      DefaultConfig.fromJson(ConfigData)
+    else:
+      readFile(path).fromJson(ConfigData)
 
   configCache = some(conf)
   conf
