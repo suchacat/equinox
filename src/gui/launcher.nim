@@ -167,6 +167,7 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
 
                 if pid == 0:
                   debug "launcher: we're the forked child"
+                  app.scheduleCloseWindow()
                   discard execCmd(cmd)
                   quit(0)
                 else:
