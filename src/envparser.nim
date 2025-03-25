@@ -1,4 +1,6 @@
-import std/[os, parseopt, logging, tables, strutils]
+#thefunny (also mostly ai generated code)
+
+import std/[os, logging]
 
 type
   XdgEnv* = object
