@@ -5,12 +5,14 @@ import ../[argparser]
 
 type ConfigData* = object
   free_robucks*: bool = false
+  allocator*: string = "minigbm_gbm_mesa"
+  max_fps*: Option[uint16] = none(uint16)
   fflags*: FFlagList
 
 const DefaultConfig* =
   """
 {
-	"free_robucks": true,
+        "allocator": "minigbm_gbm_mesa",
 	"fflags": {
 		"DFFlagDisableDPIScale": true,
 		"DFIntTaskSchedulerTargetFps": 145,
