@@ -81,7 +81,6 @@ proc installSplitApp*(base, split: string) =
   debug "platform: installing APK (base=`" & base & "`, split=`" & split & "`)"
 
   debug "platform: copying APKs to /data/"
-  echo config.equinoxData
   copyFile(base, config.equinoxData / "base.apk")
   copyFile(split, config.equinoxData / "split.apk")
 
