@@ -2,6 +2,7 @@
 import std/[os, logging]
 import pkg/[colored_logger]
 import ./gui/[onboard]
+import ./gui/[launcher]
 import ./argparser
 
 proc isFirstRun*(input: Input): bool =
@@ -11,6 +12,10 @@ proc isFirstRun*(input: Input): bool =
 proc showOnboardingGui() =
   debug "gui: showing onboarding gui"
   runOnboardingApp()
+
+proc showLauncher() =
+  debug "gui: launcher gui spawned"
+  runLauncher()
 
 proc main() {.inline.} =
   addHandler(newColoredLogger())
@@ -22,6 +27,8 @@ proc main() {.inline.} =
   case input.command
   of "onboarding":
     showOnboardingGui()
+  of "launcher":
+    showLauncher()
   else:
     error "equinox-gui: invalid command: " & input.command
 

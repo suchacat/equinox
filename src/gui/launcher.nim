@@ -1,10 +1,10 @@
-## Onboarding GUI
+## Launcher GUI
 import std/[logging]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 
 import ../envparser
 
-viewable OnboardingApp:
+viewable Launcher:
   description:
     string = "This is Equinox"
   iconName:
@@ -13,19 +13,16 @@ viewable OnboardingApp:
     string = "Equinox"
   active:
     bool = false
-  subtitle:
-    string = "uuuuuh"
   sensitive:
     bool = true
+  toggle:
+    bool
+  subtitle:
+    string = "uuuuuh"
   tooltip:
     string = "man..."
   sizeRequest:
     tuple[x, y: int] = (-1, -1)
-
-  consentedTOS:
-    bool
-  consentedPrivacy:
-    bool
 
   #my code sucks
   erm_guh:
@@ -39,10 +36,10 @@ viewable OnboardingApp:
 
 let env = getXdgEnv()
 
-method view(app: OnboardingAppState): Widget =
+method view(app: LauncherState): Widget =
   result = gui:
     Window:
-      defaultSize = (400, 600)
+      defaultSize = (600, 400)
       title = app.title
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
@@ -56,30 +53,19 @@ method view(app: OnboardingAppState): Widget =
           spacing = 12
 
           PreferencesGroup {.expand: false.}:
-            title = "Onboarding"
+            #title = app.title
             #description = "Losing it"
 
             ActionRow:
-              title = "I Consent"
-              subtitle = "To the Equinox Terms of Service"
-              Switch() {.addSuffix.}:
+              title = "Make sure to follow the README instructions"
+              subtitle = "Note: This software is experimental and may break"
+              #[Switch() {.addSuffix.}:
                 proc changed(active: bool) =
                   app.consentedTOS = active
                   if app.consentedTOS:
                     debug "gui: user has consented to TOS"
                   else:
-                    debug "gui: user no longer consents to TOS"
-
-            ActionRow:
-              title = "I Consent"
-              subtitle = "To the Equinox Privacy Policy"
-              Switch() {.addSuffix.}:
-                proc changed(active: bool) =
-                  app.consentedPrivacy = active
-                  if app.consentedPrivacy:
-                    debug "gui: user has consented to privacy policy"
-                  else:
-                    debug "gui: user no longer consents to privacy policy"
+                    debug "gui: user no longer consents to TOS"]#
 
           Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
             orient = OrientX
@@ -87,20 +73,19 @@ method view(app: OnboardingAppState): Widget =
 
             Button:
               style = [ButtonPill, ButtonSuggested]
-              text = "Start Setup"
+              text = "Launch Roblox"
               proc clicked() =
-                let consent = app.consentedPrivacy and app.consentedTOS
-                #echo "blud tf is this... :", app.erm_guh
-                echo "success???: ", "equinox init ", app.runtime,env.runtimeDir, " ", app.wayland,env.waylandDisplay, " ", app.user,env.user
-                if not consent:
-                  discard
+                echo "launch command not implemented yet"
+                #execCmd
 
-            #[ Button:
+            Button:
               style = [ButtonPill]
-              icon = "applications-system-symbolic"
+              text = "Setup Equinox"
+              #icon = "applications-system-symbolic"
               #tooltip = "config"
               proc clicked() =
-                echo "losing it" ]#
+                echo "test: ", "pkexec", "equinox init ", app.runtime,env.runtimeDir, " ", app.wayland,env.waylandDisplay, " ", app.user,env.user, " --uid:1000 --gid:1000"
+                echo "is the command correct? if not fix it dumb*ss"
 
-proc runOnboardingApp*() =
-  adw.brew(gui(OnboardingApp()))
+proc runLauncher*() =
+  adw.brew(gui(Launcher()))
