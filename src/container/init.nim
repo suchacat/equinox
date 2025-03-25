@@ -28,6 +28,8 @@ proc initialize*(input: Input) =
     return
 
   discard existsOrCreateDir(config.work)
+  discard existsOrCreateDir(config.equinoxData)
+  discard existsOrCreateDir(config.hostPerms)
   discard existsOrCreateDir(config.rootfs)
   discard existsOrCreateDir(config.overlay)
   discard existsOrCreateDir(config.overlay / "vendor")

@@ -1,9 +1,10 @@
-import std/[os, logging, strutils, posix]
+import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ./[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
     rootfs, app_config, fflags, properties,
   ]
+import pkg/glfw, pkg/pretty
 import ../argparser
 import ./utils/[exec, mount]
 
@@ -18,11 +19,16 @@ proc startAndroidRuntime*(input: Input) =
 
   mountRootfs(input, config.imagesPath)
 
-  debug "equinox: applying config"
+  var settings = loadAppConfig(input)
 
-  if input.enabled("apply-config", "C"):
-    let config = loadAppConfig(input)
-    setFflags(config.fflags)
+  debug "equinox: applying config"
+  
+  if *settings.maxFps:
+    settings.fflags["DFIntTaskSchedulerTargetFps"] = newJInt(int(&settings.maxFps))
+
+  settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true)
+  
+  setFflags(settings.fflags)
 
   generateSessionLxcConfig()
 
@@ -34,18 +40,15 @@ proc startAndroidRuntime*(input: Input) =
 
     var platform = getIPlatformService()
 
-    let pid = (&readOutput("pidof", "init")).strip().split(' ')[0].parseUint()
-      # FIXME: please fix this PEAK code to be less PEAK (it probably shits itself on non systemd distros)
-
     platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
     while isEmptyOrWhitespace(&readOutput("pidof", "com.roblox.client")):
       # FIXME: please don't do this
       platform.launchApp("com.roblox.client")
 
-    # var hwsvc = startHardwareService()
+    let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
 
-    debug "equinox: waiting for init to exit: pid=" & $pid
+    debug "equinox: waiting for roblox to exit: pid=" & $pid
     var status: cint
     while kill(Pid(pid), 0) == 0 or errno != ESRCH:
       sleep(100)
@@ -56,4 +59,5 @@ proc startAndroidRuntime*(input: Input) =
       warn "equinox: runtime stopped abnormally."
 
     stopNetworkService()
+    stopLxcContainer()
     # deinitHardwareService(hwsvc)

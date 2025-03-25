@@ -1,7 +1,7 @@
 ## Hardware abstraction layer utilities
 import std/[os, logging, strutils]
 import ../argparser
-import ./[configuration, properties, filesystem, sugar, gpu, lxc]
+import ./[configuration, properties, filesystem, sugar, gpu, lxc, app_config]
 
 proc findHal*(hardware: string): Option[string] =
   debug "lxc: finding hardware abstraction layer for hardware: " & hardware
@@ -25,6 +25,7 @@ proc findHal*(hardware: string): Option[string] =
 
 proc makeBaseProps*(input: Input) =
   var props: seq[tuple[key, value: string]]
+  let settings = loadAppConfig(input)
 
   if not fileExists("/dev/ashmem"):
     debug "hal: ashmem not found, container will be forced to use memfd."
@@ -34,21 +35,8 @@ proc makeBaseProps*(input: Input) =
   let node = getDriNode()
 
   let
-    gralloc = "minigbm_gbm_mesa"
+    gralloc = settings.allocator
     egl = "mesa"
-
-  #[if not *gralloc:
-    gralloc = some("android")
-  else:
-    if *node:
-      debug "hal: we have a suitable GPU to use. Rendering will be hardware accelerated. Yippee. :D"
-      gralloc = some("gbm")
-      egl = some("mesa")
-    else:
-      warn "hal: we DO NOT have a suitable GPU to use! Rendering will NOT be hardware accelerated."
-      warn "hal: this can happen if you have a Nvidia GPU. If you have an AMD/Intel GPU, please open a bug report."
-      gralloc = some("default")
-      egl = some("swiftshader") ]#
 
   props &= (key: "ro.hardware.gralloc", value: gralloc)
   props &= (key: "debug.stagefright.ccodec", value: "0")
@@ -59,18 +47,19 @@ proc makeBaseProps*(input: Input) =
   info "hal: using gralloc implementation: " & gralloc
   info "hal: you have EGL support."
   props &= (key: "ro.hardware.egl", value: egl)
+  
+  if settings.renderer.toRenderingBackend() == RenderingBackend.Vulkan:
+    debug "hal: finding Vulkan HAL"
+    var vulkan = findHal "vulkan"
+    if not *vulkan and *node:
+      debug "hal: cannot find suitable HAL for Vulkan, using system Vulkan drivers"
+      vulkan = some(getVulkanDriver((&node).dev.splitPath().tail))
 
-  debug "hal: finding Vulkan HAL"
-  var vulkan = findHal "vulkan"
-  if not *vulkan and *node:
-    debug "hal: cannot find suitable HAL for Vulkan, using system Vulkan drivers"
-    vulkan = some(getVulkanDriver((&node).dev.splitPath().tail))
-
-  if *vulkan:
-    info "hal: you have Vulkan support."
-    props &= (key: "ro.hardware.vulkan", value: &vulkan)
-  else:
-    warn "hal: your GPU does not support Vulkan!"
+    if *vulkan:
+      info "hal: you have Vulkan support."
+      props &= (key: "ro.hardware.vulkan", value: &vulkan)
+    else:
+      warn "hal: your GPU does not support Vulkan!"
 
   # TODO: camera support
 
@@ -109,7 +98,6 @@ proc makeBaseProps*(input: Input) =
 
   props &= (key: "waydroid.wayland_display", value: &input.flag("wayland-display"))
   props &= (key: "waydroid.open_windows", value: "1")
-  props &= (key: "waydroid.xdg_runtime_dir", value: &input.flag("xdg-runtime-dir"))
   props &= (
     key: "waydroid.background_start",
     value: (if input.enabled("show-boot", "B"): "false" else: "true"),
@@ -119,11 +107,17 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "waydroid.host.user", value: &input.flag("user"))
   props &= (key: "waydroid.keyboard_layout", value: "english")
   props &= (key: "waydroid.stub_sensors_hal", value: "1") # we don't need any sensors
-  props &= (key: "ro.sf.lcd_density", value: "180") # TODO: fractional scaling support
+  props &= (key: "ro.sf.lcd_density", value: "180")
+  props &= (key: "persist.sys.disable_ime", value: "true")
+  props &= (key: "keyboard.force_hardware", value: "true")
   props &= (key: "waydroid.xdg_runtime_dir", value: config.containerXdgRuntimeDir)
   props &= (key: "waydroid.wayland_display", value: config.containerWaylandDisplay)
   props &= (key: "waydroid.pulse_runtime_path", value: config.containerPulseRuntimePath)
   props &= (key: "waydroid.host_data_path", value: config.equinoxData / "data")
+
+  # props &= (key: "ro.product.model", value: "Chromebook")
+  # props &= (key: "ro.product.brand", value: "Google")
+  props &= (key: "ro.build.characteristics", value: "pc,keyboard")
 
   var builder: string
   for prop in props:
