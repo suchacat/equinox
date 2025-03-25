@@ -47,7 +47,7 @@ proc makeBaseProps*(input: Input) =
   info "hal: using gralloc implementation: " & gralloc
   info "hal: you have EGL support."
   props &= (key: "ro.hardware.egl", value: egl)
-  
+
   if settings.renderer.toRenderingBackend() == RenderingBackend.Vulkan:
     debug "hal: finding Vulkan HAL"
     var vulkan = findHal "vulkan"

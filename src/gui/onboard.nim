@@ -2,6 +2,8 @@
 import std/[logging]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 
+import ../envparser
+
 viewable OnboardingApp:
   description:
     string = "This is Equinox"
@@ -24,6 +26,19 @@ viewable OnboardingApp:
     bool
   consentedPrivacy:
     bool
+
+  #my code sucks
+  erm_guh:
+    string =
+      "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
+  runtime:
+    string = "--xdg-runtime-dir:"
+  wayland:
+    string = "--wayland-display:"
+  user:
+    string = "--user:"
+
+let env = getXdgEnv()
 
 method view(app: OnboardingAppState): Widget =
   result = gui:
@@ -76,6 +91,10 @@ method view(app: OnboardingAppState): Widget =
               text = "Start Setup"
               proc clicked() =
                 let consent = app.consentedPrivacy and app.consentedTOS
+                #echo "blud tf is this... :", app.erm_guh
+                echo "success???: ",
+                  "equinox init ", app.runtime, env.runtimeDir, " ", app.wayland,
+                  env.waylandDisplay, " ", app.user, env.user
                 if not consent:
                   discard
 

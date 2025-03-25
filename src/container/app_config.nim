@@ -7,7 +7,6 @@ type
   RenderingBackend* {.pure.} = enum
     OpenGL
     Vulkan
-    CPU
 
   ConfigData* = object
     free_robucks*: bool = false
@@ -16,11 +15,14 @@ type
     max_fps*: Option[uint16] = none(uint16)
     fflags*: FFlagList
 
-func toRenderingBackend*(str: string): RenderingBackend {.raises: [ValueError], inline.} =
+func toRenderingBackend*(
+    str: string
+): RenderingBackend {.raises: [ValueError], inline.} =
   case str.toLowerAscii()
-  of "opengl", "ogl", "gl": RenderingBackend.OpenGL
-  of "vulkan", "vk": RenderingBackend.Vulkan
-  of "cpu", "nthorsefly": RenderingBackend.CPU
+  of "opengl", "ogl", "gl":
+    RenderingBackend.OpenGL
+  of "vulkan", "vk":
+    RenderingBackend.Vulkan
   else:
     raise newException(ValueError, "Invalid rendering backend: " & str)
 
