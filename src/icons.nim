@@ -16,5 +16,5 @@ proc installIcons*() =
   let appsDir = scalableDir / "apps"
   discard existsOrCreateDir(appsDir)
 
-  debug "icons: overwriting roblox icon as lucem's icon"
   writeFile(appsDir / "waydroid.com.roblox.client.svg", LucemIcon)
+  writeFile(appsDir / "equinox.svg", LucemIcon)

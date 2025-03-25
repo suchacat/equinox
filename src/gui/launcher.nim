@@ -4,7 +4,9 @@ import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 
 import ../envparser
 
-const NimblePkgVersion {.strdefine.} = "???"
+const
+  NimblePkgVersion {.strdefine.} = "???"
+  License = staticRead("../../LICENSE")
 
 viewable Launcher:
   description:
@@ -86,16 +88,27 @@ method view(app: LauncherState): Widget =
                 proc clicked() =
                   discard app.open:
                     gui:
-                      AboutDialog:
-                        programName = "Equinox"
-                        logo = "equinox"
+                      AboutWindow:
+                        applicationName = "Equinox"
+                        developerName = "The EquinoxHQ Team"
                         version = NimblePkgVersion
-                        credits =
-                          @{
-                            "Code": @["Trayambak (xTrayambak)"],
-                            "GUI Design": @["Adrien (AshtakaOOf)"],
-                            "APK Fetcher": @["Kirby (k1yrix)"],
-                          }
+                        supportUrl = "https://discord.gg/Z5m3n9fjcU"
+                        issueUrl = "https://github.com/equinoxhq/equinox/issues"
+                        website = "https://github.com/equinoxhq/equinox/"
+                        copyright = """
+Copyright (C) 2025 xTrayambak and the EquinoxHQ Team
+The Roblox logo and branding are registered trademarks of Roblox Corporation.
+                        """
+                        license = License
+                        licenseType = LicenseMIT_X11
+                        applicationIcon = "equinox"
+                        developers = @["Trayambak (xTrayambak)"]
+                        designers = @["Adrien (AshtakaOOf)"]
+                        artists = @[]
+                        documenters = @[]
+                        credits = @{
+                          "APK Fetcher by": @["Kirby (k1yrix)"]
+                        }
 
             Box {.name: "tools".}:
               orient = OrientY
@@ -178,4 +191,4 @@ method view(app: LauncherState): Widget =
                   warn "launcher: TODO: add a spinner or smt"
 
 proc runLauncher*() =
-  adw.brew(id = "io.github.equinoxhq.equinox", gui(Launcher()))
+  adw.brew(gui(Launcher()))
