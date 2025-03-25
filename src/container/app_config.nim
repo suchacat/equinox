@@ -1,35 +1,50 @@
-import std/[os, options, logging, tables]
+import std/[os, options, logging, strutils, tables]
 import pkg/[jsony]
 import ./[fflags, sugar]
 import ../[argparser]
 
-type ConfigData* = object
-  free_robucks*: bool = false
-  allocator*: string = "minigbm_gbm_mesa"
-  max_fps*: Option[uint16] = none(uint16)
-  fflags*: FFlagList
+type
+  RenderingBackend* {.pure.} = enum
+    OpenGL
+    Vulkan
+    CPU
+
+  ConfigData* = object
+    free_robucks*: bool = false
+    allocator*: string = "minigbm_gbm_mesa"
+    renderer*: string = "vulkan"
+    max_fps*: Option[uint16] = none(uint16)
+    fflags*: FFlagList
+
+func toRenderingBackend*(str: string): RenderingBackend {.raises: [ValueError], inline.} =
+  case str.toLowerAscii()
+  of "opengl", "ogl", "gl": RenderingBackend.OpenGL
+  of "vulkan", "vk": RenderingBackend.Vulkan
+  of "cpu", "nthorsefly": RenderingBackend.CPU
+  else:
+    raise newException(ValueError, "Invalid rendering backend: " & str)
 
 const DefaultConfig* =
   """
 {
         "allocator": "minigbm_gbm_mesa",
+        "renderer": "vulkan",
 	"fflags": {
-		"DFFlagDisableDPIScale": true,
-		"DFIntTaskSchedulerTargetFps": 145,
-		"FFlagAdServiceEnabled": false,
-		"FFlagDebugDisableTelemetryEphemeralCounter": true,
-	    	"FFlagDebugDisableTelemetryEphemeralStat": true,
-	    	"FFlagDebugDisableTelemetryEventIngest": true,
-	    	"FFlagDebugDisableTelemetryPoint": true,
-	    	"FFlagDebugDisableTelemetryV2Counter": true,
-	    	"FFlagDebugDisableTelemetryV2Event": true,
-	    	"FFlagDebugDisableTelemetryV2Stat": true,
-	    	"FFlagFutureIsBrightPhase3Vulkan": true,
-	    	"FFlagGameBasicSettingsFramerateCap5": true,
-	    	"FFlagSendMeshTTMQTelemetry": false,
-	    	"FFlagTextureDeduplicationByHash4": false,
-	    	"FFlagUserHandleChatHotKeyWithContextActionService": true,
-	    	"FLogFMOD": 0
+	  "DFFlagDisableDPIScale": true,
+	  "FFlagAdServiceEnabled": false,
+	  "FFlagDebugDisableTelemetryEphemeralCounter": true,
+	  "FFlagDebugDisableTelemetryEphemeralStat": true,
+	  "FFlagDebugDisableTelemetryEventIngest": true,
+	  "FFlagDebugDisableTelemetryPoint": true,
+	  "FFlagDebugDisableTelemetryV2Counter": true,
+	  "FFlagDebugDisableTelemetryV2Event": true,
+	  "FFlagDebugDisableTelemetryV2Stat": true,
+	  "FFlagFutureIsBrightPhase3Vulkan": true,
+	  "FFlagGameBasicSettingsFramerateCap5": true,
+	  "FFlagSendMeshTTMQTelemetry": false,
+	  "FFlagTextureDeduplicationByHash4": false,
+	  "FFlagUserHandleChatHotKeyWithContextActionService": true,
+	  "FLogFMOD": 0
 	}
 }
   """
