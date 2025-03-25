@@ -95,7 +95,8 @@ method view(app: LauncherState): Widget =
                         supportUrl = "https://discord.gg/Z5m3n9fjcU"
                         issueUrl = "https://github.com/equinoxhq/equinox/issues"
                         website = "https://github.com/equinoxhq/equinox/"
-                        copyright = """
+                        copyright =
+                          """
 Copyright (C) 2025 xTrayambak and the EquinoxHQ Team
 The Roblox logo and branding are registered trademarks of Roblox Corporation.
                         """
@@ -106,9 +107,7 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
                         designers = @["Adrien (AshtakaOOf)"]
                         artists = @[]
                         documenters = @[]
-                        credits = @{
-                          "APK Fetcher by": @["Kirby (k1yrix)"]
-                        }
+                        credits = @{"APK Fetcher by": @["Kirby (k1yrix)"]}
 
             Box {.name: "tools".}:
               orient = OrientY
