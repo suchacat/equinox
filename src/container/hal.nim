@@ -98,7 +98,6 @@ proc makeBaseProps*(input: Input) =
 
   props &= (key: "waydroid.wayland_display", value: &input.flag("wayland-display"))
   props &= (key: "waydroid.open_windows", value: "1")
-  props &= (key: "waydroid.xdg_runtime_dir", value: &input.flag("xdg-runtime-dir"))
   props &= (
     key: "waydroid.background_start",
     value: (if input.enabled("show-boot", "B"): "false" else: "true"),
