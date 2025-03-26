@@ -29,6 +29,8 @@ viewable OnboardingApp:
     bool
   consentedPrivacy:
     bool
+  consentFail:
+    string = ""
 
   #my code sucks
   erm_guh:
@@ -46,7 +48,7 @@ let env = getXdgEnv()
 method view(app: OnboardingAppState): Widget =
   result = gui:
     Window:
-      defaultSize = (400, 600)
+      defaultSize = (300, 400)
       title = app.title
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
@@ -90,6 +92,11 @@ method view(app: OnboardingAppState): Widget =
               "Welcome to Equinox. Press the button below to start the setup.\nKeep in mind that this can take upwards of 10 minutes, depending on your internet connection.\nThis application will be fully unresponsive until it is done. Do not exit it!"
             margin = 24
 
+          Label:
+            text = app.consentFail
+            margin = 12
+            style = [StyleClass("warning-label")]
+
           Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
             orient = OrientX
             spacing = 12
@@ -98,8 +105,10 @@ method view(app: OnboardingAppState): Widget =
               style = [ButtonPill, ButtonSuggested]
               text = "Start Setup"
               proc clicked() =
+                app.consentFail = ""
                 let consent = app.consentedPrivacy and app.consentedTOS
                 if not consent:
+                  app.consentFail = "Please consent to our Terms of Service and Privacy Policy to continue."
                   return
 
                 # Init command
@@ -128,6 +137,8 @@ method view(app: OnboardingAppState): Widget =
                     Window:
                       title = "Setup Flow"
                       defaultSize = (300, 450)
+                      HeaderBar {.addTitlebar.}:
+                        style = [HeaderBarFlat]
 
                       Clamp:
                         maximumSize = 450
@@ -173,4 +184,10 @@ method view(app: OnboardingAppState): Widget =
                 echo "losing it" ]#
 
 proc runOnboardingApp*() =
-  adw.brew(gui(OnboardingApp()))
+  adw.brew(gui(OnboardingApp()), stylesheets=[
+    newStylesheet("""
+      .warning-label {
+        color: #ff938b;
+      }
+    """)
+  ])
