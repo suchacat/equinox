@@ -63,7 +63,7 @@ proc getVulkanDriver*(device: string): string =
 
   let table = {
     "i915": "intel",
-    "amdgpu": "amdgpu",
+    "amdgpu": "radeon",
     "radeon": "radeon",
     "panfrost": "panfrost",
     "msm": "freedreno",
