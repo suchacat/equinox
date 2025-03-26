@@ -2,7 +2,7 @@ import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ./[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
-    rootfs, app_config, fflags, properties,
+    rootfs, app_config, fflags, properties, roblox_logs
   ]
 import ../argparser
 import ./utils/[exec, mount]
@@ -15,7 +15,8 @@ proc showUI*() =
 proc startAndroidRuntime*(input: Input) =
   info "equinox: starting android runtime"
   debug "equinox: starting prep for android runtime"
-
+  
+  destroyAllLogs()
   mountRootfs(input, config.imagesPath)
 
   var settings = loadAppConfig(input)
@@ -26,7 +27,7 @@ proc startAndroidRuntime*(input: Input) =
     settings.fflags["DFIntTaskSchedulerTargetFps"] = newJInt(int(&settings.maxFps))
 
   settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true)
-
+  
   setFflags(settings.fflags)
 
   generateSessionLxcConfig()
@@ -38,12 +39,14 @@ proc startAndroidRuntime*(input: Input) =
     startLxcContainer(input)
 
     var platform = getIPlatformService()
-
     platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
     while isEmptyOrWhitespace(&readOutput("pidof", "com.roblox.client")):
       # FIXME: please don't do this
       platform.launchApp("com.roblox.client")
+      sleep(100)
+
+    startLogWatcher()
 
     let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
 
@@ -56,7 +59,8 @@ proc startAndroidRuntime*(input: Input) =
       info "equinox: runtime has been stopped."
     else:
       warn "equinox: runtime stopped abnormally."
-
+    
+    stopLogWatcher()
     stopNetworkService()
     stopLxcContainer()
     # deinitHardwareService(hwsvc)
