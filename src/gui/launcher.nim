@@ -109,21 +109,6 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
                         documenters = @[]
                         credits = @{"APK Fetcher by": @["Kirby (k1yrix)"]}
 
-            Box {.name: "tools".}:
-              orient = OrientY
-              margin = 4
-              spacing = 3
-
-              ModelButton:
-                text = "Uninstall Equinox"
-                proc clicked() =
-                  echo "Not a feature yet"
-
-              ModelButton:
-                text = "Open Config file"
-                proc clicked() =
-                  echo "Not a feature yet"
-
       Clamp:
         maximumSize = 500
         margin = 12
