@@ -1,9 +1,8 @@
 ## equinox gui integration
 import std/[os, logging]
 import pkg/[colored_logger]
-import ./gui/[onboard]
-import ./gui/[launcher]
-import ./[argparser, icons]
+import ./gui/[onboard, icons, launcher]
+import ./[argparser]
 
 proc isFirstRun*(input: Input): bool =
   not dirExists(getHomeDir() / ".local" / "share" / "equinox") or
