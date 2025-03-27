@@ -9,10 +9,6 @@ const
   License = staticRead("../../LICENSE")
 
 viewable Launcher:
-  description:
-    string = "This is Equinox"
-  iconName:
-    string = "weather-clear-symbolic"
   title:
     string = "Equinox"
   active:
@@ -23,25 +19,10 @@ viewable Launcher:
     bool
   offset:
     tuple[x, y: int] = (0, 0)
-  subtitle:
-    string = "uuuuuh"
-  tooltip:
-    string = "man..."
   sizeRequest:
     tuple[x, y: int] = (-1, -1)
   position:
     PopoverPosition = PopoverBottom
-
-  #my code sucks
-  erm_guh:
-    string =
-      "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
-  runtime:
-    string = "--xdg-runtime-dir:"
-  wayland:
-    string = "--wayland-display:"
-  user:
-    string = "--user:"
 
 let env = getXdgEnv()
 
