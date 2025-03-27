@@ -2,7 +2,8 @@
 import std/[browsers, logging, os, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 import
-  ../[argparser, envparser],
+  ../[argparser],
+  ./envparser,
   ../container/[lxc, sugar, certification],
   ../container/utils/exec,
   ./clipboard

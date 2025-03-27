@@ -2,7 +2,7 @@
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 
-import ../envparser
+import ./envparser
 
 const
   NimblePkgVersion {.strdefine.} = "???"
