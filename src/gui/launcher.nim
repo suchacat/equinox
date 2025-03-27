@@ -1,18 +1,21 @@
 ## Launcher GUI
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
-
-import ../envparser
+import ./envparser
 
 const
   NimblePkgVersion {.strdefine.} = "???"
   License = staticRead("../../LICENSE")
 
+type
+  CantMakeSocketPair = object of OSError
+
+  LauncherMagic {.pure, size: sizeof(uint8).} = enum
+    Launch = 0    ## Launch Equinox.
+    Halt = 1      ## Halt Equinox.
+    Die = 2       ## Kill yourself.
+
 viewable Launcher:
-  description:
-    string = "This is Equinox"
-  iconName:
-    string = "weather-clear-symbolic"
   title:
     string = "Equinox"
   active:
@@ -23,25 +26,12 @@ viewable Launcher:
     bool
   offset:
     tuple[x, y: int] = (0, 0)
-  subtitle:
-    string = "uuuuuh"
-  tooltip:
-    string = "man..."
   sizeRequest:
     tuple[x, y: int] = (-1, -1)
   position:
     PopoverPosition = PopoverBottom
 
-  #my code sucks
-  erm_guh:
-    string =
-      "equinox init --xdg-runtime-dir:A --wayland-display:B --user:C --uid:D --gid:E"
-  runtime:
-    string = "--xdg-runtime-dir:"
-  wayland:
-    string = "--wayland-display:"
-  user:
-    string = "--user:"
+  sock: cint
 
 let env = getXdgEnv()
 
@@ -143,37 +133,79 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
               text = "Launch Roblox"
               tooltip = "This will start Roblox through Equinox."
               proc clicked() =
-                let cmd =
-                  findExe("pkexec") & ' ' & env.equinoxPath & " run --xdg-runtime-dir:" &
-                  env.runtimeDir & " --wayland-display:" & env.waylandDisplay &
-                  " --user:" & env.user & " --uid:" & $getuid() & " --gid:" & $getgid()
-                let pid = fork()
-
-                if pid == 0:
-                  debug "launcher: we're the forked child"
-                  app.scheduleCloseWindow()
-                  discard execCmd(cmd)
-                  quit(0)
-                else:
-                  debug "launcher: we're the parent"
-                  app.scheduleCloseWindow()
-                  quit(0)
+                var buff: array[1, uint8]
+                buff[0] = (uint8)LauncherMagic.Launch
+                discard write(app.sock, buff[0].addr, 1) == 0
 
             Button:
               style = [ButtonPill, ButtonDestructive]
               text = "Stop Equinox"
               tooltip = "Gracefully shut down the Equinox container."
               proc clicked() =
-                let cmd = findExe("pkexec") & ' ' & env.equinoxPath & " halt"
-                let pid = fork()
+                var buff: array[1, uint8]
+                buff[0] = (uint8)LauncherMagic.Halt
+                discard write(app.sock, buff[0].addr, 1) == 0
 
-                if pid == 0:
-                  debug "launcher: we're the forked child"
-                  discard execCmd(cmd)
-                  quit(0)
-                else:
-                  debug "launcher: we're the parent"
-                  warn "launcher: TODO: add a spinner or smt"
+proc waitForCommands*(fd: cint) {.noReturn.} =
+  debug "launcher/child: waiting for commands"
+  
+  var running = true
+  while running:
+    debug "launcher/child: waiting for opcode"
+    var opcode: array[1, byte]
+    if (let status = read(fd, opcode[0].addr, 1); status != 1):
+      error "launcher/child: read() returned " & $status & ": " & $strerror(errno) & " (errno " & $errno & ')'
+      error "launcher/child: i think the launcher has crashed or something idk"
+      break
+
+    var op = cast[LauncherMagic](cast[uint8](opcode[0]))
+    debug "launcher/child: opcode -> " & $op
+
+    case op
+    of LauncherMagic.Launch:
+      let cmd =
+        findExe("pkexec") & ' ' & env.equinoxPath & " run --xdg-runtime-dir:" &
+        env.runtimeDir & " --wayland-display:" & env.waylandDisplay &
+        " --user:" & env.user & " --uid:" & $getuid() & " --gid:" & $getgid()
+
+      debug "launcher/child: cmd -> " & cmd
+      let pid = fork()
+
+      if pid == 0:
+        debug "launcher/child: we're the forked child"
+        discard execCmd(cmd)
+        quit(0)
+      else:
+        debug "launcher/child: we're the parent"
+    of LauncherMagic.Halt:
+      let cmd = findExe("pkexec") & ' ' & env.equinoxPath & " halt"
+      debug "launcher/child: cmd -> " & cmd
+
+      discard execCmd(cmd)
+    of LauncherMagic.Die:
+      running = false
+  
+  debug "launcher/child: adios"
+  discard close(fd)
+  quit(0)
 
 proc runLauncher*() =
-  adw.brew(gui(Launcher()))
+  var pair: array[2, cint]
+  if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
+    raise newException(CantMakeSocketPair, "socketpair() returned " & $status & ": " & $strerror(errno) & " (errno " & $errno & ')')
+
+  let pid = fork()
+  
+  # If we're the parent - we launch the GUI.
+  # Else, we'll sit around waiting for commands to act upon.
+  if pid == 0:
+    adw.brew(gui(Launcher(
+      sock = pair[0]
+    )))
+
+    # Tell the child to die.
+    var buff: array[1, uint8]
+    buff[0] = (uint8)LauncherMagic.Die
+    discard write(pair[0], buff[0].addr, 1) == 0
+  else:
+    waitForCommands(pair[1])

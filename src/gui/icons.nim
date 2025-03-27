@@ -1,6 +1,6 @@
 import std/[os, logging]
 
-const LucemIcon = staticRead("../assets/lucem.svg")
+const LucemIcon = staticRead("../../assets/lucem.svg")
 
 proc installIcons*() =
   debug "icons: installing lucem icon"
