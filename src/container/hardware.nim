@@ -1,7 +1,8 @@
 import std/[os, logging, locks]
 import ./[configuration]
 import ./utils/[objects]
-import ../bindings/[gbinder, glib2]
+import ../bindings/[glib2]
+import pkg/libgbinder
 
 const
   Interface = "lineageos.waydroid.IHardware"

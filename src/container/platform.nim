@@ -1,6 +1,6 @@
 import std/[os, logging, strutils, times, options]
 import ./[configuration, lxc, drivers, sugar]
-import ../bindings/[gbinder]
+import pkg/libgbinder
 
 const
   InterfaceName = "lineageos.waydroid.IPlatform"
