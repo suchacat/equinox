@@ -2,9 +2,14 @@
 Equinox is a stupid runtime for Roblox on Linux that uses LXC containers to run (y)our beloved lego game.
 
 # Progress
-- Get a container running [X]
-- Get the GPU working in the container [X]
-- Make it run Roblox [X]
+- [X] Get a container running
+- [X] Get the GPU working in the container
+- [X] Make it run Roblox
+- [ ] PC-exclusive game support
+- [ ] Proper mouselocking support
+- [ ] Discord RPC (with Bloxstrap)
+- [ ] All configuration options from Lucem 2.x
+- [ ] New configuration options (possibly like Sober's asset overlay?)
 
 # Known Issues (These will be fixed sooner or later)
 - Performance is really bad in certain games (Arsenal, Dead Rails, etc.)
