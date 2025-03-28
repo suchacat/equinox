@@ -33,6 +33,8 @@ Modes:
   fetch-image-pair     Fetch a suitable image pair (system+vendor) from the Waydroid OTA
   shell                Run a shell command in the Android container
   sh                   Run a shell REPL in the Android container
+  install              Automatically fetch and install Roblox
+  install-apk          Install Roblox from an APK/APKM file supplied by the user
   get-property         Fetch propert(y/ies) from the Android container
   get-gsf-id           Get the Google Services Framework Android ID from the container
   remove-app           Remove an application

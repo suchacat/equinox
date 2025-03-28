@@ -1,5 +1,6 @@
-import std/[os, logging, strutils, times, options]
-import ./[configuration, lxc, drivers, sugar]
+import std/[os, logging, strutils, times, options, posix]
+import ./[configuration, lxc, drivers, sugar, rootfs]
+import ../argparser
 import pkg/libgbinder
 
 const
@@ -77,6 +78,9 @@ proc installApp*(iface: var IPlatform, path: string) =
   else:
     debug "platform: got reply successfully"
 
+proc isServiceOn*(svc: string): bool =
+  contains(&runCmdInContainer("service check " & svc), "Service " & svc & ": found")
+
 proc installSplitApp*(base, split: string) =
   debug "platform: installing APK (base=`" & base & "`, split=`" & split & "`)"
 
@@ -84,7 +88,15 @@ proc installSplitApp*(base, split: string) =
   copyFile(base, config.equinoxData / "base.apk")
   copyFile(split, config.equinoxData / "split.apk")
 
-  let sessionId = (&runCmdInContainer("pm install-create")).split('[')[1].split(']')[0]
+  # We need to wait until the package and settings services is enabled
+  # or else we're rewarded with errors.
+  while not isServiceOn("package") or not isServiceOn("settings"):
+    sleep(100)
+
+  let installCreate = &runCmdInContainer("pm install-create")
+
+  echo installCreate
+  let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
   discard runCmdInContainer("pm uninstall com.roblox.client")
@@ -133,7 +145,7 @@ proc launchIntent*(iface: var IPlatform, intent: string, uri: string) =
   if reply == nil:
     error "platform: reply == NULL; request has failed"
   else:
-    debug "platform: got reply successfully" 
+    debug "platform: got reply successfully"
 
 proc setProperty*(iface: var IPlatform, name: string, prop: string) =
   debug "platform: setting property: " & name & " = " & prop

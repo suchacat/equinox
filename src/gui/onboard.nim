@@ -121,7 +121,6 @@ method view(app: OnboardingAppState): Widget =
                     " --uid:" & $getuid() & " --gid:" & $getgid(),
                 )
 
-                var exception: ref Exception
                 let gsfId =
                   &readOutput(
                     "pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user
@@ -169,21 +168,7 @@ method view(app: OnboardingAppState): Widget =
                                 "Click this button when you are done with the steps above."
 
                               proc clicked() =
-                                startLxcContainer(default(Input), authAgent = "pkexec")
-                                warn "onboarding: FIXME: use a better way to be notified of when the container is ready"
-                                sleep(35000) # FIXME: please fix this :^(
-                                discard runCmd(
-                                  "pkexec",
-                                  env.equinoxPath & " install --consented --user:" &
-                                    env.user,
-                                )
-
-            #[ Button:
-              style = [ButtonPill]
-              icon = "applications-system-symbolic"
-              #tooltip = "config"
-              proc clicked() =
-                echo "losing it" ]#
+                                app.closeWindow()
 
 proc runOnboardingApp*() =
   adw.brew(
