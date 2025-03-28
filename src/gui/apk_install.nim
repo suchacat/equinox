@@ -70,6 +70,10 @@ method view(app: APKFetcherState): Widget =
               Window:
                 title = "An error has occurred"
                 defaultSize = (300, 450)
+
+                HeaderBar {.addTitlebar.}:
+                  style = [HeaderBarFlat]
+
                 Box:
                   orient = OrientY
                   Box {.hAlign: AlignCenter, vAlign: AlignStart.}:
