@@ -8,10 +8,12 @@ type XdgEnv* = object
 
 proc getXdgEnv*(): XdgEnv =
   let equinoxPath =
-    when defined(release):
+    when defined(packagedInstall):
       findExe("equinox")
-    else:
+    elif not defined(release):
       getCurrentDir() / "equinox"
+    else:
+      getHomeDir() / ".nimble" / "bin" / "equinox" # FIXME: stupid hack
 
   XdgEnv(
     runtimeDir: getEnv("XDG_RUNTIME_DIR"),

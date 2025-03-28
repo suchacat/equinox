@@ -114,6 +114,27 @@ proc launchApp*(iface: var IPlatform, id: string) =
   else:
     debug "platform: got reply successfully"
 
+proc launchIntent*(iface: var IPlatform, intent: string, uri: string) =
+  debug "platform: launching intent: " & intent & " -> " & uri
+  var request = gbinder_client_new_request(cast[ptr GBinderClient](iface.client))
+  discard gbinder_local_request_append_string16(request, cstring(intent))
+  discard gbinder_local_request_append_string16(request, cstring(uri))
+
+  var status: int32
+  let reply = gbinder_client_transact_sync_reply(
+    cast[ptr GBinderClient](iface.client),
+    uint32(Transaction.LaunchIntent),
+    request,
+    status.addr,
+  )
+
+  debug "platform: gbinder_client_transact_sync_reply() returned: " & $status
+
+  if reply == nil:
+    error "platform: reply == NULL; request has failed"
+  else:
+    debug "platform: got reply successfully" 
+
 proc setProperty*(iface: var IPlatform, name: string, prop: string) =
   debug "platform: setting property: " & name & " = " & prop
 

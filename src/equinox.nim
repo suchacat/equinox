@@ -37,6 +37,8 @@ Modes:
   get-gsf-id           Get the Google Services Framework Android ID from the container
   remove-app           Remove an application
   launch-app           Launch an application
+  launch-game          Launch a Roblox game/experience with its ID.
+  launch-game-uri      Launch a Roblox game/experience with its URI.
 """
   quit(code)
 
@@ -181,6 +183,20 @@ EquinoxHQ is not responsible for any of your actions.
     else:
       error "equinox: invalid subcommand for `net`: " & input.arguments[0]
       quit(1)
+  of "launch-game":
+    if input.arguments.len < 1:
+      error "equinox: `launch-game` expects a game ID"
+      quit(1)
+
+    let id = input.arguments[0]
+    launchRobloxGame(input, id)
+  of "launch-game-uri":
+    if input.arguments.len < 1:
+      error "equinox: `launch-game-uri` expects a game URI (format: `roblox://placeId=<Place ID>`)"
+      quit(1)
+
+    let uri = cast[PlaceURI](input.arguments[0])
+    launchRobloxGame(input, uri)
   else:
     error "equinox: invalid command: " & input.command
     quit(1)

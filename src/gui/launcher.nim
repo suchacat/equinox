@@ -178,7 +178,7 @@ proc waitForCommands*(fd: cint) {.noReturn.} =
       else:
         debug "launcher/child: we're the parent"
     of LauncherMagic.Halt:
-      let cmd = findExe("pkexec") & ' ' & env.equinoxPath & " halt"
+      let cmd = findExe("pkexec") & ' ' & env.equinoxPath & " halt --force"
       debug "launcher/child: cmd -> " & cmd
 
       discard execCmd(cmd)
