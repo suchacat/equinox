@@ -49,7 +49,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
     var platform = getIPlatformService()
     platform.setProperty("waydroid.active_apps", "com.roblox.client")
-    
+
     if launchRoblox:
       startRobloxClient(platform)
 
@@ -63,8 +63,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
       stopLxcContainer()
     # deinitHardwareService(hwsvc)
 
-type
-  PlaceURI* = distinct string
+type PlaceURI* = distinct string
 
 proc launchRobloxGame*(input: Input, id: PlaceURI | string) =
   info "equinox: sending VIEW intent to roblox client"
