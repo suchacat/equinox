@@ -36,17 +36,11 @@ proc ensureDirsExist*(): string {.sideEffect.} =
 proc createMimeHandlerEntry*() =
   debug "desktop_files: creating MIME handler entry"
   writeFile(
-    ensureDirsExist() / "equinox-mime.desktop",
-    MimeTemplate % [
-      getAppFilename()
-    ]
+    ensureDirsExist() / "equinox-mime.desktop", MimeTemplate % [getAppFilename()]
   )
 
 proc createDesktopEntries*() =
   debug "desktop_files: creating desktop entry for equinox"
   writeFile(
-    ensureDirsExist() / "equinox.desktop",
-    DesktopEntryTemplate % [
-      getAppFilename()
-    ]
+    ensureDirsExist() / "equinox.desktop", DesktopEntryTemplate % [getAppFilename()]
   )
