@@ -16,7 +16,7 @@ type
     InitEquinox = 0 ## Call the Equinox initialization command
     InitSuccess = 1 ## Successful initialization has taken place
     InitFailure = 2 ## Failed initialization
-    Die = 3         ## Kill yourself.
+    Die = 3 ## Kill yourself.
 
 viewable OnboardingApp:
   description:
@@ -43,8 +43,10 @@ viewable OnboardingApp:
   consentFail:
     string = ""
 
-  sock: cint
-  showSpinner: bool = false
+  sock:
+    cint
+  showSpinner:
+    bool = false
 
 let env = getXdgEnv()
 
@@ -61,22 +63,19 @@ method view(app: OnboardingAppState): Widget =
 
     var buff: array[1, uint8]
     discard read(app.sock, buff[0].addr, 1)
-    
+
     case (OnboardMagic) buff[0]
-    of OnboardMagic.InitEquinox, OnboardMagic.Die: discard
+    of OnboardMagic.InitEquinox, OnboardMagic.Die:
+      discard
     of OnboardMagic.InitFailure:
       warn "gui/onboard: TODO: init failure screen"
     of OnboardMagic.InitSuccess:
       let gsfId =
-        &readOutput(
-          "pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user
-        )
+        &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user)
 
       debug "gui/onboard: gsf id = " & gsfId
 
-      openDefaultBrowser(
-        "https://play.google.com/about/play-terms/index.html"
-      )
+      openDefaultBrowser("https://play.google.com/about/play-terms/index.html")
       openDefaultBrowser("https://www.google.com/android/uncertified")
       copyText(gsfId)
 
@@ -163,7 +162,7 @@ method view(app: OnboardingAppState): Widget =
             text =
               "Welcome to Equinox. Press the button below to start the setup.\nKeep in mind that this can take a minute."
             margin = 24
-          
+
           if app.showSpinner:
             AdwSpinner()
 
@@ -191,7 +190,7 @@ method view(app: OnboardingAppState): Widget =
                 var buff: array[1, uint8]
                 buff[0] = (uint8) OnboardMagic.InitEquinox
                 discard write(app.sock, buff[0].addr, 1)
-                
+
                 app.showSpinner = true
                 discard addGlobalIdleTask(waitForInit)
 
@@ -214,10 +213,11 @@ proc waitForCommands*(fd: cint) =
       runCmd(
         "pkexec",
         env.equinoxPath & " init --xdg-runtime-dir:" & env.runtimeDir &
-        " --verbose --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
-        " --uid:" & $getuid() & " --gid:" & $getgid(),
+          " --verbose --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
+          " --uid:" & $getuid() & " --gid:" & $getgid(),
       )
-    of OnboardMagic.InitFailure, OnboardMagic.InitSuccess: discard
+    of OnboardMagic.InitFailure, OnboardMagic.InitSuccess:
+      discard
     of OnboardMagic.Die:
       running = false
 
@@ -229,7 +229,7 @@ proc runOnboardingApp*() =
       "socketpair() returned " & $status & ": " & $strerror(errno) & " (errno " & $errno &
         ')',
     )
-  
+
   let pid = fork()
 
   if pid == 0:

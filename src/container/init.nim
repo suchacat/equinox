@@ -1,6 +1,9 @@
 import std/[os, logging]
 import
-  ./[lxc, configuration, cpu, drivers, image_downloader, hal, rootfs, configuration, network]
+  ./[
+    lxc, configuration, cpu, drivers, image_downloader, hal, rootfs, configuration,
+    network,
+  ]
 import ../argparser
 
 proc setupConfig*(input: Input): bool =
