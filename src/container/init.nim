@@ -38,6 +38,8 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.overlayRw / "system")
   discard existsOrCreateDir(config.overlayRw / "vendor")
   discard existsOrCreateDir(config.work / "images")
+  discard existsOrCreateDir(config.lxc)
+  discard existsOrCreateDir(config.lxc / "equinox")
 
   mountRootfs(input, config.imagesPath)
   generateSessionLxcConfig()
