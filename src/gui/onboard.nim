@@ -68,7 +68,27 @@ method view(app: OnboardingAppState): Widget =
     of OnboardMagic.InitEquinox, OnboardMagic.Die:
       discard
     of OnboardMagic.InitFailure:
-      warn "gui/onboard: TODO: init failure screen"
+      discard app.open:
+        gui:
+          Window:
+            title = "An error has occurred"
+            defaultSize = (300, 450)
+
+            HeaderBar {.addTitlebar.}:
+              style = [HeaderBarFlat]
+
+            Box:
+              orient = OrientY
+              Box {.hAlign: AlignCenter, vAlign: AlignStart.}:
+                Icon:
+                  name = "abrt-symbolic"
+                  pixelSize = 200
+
+              Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
+                Label:
+                  text = "Equinox has failed to initialize the container. Please run this launcher from your terminal and send the logs to the Lucem Discord server."
+                  margin = 24
+
     of OnboardMagic.InitSuccess:
       let gsfId =
         &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user)
@@ -210,12 +230,18 @@ proc waitForCommands*(fd: cint) =
 
     case op
     of OnboardMagic.InitEquinox:
-      runCmd(
+      var buff: array[1, uint8]
+      if runCmd(
         "pkexec",
         env.equinoxPath & " init --xdg-runtime-dir:" & env.runtimeDir &
           " --verbose --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
           " --uid:" & $getuid() & " --gid:" & $getgid(),
-      )
+      ):
+        buff[0] = (uint8) OnboardMagic.InitSuccess
+      else:
+        buff[0] = (uint8) OnboardMagic.InitFailure
+      
+      discard write(fd, buff[0].addr, 1)
     of OnboardMagic.InitFailure, OnboardMagic.InitSuccess:
       discard
     of OnboardMagic.Die:
