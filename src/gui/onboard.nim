@@ -16,7 +16,8 @@ type
     InitEquinox = 0 ## Call the Equinox initialization command
     InitSuccess = 1 ## Successful initialization has taken place
     InitFailure = 2 ## Failed initialization
-    Die = 3 ## Kill yourself.
+    GoogleAuthPhase = 3 ## Copy the GSF ID and open the cert site
+    Die = 4 ## Kill yourself.
 
 viewable OnboardingApp:
   description:
@@ -65,7 +66,7 @@ method view(app: OnboardingAppState): Widget =
     discard read(app.sock, buff[0].addr, 1)
 
     case (OnboardMagic) buff[0]
-    of OnboardMagic.InitEquinox, OnboardMagic.Die:
+    of OnboardMagic.InitEquinox, OnboardMagic.Die, OnboardMagic.GoogleAuthPhase:
       discard
     of OnboardMagic.InitFailure:
       discard app.open:
@@ -86,18 +87,12 @@ method view(app: OnboardingAppState): Widget =
 
               Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
                 Label:
-                  text = "Equinox has failed to initialize the container. Please run this launcher from your terminal and send the logs to the Lucem Discord server."
+                  text =
+                    "Equinox has failed to initialize the container. Please run this launcher from your terminal and send the logs to the Lucem Discord server."
                   margin = 24
-
     of OnboardMagic.InitSuccess:
-      let gsfId =
-        &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user)
-
-      debug "gui/onboard: gsf id = " & gsfId
-
-      openDefaultBrowser("https://play.google.com/about/play-terms/index.html")
-      openDefaultBrowser("https://www.google.com/android/uncertified")
-      copyText(gsfId)
+      buff[0] = (uint8) OnboardMagic.GoogleAuthPhase
+      discard write(app.sock, buff[0].addr, 1)
 
       discard app.open:
         gui:
@@ -131,7 +126,7 @@ method view(app: OnboardingAppState): Widget =
                     style = [ButtonPill, ButtonSuggested]
                     text = "Complete Setup"
                     tooltip =
-                      "Click this button when you are done with the steps above."
+                      "Click this button when you are done with the steps above. You can then launch Equinox."
 
                     proc clicked() =
                       app.closeWindow()
@@ -240,8 +235,17 @@ proc waitForCommands*(fd: cint) =
         buff[0] = (uint8) OnboardMagic.InitSuccess
       else:
         buff[0] = (uint8) OnboardMagic.InitFailure
-      
+
       discard write(fd, buff[0].addr, 1)
+    of OnboardMagic.GoogleAuthPhase:
+      let gsfId =
+        &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user)
+
+      debug "gui/onboard: gsf id = " & gsfId
+
+      openDefaultBrowser("https://play.google.com/about/play-terms/index.html")
+      openDefaultBrowser("https://www.google.com/android/uncertified")
+      copyText(gsfId)
     of OnboardMagic.InitFailure, OnboardMagic.InitSuccess:
       discard
     of OnboardMagic.Die:
@@ -266,9 +270,14 @@ proc runOnboardingApp*() =
       stylesheets = [
         newStylesheet(
           """
-        .warning-label {
-          color: #ff938b;
-        }
+.warning-label {
+  color: #ff938b;
+}
+
+.spinner {
+  min-width: 300px;
+  min-height: 300px;
+}
       """
         )
       ],
