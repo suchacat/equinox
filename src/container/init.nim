@@ -1,6 +1,9 @@
 import std/[os, logging]
 import
-  ./[lxc, configuration, cpu, drivers, image_downloader, hal, rootfs, configuration]
+  ./[
+    lxc, configuration, cpu, drivers, image_downloader, hal, rootfs, configuration,
+    network,
+  ]
 import ../argparser
 
 proc setupConfig*(input: Input): bool =
@@ -38,9 +41,13 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.overlayRw / "system")
   discard existsOrCreateDir(config.overlayRw / "vendor")
   discard existsOrCreateDir(config.work / "images")
+  discard existsOrCreateDir(config.lxc)
+  discard existsOrCreateDir(config.lxc / "equinox")
 
+  initNetworkService()
   mountRootfs(input, config.imagesPath)
   generateSessionLxcConfig()
+  setLxcConfig()
   startLxcContainer(input)
 
   let imagesExist =
@@ -50,8 +57,8 @@ proc initialize*(input: Input) =
     let pair = getImages()
     pair.downloadImages()
 
-  setLxcConfig()
   waitForContainerBoot()
   makeBaseProps(input)
   stopLxcContainer() # stop it afterwards
+  stopNetworkService()
   info "Initialized Equinox successfully."

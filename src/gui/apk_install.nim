@@ -191,7 +191,7 @@ proc runApkFetcher*() =
 
   # If we're the parent - we launch the GUI.
   # Else, we'll sit around waiting for commands to act upon.
-  if pid == 0:
+  if pid != 0:
     var buff: array[1, uint8]
     buff[0] = (uint8) FetcherMagic.Fetch
     discard write(pair[0], buff[0].addr, 1)
