@@ -41,6 +41,7 @@ proc initialize*(input: Input) =
 
   mountRootfs(input, config.imagesPath)
   generateSessionLxcConfig()
+  setLxcConfig()
   startLxcContainer(input)
 
   let imagesExist =
@@ -50,7 +51,6 @@ proc initialize*(input: Input) =
     let pair = getImages()
     pair.downloadImages()
 
-  setLxcConfig()
   waitForContainerBoot()
   makeBaseProps(input)
   stopLxcContainer() # stop it afterwards
