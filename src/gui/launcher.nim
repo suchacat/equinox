@@ -204,7 +204,7 @@ proc runLauncher*() =
 
   # If we're the parent - we launch the GUI.
   # Else, we'll sit around waiting for commands to act upon.
-  if pid == 0:
+  if pid != 0:
     adw.brew(gui(Launcher(sock = pair[0])))
 
     # Tell the child to die.
