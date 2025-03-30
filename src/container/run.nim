@@ -6,6 +6,7 @@ import
   ]
 import ../argparser
 import ./utils/[exec, mount]
+import ../core/event_manager/[types, dispatcher]
 
 proc showUI*(launch: bool = true) =
   var platform = getIPlatformService()
@@ -40,6 +41,8 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   setFflags(settings.fflags)
   generateSessionLxcConfig()
+  
+  var dispatcher = initEventDispatcher()
 
   if getLxcStatus() == "RUNNING":
     debug "equinox: container is already running"
@@ -56,6 +59,13 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
       let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
       debug "equinox: waiting for roblox to exit: pid=" & $pid
       while kill(Pid(pid), 0) == 0 or errno != ESRCH:
+        let (event, exhausted) = dispatcher.poll()
+        if exhausted:
+          continue
+
+        echo event.kind
+        assert off
+
         sleep(100)
 
       stopLogWatcher()

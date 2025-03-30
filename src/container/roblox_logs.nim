@@ -2,6 +2,7 @@
 import std/[atomics, inotify, logging, os, posix, strutils]
 import pkg/[colored_logger]
 import ./[configuration]
+import ../core/event_manager/[types, dispatcher]
 
 import osproc
 type
@@ -96,6 +97,10 @@ proc watcherFunc(target: string) =
   let size = sizeof(INotifyEvent) + PC_NAME_MAX + 1
   var buf = cast[ptr UncheckedArray[byte]](alloc(size))
   while running.load():
+    masterED[].feed(EventPayload(
+      kind: Event.GameJoin,
+      id: "382829499"
+    ))
     let len = read(fd, buf[0].addr, size)
     if len == -1:
       error "watcher: read() returned -1: errno = " & $errno & " (" & $strerror(errno) &
