@@ -10,10 +10,10 @@ proc handleIdleRPC*(rpc: DiscordRPC) =
     Activity(
       details: "Roblox",
       state: "In the App",
-      #[assets: some ActivityAssets(
-        largeImage: "https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/assets/lucem.svg",
+      assets: some ActivityAssets(
+        largeImage: "lucem",
         largeText: "Equinox is a FOSS containerized runtime for Roblox on Linux."
-      )]#
+      )
     )
   )
 
@@ -35,9 +35,9 @@ proc handleGameRPC*(rpc: DiscordRPC, placeId: string) =
       state: "by " & details.creator.name,
       assets: some ActivityAssets(
         largeImage: thumbnail.imageUrl,
-        #largeText: details.description,
-        #smallImage: "https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/assets/lucem.svg",
-        #smallText: "Equinox is a FOSS containerized runtime for Roblox on Linux."
+        # largeText: details.description,
+        smallImage: "lucem",
+        smallText: "Equinox is a FOSS containerized runtime for Roblox on Linux."
       )
     )
   )

@@ -36,9 +36,15 @@ proc checkLineForEvents*(line: string) =
         id: gameId
       )
     )
+  elif line.contains("Client:Disconnect") or line.contains("Destroying MegaReplicator."):
+    chan.send(
+      EventPayload(
+        kind: Event.GameLeave
+      )
+    )
 
 proc findTargetLog*(): string =
-  info "Finding latest log file"
+  info "equinox: finding latest log file"
 
   var iters = 0
   while iters < int(uint16.high):

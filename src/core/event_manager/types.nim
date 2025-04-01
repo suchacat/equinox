@@ -1,6 +1,7 @@
 type
   Event* {.pure.} = enum
     GameJoin
+    GameLeave
 
   EventPayload* = object
     case kind*: Event
