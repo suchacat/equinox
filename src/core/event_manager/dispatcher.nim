@@ -15,12 +15,14 @@ proc checkChannel*(dispatcher: var EventDispatcher) =
   if attempt.dataAvailable:
     dispatcher.queue.add(attempt.msg)
 
-proc poll*(dispatcher: var EventDispatcher, repoll: bool = true): tuple[payload: EventPayload, exhausted: bool] =
+proc poll*(
+    dispatcher: var EventDispatcher, repoll: bool = true
+): tuple[payload: EventPayload, exhausted: bool] =
   ## Get an event.
   ## **NOTE**: If `exhausted` is returned as `true`, `payload` will be a zero'd out struct and will have all its properties set to their default ones.
   ##
   ## **NOTE**: This operates on a FIFO basis.
-  
+
   if dispatcher.queue.len < 1:
     debug "dispatcher: queue is empty"
     if not repoll:

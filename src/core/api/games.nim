@@ -55,9 +55,9 @@ type
     imageToken*: string
 
 proc getUniverseFromPlace*(placeId: string): UniverseID {.inline.} =
-  let payload = curl.get(
-      "https://apis.roblox.com/universes/v1/places/$1/universe" % [placeId]
-    ) # TODO: better error handling? if we get an erroneous output we'll just shit ourselves
+  let payload = curl
+    .get("https://apis.roblox.com/universes/v1/places/$1/universe" % [placeId])
+    # TODO: better error handling? if we get an erroneous output we'll just shit ourselves
     .body
     .parseJson()["universeId"]
     .getInt()

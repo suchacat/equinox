@@ -43,7 +43,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   setFflags(settings.fflags)
   generateSessionLxcConfig()
-  
+
   var dispatcher = initEventDispatcher()
 
   if getLxcStatus() == "RUNNING":
@@ -60,14 +60,16 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
       let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
       debug "equinox: waiting for roblox to exit: pid=" & $pid
-      
-      putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir")) # Fixes a crash because we don't have that defined since we run as root.
+
+      putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
+        # Fixes a crash because we don't have that defined since we run as root.
       var rpc = newDiscordRpc(RPCApplicationId)
-      
+
       try:
         let res = rpc.connect()
         info "equinox: connected to Discord RPC."
-        info "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " & res.config.apiEndpoint & ", env = " & res.config.environment
+        info "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
+          res.config.apiEndpoint & ", env = " & res.config.environment
         info "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
       except OSError as exc:
         debug "equinox: cannot connect to Discord RPC: " & exc.msg

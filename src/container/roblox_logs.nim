@@ -29,19 +29,10 @@ proc destroyAllLogs*() =
 proc checkLineForEvents*(line: string) =
   if line.contains("! Joining game"):
     let gameId = line.split("place ")[1].split(" at")[0]
-    
-    chan.send(
-      EventPayload(
-        kind: Event.GameJoin,
-        id: gameId
-      )
-    )
+
+    chan.send(EventPayload(kind: Event.GameJoin, id: gameId))
   elif line.contains("Client:Disconnect") or line.contains("Destroying MegaReplicator."):
-    chan.send(
-      EventPayload(
-        kind: Event.GameLeave
-      )
-    )
+    chan.send(EventPayload(kind: Event.GameLeave))
 
 proc findTargetLog*(): string =
   info "equinox: finding latest log file"

@@ -2,8 +2,7 @@ import std/[logging, options]
 import ./api/[games, thumbnails]
 import pkg/[discord_rpc]
 
-const
-  RPCApplicationId* {.intdefine.} = 1276893796679942195
+const RPCApplicationId* {.intdefine.} = 1276893796679942195
 
 proc handleIdleRPC*(rpc: DiscordRPC) =
   if rpc == nil:
@@ -15,8 +14,8 @@ proc handleIdleRPC*(rpc: DiscordRPC) =
       state: "In the App",
       assets: some ActivityAssets(
         largeImage: "lucem",
-        largeText: "Equinox is a FOSS containerized runtime for Roblox on Linux."
-      )
+        largeText: "Equinox is a FOSS containerized runtime for Roblox on Linux.",
+      ),
     )
   )
 
@@ -33,7 +32,7 @@ proc handleGameRPC*(rpc: DiscordRPC, placeId: string) =
   debug "Creator => " & details.creator.name
 
   let thumbnail = getGameIcon(id)
-  
+
   info "equinox: updating rich presence"
   rpc.setActivity(
     Activity(
@@ -43,7 +42,7 @@ proc handleGameRPC*(rpc: DiscordRPC, placeId: string) =
         largeImage: thumbnail.imageUrl,
         # largeText: details.description,
         smallImage: "lucem",
-        smallText: "Equinox is a FOSS containerized runtime for Roblox on Linux."
-      )
+        smallText: "Equinox is a FOSS containerized runtime for Roblox on Linux.",
+      ),
     )
   )
