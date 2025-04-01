@@ -26,6 +26,17 @@ proc destroyAllLogs*() =
 
     removeFile(path)
 
+proc checkLineForEvents*(line: string) =
+  if line.contains("! Joining game"):
+    let gameId = line.split("place ")[1].split(" at")[0]
+    
+    chan.send(
+      EventPayload(
+        kind: Event.GameJoin,
+        id: gameId
+      )
+    )
+
 proc findTargetLog*(): string =
   info "Finding latest log file"
 
@@ -97,10 +108,6 @@ proc watcherFunc(target: string) =
   let size = sizeof(INotifyEvent) + PC_NAME_MAX + 1
   var buf = cast[ptr UncheckedArray[byte]](alloc(size))
   while running.load():
-    masterED[].feed(EventPayload(
-      kind: Event.GameJoin,
-      id: "382829499"
-    ))
     let len = read(fd, buf[0].addr, size)
     if len == -1:
       error "watcher: read() returned -1: errno = " & $errno & " (" & $strerror(errno) &
@@ -112,6 +119,7 @@ proc watcherFunc(target: string) =
       debug "watcher: log file has changed"
       let line = readLastLine(target)
       stdout.write line
+      checkLineForEvents(line)
 
   dealloc(buf)
   debug "watcher: thread is exiting loop"

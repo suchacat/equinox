@@ -1,26 +1,17 @@
 import std/[logging]
 import ./[types]
 
-var masterED*: ptr EventDispatcher ## Global event dispatcher
+var chan* {.global.}: Channel[EventPayload]
 
 proc initEventDispatcher*(): EventDispatcher =
   info "lifecycle: event dispatcher is being initialized"
-  assert(masterED == nil, "initEventDispatcher() called even though another event dispatcher instance is already running")
-  var dispatcher = cast[ptr EventDispatcher](alloc(sizeof(EventDispatcher)))
-  zeroMem(dispatcher, sizeof(EventDispatcher))
-  dispatcher.channel.open()
+  var dispatcher: EventDispatcher
+  chan.open()
 
-  info "lifecycle: declaring ourselves the master event dispatcher"
-  masterED = dispatcher
-  
-  dispatcher[]
-
-proc feed*(dispatcher: var EventDispatcher, payload: EventPayload) =
-  dispatcher.channel.send(payload)
+  dispatcher
 
 proc checkChannel*(dispatcher: var EventDispatcher) =
-  let attempt = dispatcher.channel.tryRecv()
-  assert attempt.dataAvailable
+  let attempt = chan.tryRecv()
   if attempt.dataAvailable:
     dispatcher.queue.add(attempt.msg)
 

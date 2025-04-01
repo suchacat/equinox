@@ -59,14 +59,14 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
       let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
       debug "equinox: waiting for roblox to exit: pid=" & $pid
       while kill(Pid(pid), 0) == 0 or errno != ESRCH:
+        sleep(100)
         let (event, exhausted) = dispatcher.poll()
         if exhausted:
           continue
 
-        echo event.kind
-        assert off
-
-        sleep(100)
+        case event.kind
+        of Event.GameJoin:
+          info "equinox: user joined game; id=" & event.id
 
       stopLogWatcher()
       stopNetworkService()
