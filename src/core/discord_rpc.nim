@@ -6,6 +6,9 @@ const
   RPCApplicationId* {.intdefine.} = 1276893796679942195
 
 proc handleIdleRPC*(rpc: DiscordRPC) =
+  if rpc == nil:
+    return
+
   rpc.setActivity(
     Activity(
       details: "Roblox",
@@ -18,6 +21,9 @@ proc handleIdleRPC*(rpc: DiscordRPC) =
   )
 
 proc handleGameRPC*(rpc: DiscordRPC, placeId: string) =
+  if rpc == nil:
+    return
+
   let
     id = getUniverseFromPlace(placeId)
     details = getGameDetail(id)

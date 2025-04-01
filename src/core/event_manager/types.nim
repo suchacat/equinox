@@ -7,6 +7,7 @@ type
     case kind*: Event
     of Event.GameJoin:
       id*: string
+    of Event.GameLeave: discard
 
   EventDispatcher* = object
     queue*: seq[EventPayload]
