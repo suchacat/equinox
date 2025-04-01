@@ -2,6 +2,7 @@
 import std/[atomics, inotify, logging, os, posix, strutils]
 import pkg/[colored_logger]
 import ./[configuration]
+import ../core/event_manager/[types, dispatcher]
 
 import osproc
 type
@@ -25,8 +26,16 @@ proc destroyAllLogs*() =
 
     removeFile(path)
 
+proc checkLineForEvents*(line: string) =
+  if line.contains("! Joining game"):
+    let gameId = line.split("place ")[1].split(" at")[0]
+
+    chan.send(EventPayload(kind: Event.GameJoin, id: gameId))
+  elif line.contains("Client:Disconnect") or line.contains("Destroying MegaReplicator."):
+    chan.send(EventPayload(kind: Event.GameLeave))
+
 proc findTargetLog*(): string =
-  info "Finding latest log file"
+  info "equinox: finding latest log file"
 
   var iters = 0
   while iters < int(uint16.high):
@@ -107,6 +116,7 @@ proc watcherFunc(target: string) =
       debug "watcher: log file has changed"
       let line = readLastLine(target)
       stdout.write line
+      checkLineForEvents(line)
 
   dealloc(buf)
   debug "watcher: thread is exiting loop"

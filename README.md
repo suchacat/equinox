@@ -5,9 +5,9 @@ Equinox is a stupid runtime for Roblox on Linux that uses LXC containers to run 
 - [X] Get a container running
 - [X] Get the GPU working in the container
 - [X] Make it run Roblox
+- [X] Discord RPC
 - [ ] PC-exclusive game support
 - [ ] Proper mouselocking support
-- [ ] Discord RPC (with Bloxstrap)
 - [ ] All configuration options from Lucem 2.x
 - [ ] New configuration options (possibly like Sober's asset overlay?)
 
