@@ -4,9 +4,11 @@ import
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
     rootfs, app_config, fflags, properties, roblox_logs,
   ]
+import pkg/[discord_rpc]
 import ../argparser
 import ./utils/[exec, mount]
 import ../core/event_manager/[types, dispatcher]
+import ../core/discord_rpc
 
 proc showUI*(launch: bool = true) =
   var platform = getIPlatformService()
@@ -58,6 +60,17 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
       let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
       debug "equinox: waiting for roblox to exit: pid=" & $pid
+      
+      putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir")) # Fixes a crash because we don't have that defined since we run as root.
+      var rpc = newDiscordRpc(RPCApplicationId)
+      let res = rpc.connect()
+
+      rpc.handleIdleRPC()
+
+      info "equinox: connected to Discord RPC."
+      info "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " & res.config.apiEndpoint & ", env = " & res.config.environment
+      info "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
+
       while kill(Pid(pid), 0) == 0 or errno != ESRCH:
         sleep(100)
         let (event, exhausted) = dispatcher.poll()
@@ -67,6 +80,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
         case event.kind
         of Event.GameJoin:
           info "equinox: user joined game; id=" & event.id
+          handleGameRPC(rpc, event.id)
 
       stopLogWatcher()
       stopNetworkService()
