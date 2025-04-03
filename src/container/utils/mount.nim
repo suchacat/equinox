@@ -60,9 +60,7 @@ proc mount*(
 
   var cmd: string
   cmd &= source & ' ' & dest
-  if readOnly:
-    cmd &= " -o rw "
-
+  # cmd &= " -o rw"
   cmd &= extra
 
   runCmd "sudo mount", cmd

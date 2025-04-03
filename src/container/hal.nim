@@ -97,7 +97,6 @@ proc makeBaseProps*(input: Input) =
       quit(1)
 
   props &= (key: "waydroid.wayland_display", value: &input.flag("wayland-display"))
-  props &= (key: "waydroid.open_windows", value: "1")
   props &= (
     key: "waydroid.background_start",
     value: (if input.enabled("show-boot", "B"): "false" else: "true"),
@@ -116,11 +115,7 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "waydroid.pulse_runtime_path", value: config.containerPulseRuntimePath)
   props &= (key: "waydroid.host_data_path", value: config.equinoxData / "data")
 
-  props &= (key: "ro.product.model", value: "Chromebook x86_64")
-  props &= (key: "ro.product.brand", value: "Google")
-  props &= (key: "ro.build.characteristics", value: "pc,keyboard")
-
-  var builder: string
+  var builder = newStringOfCap(1800) # scientifically calculated number to prevent pesky reallocations (mmap() isn't a single CPU cycle instruction, folks!)
   for prop in props:
     builder &= prop.key & '=' & prop.value & '\n'
 

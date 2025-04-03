@@ -1,14 +1,14 @@
 import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
-  ./[
+  ../container/[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
     rootfs, app_config, fflags, properties, roblox_logs,
   ]
 import pkg/[discord_rpc]
 import ../argparser
-import ./utils/[exec, mount]
-import ../core/event_manager/[types, dispatcher]
-import ../core/discord_rpc
+import ../container/utils/[exec, mount]
+import ./event_manager/[types, dispatcher]
+import ./[discord_rpc, fflag_patches, ro_opt_patches]
 
 proc showUI*(launch: bool = true) =
   var platform = getIPlatformService()
@@ -25,6 +25,19 @@ proc startRobloxClient*(platform: var IPlatform) =
 
   startLogWatcher()
 
+proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
+  let (event, exhausted) = dispatcher.poll()
+  if exhausted:
+    return
+
+  case event.kind
+  of Event.GameJoin:
+    info "equinox: user joined game; id=" & event.id
+    handleGameRPC(rpc, event.id)
+  of Event.GameLeave:
+    info "equinox: user left game."
+    handleIdleRPC(rpc)
+
 proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   info "equinox: starting android runtime"
   debug "equinox: starting prep for android runtime"
@@ -38,9 +51,10 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   if *settings.maxFps:
     settings.fflags["DFIntTaskSchedulerTargetFps"] = newJInt(int(&settings.maxFps))
-
-  settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true)
-
+  
+  settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true) # for shy :3
+  
+  applyFflagPatches(settings.fflags)
   setFflags(settings.fflags)
   generateSessionLxcConfig()
 
@@ -77,23 +91,16 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
       rpc.handleIdleRPC()
 
+      patchProperties() 
+
       while kill(Pid(pid), 0) == 0 or errno != ESRCH:
         sleep(100)
-        let (event, exhausted) = dispatcher.poll()
-        if exhausted:
-          continue
-
-        case event.kind
-        of Event.GameJoin:
-          info "equinox: user joined game; id=" & event.id
-          handleGameRPC(rpc, event.id)
-        of Event.GameLeave:
-          info "equinox: user left game."
-          handleIdleRPC(rpc)
+        processEvents(dispatcher, rpc)
 
       stopLogWatcher()
       stopNetworkService()
       stopLxcContainer()
+      umountAll(config.rootfs)
     # deinitHardwareService(hwsvc)
 
 type PlaceURI* = distinct string
