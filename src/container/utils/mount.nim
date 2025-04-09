@@ -1,5 +1,6 @@
 import std/[os, logging, strutils]
 import ./[exec]
+import ../selinux
 
 proc isMounted*(dir: string): bool =
   let path = absolutePath(dir)
@@ -61,6 +62,9 @@ proc mount*(
   var cmd: string
   cmd &= source & ' ' & dest
   # cmd &= " -o rw"
+  if hasSELinux:
+    # SELinux-specific flags
+    cmd &= "-o context=\"system_u:object_r:waydroid_rootfs_t:s0\""
   cmd &= extra
 
   runCmd "sudo mount", cmd
