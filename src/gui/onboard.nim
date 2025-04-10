@@ -4,7 +4,7 @@ import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 import
   ../[argparser],
   ./envparser,
-  ../container/[lxc, sugar, certification],
+  ../container/[lxc, gpu, sugar, certification],
   ../container/utils/exec,
   ../bindings/libadwaita,
   ./clipboard
@@ -37,10 +37,6 @@ viewable OnboardingApp:
   sizeRequest:
     tuple[x, y: int] = (-1, -1)
 
-  consentedTOS:
-    bool
-  consentedPrivacy:
-    bool
   consentFail:
     string = ""
 
@@ -69,6 +65,8 @@ method view(app: OnboardingAppState): Widget =
     of OnboardMagic.InitEquinox, OnboardMagic.Die, OnboardMagic.GoogleAuthPhase:
       discard
     of OnboardMagic.InitFailure:
+      app.showSpinner = false
+      discard app.redraw()
       discard app.open:
         gui:
           Window:
@@ -148,35 +146,23 @@ method view(app: OnboardingAppState): Widget =
           orient = OrientY
           spacing = 12
 
-          PreferencesGroup {.expand: false.}:
-            title = "Onboarding"
-
-            ActionRow:
-              title = "I Consent"
-              subtitle = "To the Equinox Terms of Service"
-              Switch() {.addSuffix.}:
-                proc changed(active: bool) =
-                  app.consentedTOS = active
-                  if app.consentedTOS:
-                    debug "gui: user has consented to TOS"
-                  else:
-                    debug "gui: user no longer consents to TOS"
-
-            ActionRow:
-              title = "I Consent"
-              subtitle = "To the Equinox Privacy Policy"
-              Switch() {.addSuffix.}:
-                proc changed(active: bool) =
-                  app.consentedPrivacy = active
-                  if app.consentedPrivacy:
-                    debug "gui: user has consented to privacy policy"
-                  else:
-                    debug "gui: user no longer consents to privacy policy"
-
           Label:
             text =
               "Welcome to Equinox. Press the button below to start the setup.\nKeep in mind that this can take a minute."
             margin = 24
+
+          PreferencesGroup {.expand: false.}:
+            ActionRow:
+              title = "Thank you for installing Equinox."
+              subtitle = "Please keep in mind that Equinox is experimental software and is prone to bugs, errors and certain limitations. We intend to fix these eventually."
+
+            ActionRow:
+              title = "Your account could be moderated for using Equinox."
+              subtitle = "Whilst very unlikely, it is not out of the question that Roblox accidentally temporarily bans your account for using Equinox due to how it works and how it can possibly trigger the anticheat in ways we are unaware of."
+
+            ActionRow:
+              title = "Privacy Policy"
+              subtitle = "Equinox is libre software and does NOT collect any data about you, excluding crash dumps. The different services it interacts with might, though."
 
           if app.showSpinner:
             AdwSpinner()
@@ -195,11 +181,6 @@ method view(app: OnboardingAppState): Widget =
               text = "Start Setup"
               proc clicked() =
                 app.consentFail = ""
-                let consent = app.consentedPrivacy and app.consentedTOS
-                if not consent:
-                  app.consentFail =
-                    "Please consent to our Terms of Service and Privacy Policy to continue."
-                  return
 
                 # Init command
                 var buff: array[1, uint8]
