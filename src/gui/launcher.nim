@@ -1,7 +1,7 @@
 ## Launcher GUI
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
-import ./envparser
+import ./envparser, ../argparser
 
 const
   NimblePkgVersion {.strdefine.} = "???"
@@ -31,10 +31,11 @@ viewable Launcher:
   position:
     PopoverPosition = PopoverBottom
 
+  env:
+    XdgEnv
+
   sock:
     cint
-
-let env = getXdgEnv()
 
 method view(app: LauncherState): Widget =
   result = gui:
@@ -147,7 +148,7 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
                 buff[0] = (uint8) LauncherMagic.Halt
                 discard write(app.sock, buff[0].addr, 1) == 0
 
-proc waitForCommands*(fd: cint) {.noReturn.} =
+proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   debug "launcher/child: waiting for commands"
 
   var running = true
@@ -191,7 +192,7 @@ proc waitForCommands*(fd: cint) {.noReturn.} =
   discard close(fd)
   quit(0)
 
-proc runLauncher*() =
+proc runLauncher*(input: Input) =
   var pair: array[2, cint]
   if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
     raise newException(
@@ -201,15 +202,16 @@ proc runLauncher*() =
     )
 
   let pid = fork()
+  let env = getXdgEnv(input)
 
   # If we're the parent - we launch the GUI.
   # Else, we'll sit around waiting for commands to act upon.
   if pid != 0:
-    adw.brew(gui(Launcher(sock = pair[0])))
+    adw.brew(gui(Launcher(sock = pair[0], env = env)))
 
     # Tell the child to die.
     var buff: array[1, uint8]
     buff[0] = (uint8) LauncherMagic.Die
     discard write(pair[0], buff[0].addr, 1) == 0
   else:
-    waitForCommands(pair[1])
+    waitForCommands(env, pair[1])

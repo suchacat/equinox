@@ -26,10 +26,11 @@ viewable OnboardingApp:
   sock:
     cint
 
+  env:
+    XdgEnv
+
   showSpinner:
     bool = false
-
-let env = getXdgEnv()
 
 proc gpuCheck(app: OnboardingAppState): bool =
   let node = getDriNode()
@@ -211,7 +212,7 @@ method view(app: OnboardingAppState): Widget =
                 app.showSpinner = true
                 discard addGlobalIdleTask(waitForInit)
 
-proc waitForCommands*(fd: cint) =
+proc waitForCommands*(env: XdgEnv, fd: cint) =
   var running = true
   while running:
     debug "launcher/child: waiting for opcode"
@@ -253,7 +254,7 @@ proc waitForCommands*(fd: cint) =
     of OnboardMagic.Die:
       running = false
 
-proc runOnboardingApp*() =
+proc runOnboardingApp*(input: Input) =
   var pair: array[2, cint]
   if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
     raise newException(
@@ -263,12 +264,13 @@ proc runOnboardingApp*() =
     )
 
   let pid = fork()
+  let env = getXdgEnv(input)
 
   if pid == 0:
-    waitForCommands(pair[0])
+    waitForCommands(env, pair[0])
   else:
     adw.brew(
-      gui(OnboardingApp(sock = pair[1])),
+      gui(OnboardingApp(sock = pair[1], env = env)),
       stylesheets = [
         newStylesheet(
           """

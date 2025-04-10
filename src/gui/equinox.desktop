@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Equinox
+Comment=A runtime for Roblox on Linux using containerization
+Terminal=false
+Type=Application
+Icon=equinox
+Categories=Game;Utility
+Exec=equinox_gui auto

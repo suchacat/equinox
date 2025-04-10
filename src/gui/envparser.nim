@@ -1,4 +1,5 @@
-import std/[os, logging]
+import std/[os, logging, options]
+import ../[argparser]
 
 type XdgEnv* = object
   runtimeDir*: string
@@ -6,9 +7,17 @@ type XdgEnv* = object
   user*: string
   equinoxPath*: string
 
-proc getXdgEnv*(): XdgEnv =
+const AppImageRoot* {.strdefine.} = ""
+
+proc getXdgEnv*(input: Input): XdgEnv =
   let equinoxPath =
-    when defined(packagedInstall):
+    if (let flag = input.flag("appimage-build-root"); flag.isSome):
+      let path = flag.get() / "usr" / "bin" / "equinox"
+      assert fileExists(path),
+        "PACKAGING BUG: EQUINOX WAS NOT BUNDLED WITH THE APPIMAGE!"
+
+      path
+    elif defined(packagedInstall):
       findExe("equinox")
     elif not defined(release):
       getCurrentDir() / "equinox"

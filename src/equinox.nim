@@ -13,9 +13,7 @@ const Splashes = [
   "all hail the NT flying horse",
   "\"im in a perpetual state of shitting myself\" -hippoz, 2025",
   "compiled with the full clanger soyboy toolchain, complete with mimalloc",
-  "eternal hunger",
-  "iltam zumra rashupti elatim",
-  "total soong death"
+  "eternal hunger", "iltam zumra rashupti elatim", "total soong death",
 ]
 
 proc showHelp(code: int = 0) {.noReturn.} =

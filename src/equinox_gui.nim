@@ -12,17 +12,17 @@ proc isFirstRun*(input: Input): bool =
 proc needsApkUpdate*(): bool =
   not dirExists("/var" / "lib" / "equinox" / "apk" / SelectedVersion)
 
-proc showOnboardingGui() =
+proc showOnboardingGui(input: Input) =
   debug "gui: showing onboarding gui"
-  runOnboardingApp()
+  runOnboardingApp(input)
 
-proc showLauncher() =
+proc showLauncher(input: Input) =
   debug "gui: launcher gui spawned"
-  runLauncher()
+  runLauncher(input)
 
-proc showApkUpdater() =
+proc showApkUpdater(input: Input) =
   debug "gui: apk updater spawned"
-  runApkFetcher()
+  runApkFetcher(input)
 
 proc main() {.inline.} =
   addHandler(newColoredLogger())
@@ -37,17 +37,17 @@ proc main() {.inline.} =
 
   case input.command
   of "onboarding":
-    showOnboardingGui()
+    showOnboardingGui(input)
   of "launcher":
     if needsApkUpdate() and not input.enabled("skip-apk-updates", "X"):
-      showApkUpdater()
+      showApkUpdater(input)
       quit(0)
         # TODO: make the launcher show afterwards without a restart of the app. Right now it just.... closes immediately after the updater is done
         # probably has something to do with how owlkettle handles the closing of a window?
 
-    showLauncher()
+    showLauncher(input)
   of "mime-handler":
-    let env = getXdgEnv()
+    let env = getXdgEnv(input)
     discard execCmd(
       "pkexec " & env.equinoxPath & " launch-game-uri " & input.arguments[0] & " --user:" &
         env.user & " --uid:" & $getuid() & " --gid:" & $getgid() & " --wayland-display:" &
@@ -55,14 +55,14 @@ proc main() {.inline.} =
     )
   of "auto":
     if not dirExists(getHomeDir() / ".local" / "share" / "equinox"):
-      showOnboardingGui()
+      showOnboardingGui(input)
     else:
       if needsApkUpdate() and not input.enabled("skip-apk-updates", "X"):
-        showApkUpdater()
+        showApkUpdater(input)
       else:
-        showLauncher()
+        showLauncher(input)
   of "updater":
-    showApkUpdater()
+    showApkUpdater(input)
   else:
     error "equinox-gui: invalid command: " & input.command
 

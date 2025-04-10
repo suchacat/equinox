@@ -1,9 +1,9 @@
 import std/[os, logging]
 
-const LucemIcon = staticRead("../../assets/lucem.svg")
+const EquinoxIcon = staticRead("../../assets/equinox.svg")
 
 proc installIcons*() =
-  debug "icons: installing lucem icon"
+  debug "icons: installing equinox icon"
   let icons = getHomeDir() / ".local" / "share" / "icons"
   discard existsOrCreateDir(icons)
 
@@ -16,5 +16,5 @@ proc installIcons*() =
   let appsDir = scalableDir / "apps"
   discard existsOrCreateDir(appsDir)
 
-  writeFile(appsDir / "waydroid.com.roblox.client.svg", LucemIcon)
-  writeFile(appsDir / "equinox.svg", LucemIcon)
+  writeFile(appsDir / "waydroid.com.roblox.client.svg", EquinoxIcon)
+  writeFile(appsDir / "equinox.svg", EquinoxIcon)

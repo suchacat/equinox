@@ -2,6 +2,7 @@
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 import ../bindings/[libadwaita]
+import ../argparser
 import ./envparser
 
 type
@@ -29,12 +30,13 @@ viewable APKFetcher:
   position:
     PopoverPosition = PopoverBottom
 
+  env:
+    XdgEnv
+
   sock:
     cint
   addedTask:
     bool
-
-let env = getXdgEnv()
 
 method view(app: APKFetcherState): Widget =
   if not app.addedTask:
@@ -124,7 +126,7 @@ method view(app: APKFetcherState): Widget =
 
             AdwSpinner()
 
-proc waitForCommands*(fd: cint) {.noReturn.} =
+proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   debug "install/child: waiting for commands"
 
   var running = true
@@ -184,7 +186,7 @@ proc waitForCommands*(fd: cint) {.noReturn.} =
   discard close(fd)
   quit(0)
 
-proc runApkFetcher*() =
+proc runApkFetcher*(input: Input) =
   var pair: array[2, cint]
   if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
     raise newException(
@@ -194,6 +196,7 @@ proc runApkFetcher*() =
     )
 
   let pid = fork()
+  let env = getXdgEnv(input)
 
   # If we're the parent - we launch the GUI.
   # Else, we'll sit around waiting for commands to act upon.
@@ -203,7 +206,7 @@ proc runApkFetcher*() =
     discard write(pair[0], buff[0].addr, 1)
 
     adw.brew(
-      gui(APKFetcher(sock = pair[0])),
+      gui(APKFetcher(sock = pair[0], env = env)),
       stylesheets = [
         newStylesheet(
           """
@@ -225,4 +228,4 @@ proc runApkFetcher*() =
     buff[0] = (uint8) FetcherMagic.Die
     discard write(pair[0], buff[0].addr, 1)
   else:
-    waitForCommands(pair[1])
+    waitForCommands(env, pair[1])
