@@ -1,5 +1,5 @@
 ## Onboarding GUI + Setup flow
-import std/[browsers, logging, os, osproc, posix]
+import std/[browsers, logging, os, osproc, options, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 import
   ../[argparser],
@@ -25,10 +25,42 @@ viewable OnboardingApp:
 
   sock:
     cint
+
   showSpinner:
     bool = false
 
 let env = getXdgEnv()
+
+proc gpuCheck(app: OnboardingAppState): bool =
+  let node = getDriNode()
+  if node.isSome:
+    return true
+  
+  app.showSpinner = false
+  discard app.redraw()
+  discard app.open:
+    gui:
+      Window:
+        title = "No GPU detected"
+        defaultSize = (200, 300)
+
+        HeaderBar {.addTitlebar.}:
+          style = [HeaderBarFlat]
+
+        Box:
+          orient = OrientY
+          Box {.hAlign: AlignCenter, vAlign: AlignStart.}:
+            Icon:
+              name = "emblem-important"
+              pixelSize = 200
+
+          Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
+            Label:
+              text =
+                "Equinox could not detect a compatible GPU. Nvidia GPUs are not supported yet.\nIf you believe that this is not true, file a bug report."
+              margin = 24
+
+  false
 
 method view(app: OnboardingAppState): Widget =
   proc waitForInit(): bool =
@@ -164,6 +196,9 @@ method view(app: OnboardingAppState): Widget =
               text = "Start Setup"
               proc clicked() =
                 app.consentFail = ""
+
+                if not gpuCheck(app):
+                  return
 
                 # Init command
                 var buff: array[1, uint8]
