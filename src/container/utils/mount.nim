@@ -64,7 +64,7 @@ proc mount*(
   # cmd &= " -o rw"
   if hasSELinux():
     # SELinux-specific flags
-    cmd &= "-o context=\"system_u:object_r:waydroid_rootfs_t:s0\""
+    cmd &= " -o context=\"system_u:object_r:waydroid_rootfs_t:s0\""
   cmd &= extra
 
   runCmd "sudo mount", cmd
