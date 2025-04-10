@@ -98,9 +98,10 @@ proc generateNodesLxcConfig*(): seq[string] =
 
   for node in glob("/dev/video*").walkGlob:
     entry node
-
-  for node in glob("/dev/dma_heap/*").walkGlob:
-    entry node
+  
+  when defined(equinoxExposeDmaHeap):
+    for node in glob("/dev/dma_heap/*").walkGlob:
+      entry node
 
   entry "/dev" / config.binder, some("dev/binder"), check = false
   entry "/dev" / config.vndbinder, some("dev/vndbinder"), check = false
