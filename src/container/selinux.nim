@@ -1,12 +1,17 @@
 ## SELinux lists
-import std/distros
+import std/distros {.all.}
 
 const
   ## All known distros that ship with SELinux by default.
-  SELinuxDistros*: set[Distribution] = {
+  SELinuxDistros* = [
     Distribution.Fedora, Distribution.RedHat,
     Distribution.CentOS, Distribution.Oracle
-  }
+  ]
 
 proc hasSELinux*(): bool {.inline.} =
-  defined(selinux) or detectOs() in SELinuxDistros
+  when defined(selinux): return true
+
+  for distro in SELinuxDistros:
+    if detectOsImpl(distro): return true
+
+  false
