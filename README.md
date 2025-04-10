@@ -20,7 +20,3 @@ Equinox is a stupid runtime for Roblox on Linux that uses LXC containers to run 
 
 # Known Issues (Which are a long-term goal to fix)
 - Nvidia support (possibly via VirGL/Venus? Probably requires a custom HAL implementation)
-
-# Notes
-## Fedora
-Disable SELinux with `sudo setenforce Permissive`. SELinux messes with LXC.
