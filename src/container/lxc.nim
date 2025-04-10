@@ -87,7 +87,7 @@ proc generateNodesLxcConfig*(): seq[string] =
 
   let node = &noded
 
-  entry node.dev # , some("dev/dri/renderD129") # , some("dev/dri/renderD128")
+  entry node.dev
   entry node.gpu
 
   for node in glob("/dev/fb*").walkGlob:

@@ -20,23 +20,6 @@ type
     Die = 4 ## Kill yourself.
 
 viewable OnboardingApp:
-  description:
-    string = "This is Equinox"
-  iconName:
-    string = "weather-clear-symbolic"
-  title:
-    string = "Equinox"
-  active:
-    bool = false
-  subtitle:
-    string = "uuuuuh"
-  sensitive:
-    bool = true
-  tooltip:
-    string = "man..."
-  sizeRequest:
-    tuple[x, y: int] = (-1, -1)
-
   consentFail:
     string = ""
 
@@ -134,7 +117,7 @@ method view(app: OnboardingAppState): Widget =
   result = gui:
     Window:
       defaultSize = (300, 400)
-      title = app.title
+      title = "Equinox"
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
 
