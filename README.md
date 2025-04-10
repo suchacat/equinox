@@ -1,4 +1,4 @@
-# equinox
+# <img width="512" src="assets/equinox.svg"> equinox
 Equinox is a stupid runtime for Roblox on Linux that uses LXC containers to run (y)our beloved lego game.
 
 # Progress
@@ -7,16 +7,15 @@ Equinox is a stupid runtime for Roblox on Linux that uses LXC containers to run 
 - [X] Make it run Roblox
 - [X] Discord RPC
 - [ ] PC-exclusive game support
-- [ ] Proper mouselocking support
+- [X] Proper mouselocking support* <small>(with caveats)</small>
 - [ ] All configuration options from Lucem 2.x
 - [ ] New configuration options (possibly like Sober's asset overlay?)
 
 # Known Issues (These will be fixed sooner or later)
 - Performance is really bad in certain games (Arsenal, Dead Rails, etc.)
 - Graphical artifacting on integrated GPUs
-- Mouse locking does not work
+- Mouse locking sometimes does not work
 - PC-exclusive games are not playable (Project Remix, Arcane Odyssey, etc.)
-- Clipboard support is not implemented
 
 # Known Issues (Which are a long-term goal to fix)
 - Nvidia support (possibly via VirGL/Venus? Probably requires a custom HAL implementation)
