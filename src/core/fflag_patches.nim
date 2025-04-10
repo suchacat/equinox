@@ -3,11 +3,11 @@ import std/[json, tables, logging]
 import ../container/[fflags]
 
 func `[]=`[T: not JsonNode](list: var FFlagList, k: string, v: T) {.inline.} =
-  list[k] = %* v
+  list[k] = %*v
 
 proc applyFFlagPatches*(list: var FFlagList) =
   debug "equinox: applying recommended fflag patches"
-  
+
   # Misc
   list["DFFlagAndroidDebugHeapTelemetry"] = false
   list["DFFlagAndroidOomScoreTelemetry"] = false
@@ -15,7 +15,8 @@ proc applyFFlagPatches*(list: var FFlagList) =
   list["DFFlagNumOpenFilesAndroid"] = false
   list["DFFlagPerformanceControlAddMemoryPercentageTelemetry"] = false
   list["DFFlagReportAppSuspended"] = false
-  list["DFFlagReportDeviceNameInCrashes"] = false # We don't want Waydroid to show up in crash logs
+  list["DFFlagReportDeviceNameInCrashes"] = false
+    # We don't want Waydroid to show up in crash logs
   list["EnableAppsFlyerFacebookTracking"] = false
   list["FFlagLuaEnableLandingPageTTIMeasurements"] = false
   list["FFlagLuaIdentityGetPhoneNumber"] = false

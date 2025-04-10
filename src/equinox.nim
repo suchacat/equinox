@@ -6,16 +6,14 @@ import
     certification, lxc, image_downloader, configuration, init, sugar, properties,
     app_manager, platform, network, apk_fetcher,
   ],
-  core/[
-    run
-  ]
+  core/[run]
 
 const Splashes = [
   "\"pc game support when\" bro im not even done installing my rootkits on your pc -tray",
   "all hail the NT flying horse",
   "\"im in a perpetual state of shitting myself\" -hippoz, 2025",
   "compiled with the full clanger soyboy toolchain, complete with mimalloc",
-  "eternal hunger"
+  "eternal hunger",
 ]
 
 proc showHelp(code: int = 0) {.noReturn.} =

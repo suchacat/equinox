@@ -161,6 +161,12 @@ proc waitForCommands*(fd: cint) {.noReturn.} =
           " --wayland-display:" & env.waylandDisplay & " --consented"
       )
 
+      discard execCmd(
+        "pkexec " & env.equinoxPath & " run --user:" & env.user & " --uid:" & $getuid() &
+          " --gid:" & $getgid() & " --wayland-display:" & env.waylandDisplay &
+          " --xdg-runtime-dir:" & env.runtimeDir
+      )
+
       var buff: array[1, uint8]
       buff[0] = (uint8)(
         if code == 0:

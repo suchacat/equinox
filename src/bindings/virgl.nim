@@ -31,11 +31,18 @@ type
   virgl_renderer_callbacks* {.importc: "struct virgl_renderer_callbacks".} = object
     version*: int32
     write_fence*: proc(cookie: pointer, fence: uint32): void {.cdecl.}
-    create_gl_context*: proc(cookie: pointer, scanout_idx: int32, param: ptr virgl_renderer_gl_ctx_param): virgl_renderer_gl_context {.cdecl.}
-    destroy_gl_context*: proc(cookie: pointer, ctx: virgl_renderer_gl_context): void {.cdecl.}
-    make_current*: proc(cookie: pointer, scanout_idx: int32, ctx: virgl_renderer_gl_context): int32 {.cdecl.}
+    create_gl_context*: proc(
+      cookie: pointer, scanout_idx: int32, param: ptr virgl_renderer_gl_ctx_param
+    ): virgl_renderer_gl_context {.cdecl.}
+    destroy_gl_context*:
+      proc(cookie: pointer, ctx: virgl_renderer_gl_context): void {.cdecl.}
+    make_current*: proc(
+      cookie: pointer, scanout_idx: int32, ctx: virgl_renderer_gl_context
+    ): int32 {.cdecl.}
     get_drm_fd*: proc(cookie: pointer): cint {.cdecl.}
-    write_context_fence*: proc(cookie: pointer, ctx_id: uint32, ring_idx: uint32, fence_id: uint64): void {.cdecl.}
+    write_context_fence*: proc(
+      cookie: pointer, ctx_id: uint32, ring_idx: uint32, fence_id: uint64
+    ): void {.cdecl.}
     get_server_fd*: proc(cookie: pointer, version: uint32): cint {.cdecl.}
     get_egl_display*: proc(cookie: pointer): pointer {.cdecl.}
 
@@ -58,7 +65,10 @@ def VIRGL_RENDERER_COMPAT_PROFILE
 def VIRGL_RENDERER_USE_GUEST_VRAM
 
 {.push importc.}
-proc virgl_renderer_init*(cookie: pointer, flags: int32, cb: ptr virgl_renderer_callbacks): int32
+proc virgl_renderer_init*(
+  cookie: pointer, flags: int32, cb: ptr virgl_renderer_callbacks
+): int32
+
 proc virgl_renderer_poll*(): void
 {.pop.}
 

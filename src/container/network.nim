@@ -42,7 +42,8 @@ proc enableIf*() =
   exec("sudo ip link set dev " & LxcBridge & " up")
 
   if findExe("firewall-cmd").len > 0:
-    exec("sudo firewall-cmd --zone=trusted --add-interface=" & LxcBridge) # firewalld support
+    exec("sudo firewall-cmd --zone=trusted --add-interface=" & LxcBridge)
+      # firewalld support
 
 proc disableIf*() =
   debug "net: disabling interface"

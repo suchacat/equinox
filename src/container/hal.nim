@@ -115,7 +115,8 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "waydroid.pulse_runtime_path", value: config.containerPulseRuntimePath)
   props &= (key: "waydroid.host_data_path", value: config.equinoxData / "data")
 
-  var builder = newStringOfCap(1800) # scientifically calculated number to prevent pesky reallocations (mmap() isn't a single CPU cycle instruction, folks!)
+  var builder = newStringOfCap(1800)
+    # scientifically calculated number to prevent pesky reallocations (mmap() isn't a single CPU cycle instruction, folks!)
   for prop in props:
     builder &= prop.key & '=' & prop.value & '\n'
 

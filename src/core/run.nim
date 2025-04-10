@@ -51,9 +51,9 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   if *settings.maxFps:
     settings.fflags["DFIntTaskSchedulerTargetFps"] = newJInt(int(&settings.maxFps))
-  
+
   settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true) # for shy :3
-  
+
   applyFflagPatches(settings.fflags)
   setFflags(settings.fflags)
   generateSessionLxcConfig()
@@ -91,7 +91,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
       rpc.handleIdleRPC()
 
-      patchProperties() 
+      patchProperties()
 
       while kill(Pid(pid), 0) == 0 or errno != ESRCH:
         sleep(100)

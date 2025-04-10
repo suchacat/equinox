@@ -35,7 +35,7 @@ proc gpuCheck(app: OnboardingAppState): bool =
   let node = getDriNode()
   if node.isSome:
     return true
-  
+
   app.showSpinner = false
   discard app.redraw()
   discard app.open:
@@ -169,15 +169,18 @@ method view(app: OnboardingAppState): Widget =
           PreferencesGroup {.expand: false.}:
             ActionRow:
               title = "Thank you for installing Equinox."
-              subtitle = "Please keep in mind that Equinox is experimental software and is prone to bugs, errors and certain limitations. We intend to fix these eventually."
+              subtitle =
+                "Please keep in mind that Equinox is experimental software and is prone to bugs, errors and certain limitations. We intend to fix these eventually."
 
             ActionRow:
               title = "Your account could be moderated for using Equinox."
-              subtitle = "Whilst very unlikely, it is not out of the question that Roblox accidentally temporarily bans your account for using Equinox due to how it works and how it can possibly trigger the anticheat in ways we are unaware of."
+              subtitle =
+                "Whilst very unlikely, it is not out of the question that Roblox accidentally temporarily bans your account for using Equinox due to how it works and how it can possibly trigger the anticheat in ways we are unaware of."
 
             ActionRow:
               title = "Privacy Policy"
-              subtitle = "Equinox is libre software and does NOT collect any data about you, excluding crash dumps. The different services it interacts with might, though."
+              subtitle =
+                "Equinox is libre software and does NOT collect any data about you, excluding crash dumps. The different services it interacts with might, though."
 
           if app.showSpinner:
             AdwSpinner()

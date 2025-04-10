@@ -98,7 +98,7 @@ proc generateNodesLxcConfig*(): seq[string] =
 
   for node in glob("/dev/video*").walkGlob:
     entry node
-  
+
   when defined(equinoxExposeDmaHeap):
     for node in glob("/dev/dma_heap/*").walkGlob:
       entry node
