@@ -49,8 +49,8 @@ proc getDriNode*(): Option[DRINode] =
       (char) (((uint8) it[it.len - 1]) - ((uint8) '0'))
     )
   else:
-    let nodes = glob("/dev/dri/renderD*").walkGlob.toSeq()
-
+    let nodes = glob("/dev/dri/renderD*").walkGlob.toSeq().reversed()
+  
   for node in nodes: 
     let split = splitPath(node).tail
     let renderDev = split
