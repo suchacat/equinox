@@ -4,7 +4,7 @@ import ./argparser
 import
   container/[
     certification, lxc, image_downloader, configuration, init, sugar, properties,
-    app_manager, platform, network, apk_fetcher,
+    app_manager, platform, network, apk_fetcher, drivers
   ],
   core/[run]
 
@@ -172,6 +172,8 @@ EquinoxHQ is not responsible for any of your actions.
           echo &output
   of "get-gsf-id":
     echo getGSFAndroidID()
+  of "allocate-binder-nodes":
+    discard setupBinderNodes()
   of "launch-app":
     var platform = getIPlatformService()
     platform.launchApp(input.arguments[0])

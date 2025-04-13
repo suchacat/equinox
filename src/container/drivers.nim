@@ -1,5 +1,6 @@
 import std/[os, logging, strutils, posix]
-import ./utils/exec 
+import ./utils/exec
+import ./selinux
 
 const
   BINDER_DRIVERS = ["anbox-binder", "puddlejumper", "bonder", "binder"]
@@ -24,8 +25,8 @@ proc devExists*(file: string): bool =
   return false
 
 type
-  BinderNode = object
-    name: array[256, char]
+  BinderNode {.packed.}  = object
+    name: array[0 .. 255, char]
     ctl0, ctl1: uint32
 
 proc ioctl(fd: cint, request: uint, data: pointer): cint {.importc, header: "<sys/ioctl.h>".}
@@ -69,10 +70,12 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
   for node in binderDevNodes:
     var nodeStruct = BinderNode(ctl0: 0, ctl1: 0)
     for i, c in node:
-      if i >= 256:
+      if i > 255:
         break
 
       nodeStruct.name[i] = c
+
+    echo nodeStruct.name
 
     if ioctl(binderCtlFd, binderCtlAdd, nodeStruct.addr) < 0 and errno != EEXIST:
       error "drivers: an error occured while allocating binder node: " & node
@@ -95,6 +98,12 @@ proc probeBinderDriver*() =
     discard runCmd("sudo", "ln -s /dev/binderfs/binder /dev/binder") # TODO: use proper POSIX C functions here
     discard runCmd("sudo", "ln -s /dev/binderfs/hwbinder /dev/hwbinder") # TODO: use proper POSIX C functions here
     discard runCmd("sudo", "ln -s /dev/binderfs/vndbinder /dev/vndbinder") # TODO: use proper POSIX C functions here
+    
+    if hasSELinux():
+      debug "drivers: making symlinks inherit SELinux context"
+      discard runCmd("sudo", "chcon --reference=/dev/binderfs/binder /dev/binder")
+      discard runCmd("sudo", "chcon --reference=/dev/binderfs/hwbinder /dev/hwbinder")
+      discard runCmd("sudo", "chcon --reference=/dev/binderfs/vndbinder /dev/vndbinder")
 
 proc setupBinderNodes*(): Drivers =
   probeBinderDriver()

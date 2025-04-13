@@ -2,6 +2,7 @@
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
 import ./envparser, ../argparser
+import ../container/selinux
 
 const
   NimblePkgVersion {.strdefine.} = "???"
@@ -212,6 +213,6 @@ proc runLauncher*(input: Input) =
     # Tell the child to die.
     var buff: array[1, uint8]
     buff[0] = (uint8) LauncherMagic.Die
-    discard write(pair[0], buff[0].addr, 1) == 0
+    discard write(pair[0], buff[0].addr, 1)
   else:
     waitForCommands(env, pair[1])
