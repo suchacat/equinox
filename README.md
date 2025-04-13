@@ -1,4 +1,4 @@
-# <img width="512" src="assets/equinox.svg"> equinox
+# <img width="36" src="assets/equinox.svg"> equinox
 Equinox is a stupid runtime for Roblox on Linux that uses LXC containers to run (y)our beloved lego game.
 
 # Progress
