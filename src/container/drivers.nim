@@ -99,12 +99,6 @@ proc probeBinderDriver*() =
     discard runCmd("sudo", "ln -s /dev/binderfs/hwbinder /dev/hwbinder") # TODO: use proper POSIX C functions here
     discard runCmd("sudo", "ln -s /dev/binderfs/vndbinder /dev/vndbinder") # TODO: use proper POSIX C functions here
     
-    if hasSELinux():
-      debug "drivers: making symlinks inherit SELinux context"
-      discard runCmd("sudo", "chcon --reference=/dev/binderfs/binder /dev/binder")
-      discard runCmd("sudo", "chcon --reference=/dev/binderfs/hwbinder /dev/hwbinder")
-      discard runCmd("sudo", "chcon --reference=/dev/binderfs/vndbinder /dev/vndbinder")
-
 proc setupBinderNodes*(): Drivers =
   probeBinderDriver()
   var hasBinder = false
