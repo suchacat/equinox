@@ -11,3 +11,4 @@ tmp/
 *.AppImage
 *.if
 *.pp
+*.fc
