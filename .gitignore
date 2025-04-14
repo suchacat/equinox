@@ -9,7 +9,5 @@ tmp/
 *.log
 *.json
 *.AppImage
-*.fc
-*.te
 *.if
 *.pp

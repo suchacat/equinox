@@ -1,0 +1,2 @@
+/usr/bin/equinox gen_context(system_u:object_r:equinox_exec_t,s0)
+/var/lib/equinox(.*)? gen_context(system_u:object_r:equinox_data_t,s0)

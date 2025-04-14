@@ -1,0 +1,135 @@
+# Equinox's SELinux policy.
+# Adapted from Waydroid's SELinux policy.
+
+policy_module(equinox, 1.0)
+
+require {
+	type unconfined_t;
+	type unconfined_service_t;
+	type dma_device_t;
+	type binder_device_t;
+	type binderfs_t;
+	type abrt_t;
+	type bin_t;
+	type var_lib_t;
+	type proc_t;
+	type mount_exec_t;
+	type mount_t;
+	type uhid_device_t;
+	type tun_tap_device_t;
+	type tmp_t;
+	type http_cache_port_t;
+	type rpm_script_t;
+	role rpm_script_roles;
+	type iptables_t;
+	type systemd_systemctl_exec_t;
+}
+
+# Define domain
+type equinox_t;
+type equinox_exec_t;
+init_daemon_domain(equinox_t, equinox_exec_t)
+
+# Execute python
+allow equinox_t bin_t:file { map execute };
+allow equinox_t proc_t:file read_file_perms;
+gnome_search_gconf_data_dir(equinox_t)
+auth_read_passwd(equinox_t)
+miscfiles_read_generic_certs(equinox_t)
+
+# Manage /var/lib/equinox
+type equinox_data_t;
+files_type(equinox_data_t)
+filetrans_pattern(equinox_t, var_lib_t, equinox_data_t, dir, "equinox")
+filetrans_pattern(unconfined_t, var_lib_t, equinox_data_t, dir, "equinox")
+manage_dirs_pattern(equinox_t, equinox_data_t, equinox_data_t)
+manage_files_pattern(equinox_t, equinox_data_t, equinox_data_t)
+manage_lnk_files_pattern(equinox_t, equinox_data_t, equinox_data_t)
+
+# Execute lxc commands, domain transition
+container_runtime_domtrans(equinox_t)
+
+# Execute misc utils
+exec_files_pattern(equinox_t, bin_t, bin_t)
+domtrans_pattern(equinox_t, mount_exec_t, mount_t)
+corecmd_exec_shell(equinox_t)
+modutils_domtrans_kmod(equinox_t)
+
+# Equinox init from the container daemon
+dev_read_sysfs(equinox_t)
+storage_getattr_fuse_dev(equinox_t)
+getattr_chr_files_pattern(equinox_t, device_t, { uhid_device_t tun_tap_device_t })
+fs_search_cgroup_dirs(equinox_t)
+allow equinox_t tmp_t:dir read;
+allow equinox_t self:process setfscreate;
+allow equinox_t self:tcp_socket create_socket_perms;
+allow equinox_t http_cache_port_t:tcp_socket name_connect;
+sysnet_dns_name_resolve(equinox_t)
+corenet_sendrecv_http_client_packets(equinox_t)
+corenet_tcp_connect_http_port(equinox_t)
+# No need to run systemctl. It is only used to determine apparmor status
+dontaudit equinox_t systemd_systemctl_exec_t:file getattr;
+
+# Read android rootfs
+type equinox_rootfs_t;
+files_type(equinox_rootfs_t)
+read_files_pattern(equinox_t, equinox_rootfs_t, equinox_rootfs_t)
+
+# Read android data
+allow equinox_t self:capability { dac_read_search };
+
+# Upgrade from app
+allow equinox_t self:capability dac_override;
+read_files_pattern(equinox_t, data_home_t, data_home_t)
+delete_files_pattern(equinox_t, data_home_t, data_home_t)
+list_dirs_pattern(equinox_t, equinox_data_t, equinox_rootfs_t)
+delete_files_pattern(equinox_t, { equinox_data_t equinox_rootfs_t }, { equinox_data_t equinox_rootfs_t })
+delete_dirs_pattern(equinox_t, { equinox_data_t equinox_rootfs_t }, { equinox_data_t equinox_rootfs_t })
+allow equinox_t self:unix_dgram_socket { create setopt getopt };
+
+# Use binder devices
+allow equinox_t binderfs_t:dir search_dir_perms;
+allow equinox_t binder_device_t:chr_file { getattr setattr ioctl map open read write };
+allow equinox_t container_runtime_t:binder { call transfer };
+allow container_runtime_t equinox_t:binder call;
+allow container_runtime_t self:binder { call set_context_mgr transfer };
+allow container_runtime_t self:capability2 mac_admin;
+allow container_runtime_t unconfined_service_t:binder call;
+allow container_runtime_t unconfined_t:binder { call transfer };
+allow unconfined_service_t container_runtime_t:binder { call transfer };
+allow unconfined_t container_runtime_t:binder { call transfer };
+
+# Graphics
+dev_setattr_generic_dirs(equinox_t)
+dev_getattr_dri_dev(equinox_t)
+dev_setattr_dri_dev(equinox_t)
+dev_getattr_framebuffer_dev(equinox_t)
+dev_setattr_framebuffer_dev(equinox_t)
+getattr_chr_files_pattern(equinox_t, device_t, dma_device_t)
+setattr_chr_files_pattern(equinox_t, device_t, dma_device_t)
+allow equinox_t self:capability fsetid;
+
+# Video
+dev_getattr_video_dev(equinox_t)
+dev_setattr_video_dev(equinox_t)
+
+# Search shared sockets
+userdom_search_user_tmp_dirs(equinox_t)
+allow equinox_t user_tmp_t:sock_file getattr;
+
+# For when we crash
+allow abrt_t binder_device_t:chr_file { open read };
+
+# Attach to the container
+allow container_runtime_t self:process2 { nnp_transition };
+exec_files_pattern(container_runtime_t, equinox_rootfs_t, equinox_rootfs_t)
+domain_entry_file(container_runtime_t, equinox_rootfs_t)
+
+# Snap
+optional_policy(`
+	require {
+		type snappy_var_lib_t;
+	}
+	dontaudit equinox_t snappy_var_lib_t:dir search_dir_perms;
+')
+
