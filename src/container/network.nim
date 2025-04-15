@@ -60,7 +60,7 @@ proc startIptables*() =
     for _, dev in walkDir("/sys" / "class" / "net"):
       let iface = dev.splitPath().tail
       if iface.startsWith("eth") or iface.startsWith("wlo") or iface.startsWith("enp") or
-          iface.startsWith("wlp"):
+          iface.startsWith("wlp") or iface.startsWith("wlan"):
         x = iface
 
     ensureMove(x)
