@@ -43,19 +43,19 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.work / "images")
   discard existsOrCreateDir(config.lxc)
   discard existsOrCreateDir(config.lxc / "equinox")
+  
+  let imagesExist =
+    fileExists(config.imagesPath / "system.img") and
+    fileExists(config.imagesPath / "vendor.img")
+  if not imagesExist:
+    let pair = getImages()
+    pair.downloadImages()
 
   initNetworkService()
   mountRootfs(input, config.imagesPath)
   generateSessionLxcConfig()
   setLxcConfig()
   startLxcContainer(input)
-
-  let imagesExist =
-    fileExists(config.imagesPath / "system.img") and
-    fileExists(config.imagesPath / "vendor.img")
-  if not imagesExist and not input.enabled("no-img-download", "Z"):
-    let pair = getImages()
-    pair.downloadImages()
 
   waitForContainerBoot()
   makeBaseProps(input)
