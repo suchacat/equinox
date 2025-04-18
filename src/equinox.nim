@@ -85,6 +85,9 @@ EquinoxHQ is not responsible for any of your actions.
       if consent != "y":
         error "equinox: aborted."
         quit(1)
+    
+    initNetworkService()
+    startAndroidRuntime(input, launchRoblox = false)
 
     info "equinox: fetching Roblox " & SelectedVersion & " links from EquinoxHQ endpoint"
     let packages = fetchRobloxApk()
