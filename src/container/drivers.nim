@@ -1,6 +1,6 @@
 import std/[os, logging, strutils, posix]
 import ./utils/exec
-import ./selinux
+import ./[configuration, selinux]
 
 const
   BINDER_DRIVERS = ["anbox-binder", "puddlejumper", "bonder", "binder"]
@@ -85,20 +85,49 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
   discard close(binderCtlFd)
 
 proc probeBinderDriver*() =
-  if isBinderfsLoaded():
+  var hasBinder, hasHwbinder, hasVndbinder: bool
+  var binderDevNodes = newSeqOfCap[string](3)
+  for binder in BINDER_DRIVERS:
+    if devExists("/dev" / binder):
+      config.binder = binder
+      hasBinder = true
+      break
+
+  for hwbinder in HWBINDER_DRIVERS:
+    if devExists("/dev" / hwbinder):
+      config.hwbinder = hwbinder
+      hasHwbinder = true
+      break
+
+  for vndbinder in VNDBINDER_DRIVERS:
+    if devExists("/dev" / vndbinder):
+      config.vndbinder = vndbinder
+      hasVndbinder = true
+      break
+
+  if not hasBinder:
+    binderDevNodes &= BINDER_DRIVERS[0]
+
+  if not hasHwbinder:
+    binderDevNodes &= HWBINDER_DRIVERS[0]
+
+  if not hasVndbinder:
+    binderDevNodes &= VNDBINDER_DRIVERS[0]
+  
+  if binderDevNodes.len > 0 and isBinderfsLoaded():
     debug "drivers: creating /dev/binderfs"
     discard existsOrCreateDir("/dev/binderfs")
 
     debug "drivers: mounting binder at /dev/binderfs"
     discard runCmd("sudo", "mount -t binder binder /dev/binderfs")
 
-    allocBinderNodes(["binder", "hwbinder", "vndbinder"])
+    allocBinderNodes(binderDevNodes)
 
-    debug "drivers: linking /dev/binderfs/binder to /dev/binder"
-    discard runCmd("sudo", "ln -s /dev/binderfs/binder /dev/binder") # TODO: use proper POSIX C functions here
-    discard runCmd("sudo", "ln -s /dev/binderfs/hwbinder /dev/hwbinder") # TODO: use proper POSIX C functions here
-    discard runCmd("sudo", "ln -s /dev/binderfs/vndbinder /dev/vndbinder") # TODO: use proper POSIX C functions here
-    
+    for _, node in walkDir("/dev/binderfs"):
+      let nam = node.split("/dev/binderfs/")[1]
+      discard runCmd("sudo", "ln -s " & node & " /dev/" & nam)
+      discard runCmd("sudo", "chmod 666 -R /dev/" & nam)
+
 proc setupBinderNodes*(): Drivers =
   probeBinderDriver()
   var hasBinder = false
@@ -130,3 +159,11 @@ proc setupBinderNodes*(): Drivers =
 
   if not hasHwbinder:
     raise newException(Defect, "Cannot find HW Binder node")
+
+  writeFile(config.work / "binders", result.binder & '\n' & result.hwbinder & '\n' & result.vndbinder)
+
+proc loadBinderNodes*() =
+  let binderDesc = readFile(config.work / "binders").splitLines()
+  config.binder = binderDesc[0]
+  config.hwbinder = binderDesc[1]
+  config.vndbinder = binderDesc[2]

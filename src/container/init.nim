@@ -4,6 +4,7 @@ import
     lxc, configuration, cpu, drivers, image_downloader, hal, rootfs, configuration,
     network,
   ]
+import ./utils/exec
 import ../argparser
 
 proc setupConfig*(input: Input): bool =
@@ -33,6 +34,7 @@ proc initialize*(input: Input) =
 
   discard existsOrCreateDir(config.work)
   discard existsOrCreateDir(config.equinoxData)
+  discard runCmd("sudo", "chmod 666 -R " & config.equinoxData)
   discard existsOrCreateDir(config.hostPerms)
   discard existsOrCreateDir(config.rootfs)
   discard existsOrCreateDir(config.overlay)

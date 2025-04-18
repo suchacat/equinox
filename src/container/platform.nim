@@ -208,6 +208,7 @@ proc waitForManager*(mgr: var ptr GBinderServiceManager): bool =
       mgr = gbinder_servicemanager_new2(
         cstring("/dev" / config.binder), "aidl3".cstring, "aidl3".cstring
       )
+      sleep(150)
 
     if gbinder_servicemanager_is_present(mgr):
       debug "platform: service manager is present!"
@@ -216,14 +217,9 @@ proc waitForManager*(mgr: var ptr GBinderServiceManager): bool =
   false
 
 proc getIPlatformService*(): IPlatform =
-  let driverList = setupBinderNodes()
-
-  debug "init: binder = " & driverList.binder
-  debug "init: vndbinder = " & driverList.vndbinder
-  debug "init: hwbinder = " & driverList.hwbinder
-  config.binder = driverList.binder
-  config.vndbinder = driverList.vndbinder
-  config.hwbinder = driverList.hwbinder
+  debug "init: binder = " & config.binder
+  debug "init: vndbinder = " & config.vndbinder
+  debug "init: hwbinder = " & config.hwbinder
 
   var serviceMgr = gbinder_servicemanager_new2(
     cstring("/dev" / config.binder), "aidl3".cstring, "aidl3".cstring
