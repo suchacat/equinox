@@ -68,7 +68,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     startLxcContainer(input)
 
     var platform = getIPlatformService()
-    platform.setProperty("waydroid.active_apps", "com.roblox.client")
+    # platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
     if launchRoblox:
       startRobloxClient(platform)
