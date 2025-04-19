@@ -60,7 +60,6 @@ proc initialize*(input: Input) =
 
   waitForContainerBoot()
   makeBaseProps(input)
-  discard runCmdInContainer("/bin/pm uninstall --user 0 com.android.inputmethod.latin")
   stopLxcContainer() # stop it afterwards
   stopNetworkService()
   info "Initialized Equinox successfully."

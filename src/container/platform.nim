@@ -93,17 +93,20 @@ proc installSplitApp*(base, split: string) =
   while not isServiceOn("package") or not isServiceOn("settings"):
     sleep(100)
 
-  let installCreate = &runCmdInContainer("/bin/pm install-create")
+  let installCreate = &runCmdInContainer("/bin/cmd package install-create")
 
   echo installCreate
   let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  discard runCmdInContainer("/bin/pm uninstall com.roblox.client")
+  discard runCmdInContainer("/bin/cmd package uninstall com.roblox.client")
     # just do this to prevent conflicts :3
-  discard runCmdInContainer("/bin/pm install-write $1 0 /data/base.apk" % [sessionId])
-  discard runCmdInContainer("/bin/pm install-write $1 1 /data/split.apk" % [sessionId])
-  discard runCmdInContainer("/bin/pm install-commit $1" % [sessionId])
+  discard runCmdInContainer("/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId])
+  discard runCmdInContainer("/bin/cmd package install-write $1 1 /data/split.apk" % [sessionId])
+  discard runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
+  
+  # HACK: place this somewhere that makes more sense...
+  discard runCmdInContainer("/bin/cmd package uninstall --user 0 com.android.inputmethod.latin")
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
