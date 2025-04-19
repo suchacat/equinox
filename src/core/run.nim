@@ -68,7 +68,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     startLxcContainer(input)
 
     var platform = getIPlatformService()
-    # platform.setProperty("waydroid.active_apps", "com.roblox.client")
+    platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
     if launchRoblox:
       startRobloxClient(platform)
@@ -86,7 +86,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
         info "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
           res.config.apiEndpoint & ", env = " & res.config.environment
         info "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
-      except OSError as exc:
+      except CatchableError as exc:
         debug "equinox: cannot connect to Discord RPC: " & exc.msg
         rpc = nil
 
