@@ -8,8 +8,8 @@ proc containerHasFile*(name: string): bool =
 proc containerHasDir*(name: string): bool =
   dirExists(config.rootfs / name)
 
-proc containRemoveFile*(name: string) =
-  removeFile(name)
+proc containerRemoveFile*(name: string) =
+  removeFile(config.rootfs / name)
 
-proc containRemoveDir*(name: string) =
-  removeDir(name)
+proc containerRemoveDir*(name: string) =
+  removeDir(config.rootfs / name)

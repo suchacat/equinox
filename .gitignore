@@ -4,7 +4,11 @@
 !.github/
 !.github/*
 !LICENSE
+tmp/
 # waydroid/
 *.log
 *.json
 *.AppImage
+*.if
+*.pp
+*.fc

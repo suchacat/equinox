@@ -2,13 +2,13 @@ import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
-    rootfs, app_config, fflags, properties, roblox_logs,
+    rootfs, app_config, fflags, properties, drivers
   ]
 import pkg/[discord_rpc]
 import ../argparser
 import ../container/utils/[exec, mount]
 import ./event_manager/[types, dispatcher]
-import ./[discord_rpc, fflag_patches, ro_opt_patches]
+import ./[discord_rpc, fflag_patches, ro_opt_patches, roblox_logs]
 
 proc showUI*(launch: bool = true) =
   var platform = getIPlatformService()
@@ -44,6 +44,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   destroyAllLogs()
   mountRootfs(input, config.imagesPath)
+  discard setupBinderNodes()
 
   var settings = loadAppConfig(input)
 
@@ -85,7 +86,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
         info "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
           res.config.apiEndpoint & ", env = " & res.config.environment
         info "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
-      except OSError as exc:
+      except CatchableError as exc:
         debug "equinox: cannot connect to Discord RPC: " & exc.msg
         rpc = nil
 

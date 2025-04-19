@@ -4,7 +4,7 @@ import ./argparser
 import
   container/[
     certification, lxc, image_downloader, configuration, init, sugar, properties,
-    app_manager, platform, network, apk_fetcher,
+    app_manager, platform, network, apk_fetcher, drivers
   ],
   core/[run]
 
@@ -32,7 +32,6 @@ Modes:
     start              Start the networking bridge. This is already called by `run` upon starting up.
     stop               Stop the networking bridge. This is already called by `run` upon exiting.
 
-  fetch-image-pair     Fetch a suitable image pair (system+vendor) from the Waydroid OTA
   shell                Run a shell command in the Android container
   sh                   Run a shell REPL in the Android container
   install              Automatically fetch and install Roblox
@@ -85,6 +84,9 @@ EquinoxHQ is not responsible for any of your actions.
       if consent != "y":
         error "equinox: aborted."
         quit(1)
+    
+    initNetworkService()
+    startAndroidRuntime(input, launchRoblox = false)
 
     info "equinox: fetching Roblox " & SelectedVersion & " links from EquinoxHQ endpoint"
     let packages = fetchRobloxApk()
@@ -147,8 +149,6 @@ EquinoxHQ is not responsible for any of your actions.
           &value,
           resetStyle,
         )
-  of "fetch-image-pair":
-    print getImages()
   of "halt":
     stopLxcContainer(
       force = input.enabled("force", "F") or input.enabled("my-time-has-value")
@@ -172,6 +172,8 @@ EquinoxHQ is not responsible for any of your actions.
           echo &output
   of "get-gsf-id":
     echo getGSFAndroidID()
+  of "allocate-binder-nodes":
+    discard setupBinderNodes()
   of "launch-app":
     var platform = getIPlatformService()
     platform.launchApp(input.arguments[0])

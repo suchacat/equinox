@@ -4,6 +4,7 @@ import
     lxc, configuration, cpu, drivers, image_downloader, hal, rootfs, configuration,
     network,
   ]
+import ./utils/exec
 import ../argparser
 
 proc setupConfig*(input: Input): bool =
@@ -33,6 +34,7 @@ proc initialize*(input: Input) =
 
   discard existsOrCreateDir(config.work)
   discard existsOrCreateDir(config.equinoxData)
+  discard runCmd("sudo", "chmod 666 -R " & config.equinoxData)
   discard existsOrCreateDir(config.hostPerms)
   discard existsOrCreateDir(config.rootfs)
   discard existsOrCreateDir(config.overlay)
@@ -43,19 +45,18 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.work / "images")
   discard existsOrCreateDir(config.lxc)
   discard existsOrCreateDir(config.lxc / "equinox")
+  
+  let imagesExist =
+    fileExists(config.imagesPath / "system.img") and
+    fileExists(config.imagesPath / "vendor.img")
+  if not imagesExist:
+    downloadImages()
 
   initNetworkService()
   mountRootfs(input, config.imagesPath)
   generateSessionLxcConfig()
   setLxcConfig()
   startLxcContainer(input)
-
-  let imagesExist =
-    fileExists(config.imagesPath / "system.img") and
-    fileExists(config.imagesPath / "vendor.img")
-  if not imagesExist and not input.enabled("no-img-download", "Z"):
-    let pair = getImages()
-    pair.downloadImages()
 
   waitForContainerBoot()
   makeBaseProps(input)

@@ -7,7 +7,7 @@ import ../argparser
 
 const
   APKEndpoint* = "https://equinoxhq.github.io/equinox-json/equinox.json"
-  SelectedVersion* {.strdefine: "RobloxVersionTarget".} = "2.667.666"
+  SelectedVersion* {.strdefine: "RobloxVersionTarget".} = "2.668.660"
 
 type
   APKNotFound* = object of ValueError

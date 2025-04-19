@@ -79,7 +79,7 @@ proc installApp*(iface: var IPlatform, path: string) =
     debug "platform: got reply successfully"
 
 proc isServiceOn*(svc: string): bool =
-  contains(&runCmdInContainer("service check " & svc), "Service " & svc & ": found")
+  not contains(&runCmdInContainer("/bin/service check " & svc), "not found")
 
 proc installSplitApp*(base, split: string) =
   debug "platform: installing APK (base=`" & base & "`, split=`" & split & "`)"
@@ -93,17 +93,20 @@ proc installSplitApp*(base, split: string) =
   while not isServiceOn("package") or not isServiceOn("settings"):
     sleep(100)
 
-  let installCreate = &runCmdInContainer("pm install-create")
+  let installCreate = &runCmdInContainer("/bin/cmd package install-create")
 
   echo installCreate
   let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  discard runCmdInContainer("pm uninstall com.roblox.client")
+  discard runCmdInContainer("/bin/cmd package uninstall com.roblox.client")
     # just do this to prevent conflicts :3
-  discard runCmdInContainer("pm install-write $1 0 /data/base.apk" % [sessionId])
-  discard runCmdInContainer("pm install-write $1 1 /data/split.apk" % [sessionId])
-  discard runCmdInContainer("pm install-commit $1" % [sessionId])
+  discard runCmdInContainer("/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId])
+  discard runCmdInContainer("/bin/cmd package install-write $1 1 /data/split.apk" % [sessionId])
+  discard runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
+  
+  # HACK: place this somewhere that makes more sense...
+  discard runCmdInContainer("/bin/cmd package uninstall --user 0 com.android.inputmethod.latin")
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
@@ -208,6 +211,7 @@ proc waitForManager*(mgr: var ptr GBinderServiceManager): bool =
       mgr = gbinder_servicemanager_new2(
         cstring("/dev" / config.binder), "aidl3".cstring, "aidl3".cstring
       )
+      sleep(150)
 
     if gbinder_servicemanager_is_present(mgr):
       debug "platform: service manager is present!"
@@ -216,14 +220,9 @@ proc waitForManager*(mgr: var ptr GBinderServiceManager): bool =
   false
 
 proc getIPlatformService*(): IPlatform =
-  let driverList = setupBinderNodes()
-
-  debug "init: binder = " & driverList.binder
-  debug "init: vndbinder = " & driverList.vndbinder
-  debug "init: hwbinder = " & driverList.hwbinder
-  config.binder = driverList.binder
-  config.vndbinder = driverList.vndbinder
-  config.hwbinder = driverList.hwbinder
+  debug "init: binder = " & config.binder
+  debug "init: vndbinder = " & config.vndbinder
+  debug "init: hwbinder = " & config.hwbinder
 
   var serviceMgr = gbinder_servicemanager_new2(
     cstring("/dev" / config.binder), "aidl3".cstring, "aidl3".cstring
