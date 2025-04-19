@@ -50,8 +50,7 @@ proc initialize*(input: Input) =
     fileExists(config.imagesPath / "system.img") and
     fileExists(config.imagesPath / "vendor.img")
   if not imagesExist:
-    let pair = getImages()
-    pair.downloadImages()
+    downloadImages()
 
   initNetworkService()
   mountRootfs(input, config.imagesPath)

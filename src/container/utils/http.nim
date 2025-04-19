@@ -1,4 +1,4 @@
-import std/[logging, options, importutils, locks]
+import std/[httpclient, asyncdispatch, logging, options, importutils, locks, terminal, math]
 import pkg/curly # {.all.}
 
 # privateAccess(RequestWrapObj)
@@ -6,7 +6,7 @@ import pkg/curly # {.all.}
 
 var curl {.global.} = newCurly()
 
-proc httpGet*(url: string, headers: HttpHeaders = emptyHttpHeaders()): Response =
+proc httpGet*(url: string, headers: httpheaders.HttpHeaders = emptyHttpHeaders()): curly.Response =
   debug "http: GET: " & url
   let resp = curl.get(url, headers, timeout = -1)
 
@@ -14,39 +14,46 @@ proc httpGet*(url: string, headers: HttpHeaders = emptyHttpHeaders()): Response 
 
   resp
 
-proc malloc_usable_size*(p: pointer): uint64 {.importc, header: "<malloc.h>".}
-
-#[
 proc download*(url: string): string =
-  ## Download data from a URL while also showing the progress (and writing it to `/tmp/equinox-download-progress.json` as a small hack)
-  debug "http/download: GET: " & url
+  debug "http: downloading content: " & url
 
-  curl.startRequest("GET", url)
-
-  while true:
-    let resp = curl.pollForResponse()
-    if resp.isSome:
-      info "download completed!"
-      return resp.get().body
-      
-    acquire(curl.lock)
-
-    # We're only sending 1 request so we can just safely pick up the first one here.
-    let inflight =
-      block:
-        var request: RequestWrap
-        for easy, req in curl.inFlight:
-          req = request
-
-        request
-
+  var client = newAsyncHttpClient()
+  client.onProgressChanged = proc(total, progress, speed: int64) {.async.} =
+    stdout.write("\x1b[1A")
+    stdout.write("\x1b[2K")
+    
     let
-      received = malloc_usable_size(inflight.body).int
-      total = inflight.bodyLen
-      progress = float(received / total)
+      speedKbps = speed / 1000
+      speedColor =
+        if speedKbps >= 4096:
+          fgGreen
+        elif speedKbps >= 2048:
+          fgBlue
+        elif speedKbps >= 800:
+          fgYellow
+        else: fgRed
 
-    info "GET: " & url & " (" & $(progress * 100f) & "%)"
-    writeFile(
-      "/tmp/equinox-download-progress.json",
+      downloadSpeedHours =
+        round(
+          (total - progress) / speed / 3600,
+          2
+        )
+
+      downloadSpeedColor =
+        if downloadSpeedHours < 0.1:
+          fgBlue
+        elif downloadSpeedHours < 0.2:
+          fgGreen
+        elif downloadSpeedHours < 0.5:
+          fgYellow
+        else:
+          fgRed
+
+    stdout.styledWriteLine(
+      fgGreen, $(progress / 1_000_000), resetStyle, " MB", styleBright, " / ", resetStyle, fgGreen, $(total / 1_000_000), " MB",  resetStyle,
+      styleBright, " (", resetStyle, speedColor, $speedKbps, resetStyle, " kb/s", styleBright, ") [", resetStyle, downloadSpeedColor, $downloadSpeedHours, resetStyle, " hours", styleBright, "]", resetStyle
     )
-  ]#
+
+  let content = waitFor client.getContent(url)
+  
+  content
