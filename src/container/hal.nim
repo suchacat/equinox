@@ -115,6 +115,7 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "waydroid.wayland_display", value: config.containerWaylandDisplay)
   props &= (key: "waydroid.pulse_runtime_path", value: config.containerPulseRuntimePath)
   props &= (key: "waydroid.host_data_path", value: config.equinoxData / "data")
+  props &= (key: "ro.config.notification_sound", value: "earbleed.ogg")
 
   var builder = newStringOfCap(1800)
     # scientifically calculated number to prevent pesky reallocations (mmap() isn't a single CPU cycle instruction, folks!)
