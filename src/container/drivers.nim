@@ -164,8 +164,6 @@ proc setupBinderNodes*(): Drivers =
   if not hasHwbinder:
     raise newException(Defect, "Cannot find HW Binder node")
 
-  writeFile(config.work / "binders", result.binder & '\n' & result.hwbinder & '\n' & result.vndbinder)
-
 proc loadBinderNodes*() =
   let binderDesc = readFile(config.work / "binders").splitLines()
   config.binder = binderDesc[0]
