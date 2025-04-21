@@ -15,7 +15,9 @@ proc httpGet*(url: string, headers: httpheaders.HttpHeaders = emptyHttpHeaders()
   resp
 
 proc download*(url: string): string =
-  debug "http: downloading content: " & url
+  return httpGet(url).body # TODO: unbork the old code
+
+  #[ debug "http: downloading content: " & url
 
   var client = newAsyncHttpClient()
   client.onProgressChanged = proc(total, progress, speed: int64) {.async.} =
@@ -66,4 +68,4 @@ proc download*(url: string): string =
   let content = waitFor client.getContent(url)
   removeFile("/tmp/equinox-progress.json")
   
-  content
+  content ]#

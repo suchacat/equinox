@@ -266,7 +266,7 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
       discard write(fd, buff[0].addr, 1)
     of OnboardMagic.GoogleAuthPhase:
       let gsfId =
-        &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user)
+        &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user & " --uid:" & $getuid() & " --gid:" & $getgid() & " --xdg-runtime-dir:" & getEnv("XDG_RUNTIME_DIR"))
 
       debug "gui/onboard: gsf id = " & gsfId
 

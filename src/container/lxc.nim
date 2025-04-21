@@ -65,6 +65,8 @@ proc generateNodesLxcConfig*(): seq[string] =
   ): bool {.discardable.} =
     addNodeEntry(nodes, src, dest, mntType, options, check)
 
+  probeBinderDriver()
+
   entry "tmpfs", some("dev"), "tmpfs", "nosuid 0 0", false
   entry "/dev/zero"
   entry "/dev/null"
