@@ -1,4 +1,4 @@
-import std/[httpclient, asyncdispatch, logging, options, importutils, locks, terminal, math]
+import std/[os, httpclient, asyncdispatch, logging, options, importutils, locks, terminal, math, json]
 import pkg/curly # {.all.}
 
 # privateAccess(RequestWrapObj)
@@ -48,6 +48,15 @@ proc download*(url: string): string =
           fgYellow
         else:
           fgRed
+    
+    writeFile(
+      "/tmp/equinox-progress.json",
+      $(%* {
+        "speedKbps": speedKbps,
+        "totalBytes": total,
+        "downloadedBytes": progress
+      })
+    )
 
     stdout.styledWriteLine(
       fgGreen, $(progress / 1_000_000), resetStyle, " MB", styleBright, " / ", resetStyle, fgGreen, $(total / 1_000_000), " MB",  resetStyle,
@@ -55,5 +64,6 @@ proc download*(url: string): string =
     )
 
   let content = waitFor client.getContent(url)
+  removeFile("/tmp/equinox-progress.json")
   
   content

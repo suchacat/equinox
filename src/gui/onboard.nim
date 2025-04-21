@@ -1,6 +1,6 @@
 ## Onboarding GUI + Setup flow
-import std/[browsers, logging, os, osproc, options, posix]
-import pkg/owlkettle, pkg/owlkettle/[playground, adw]
+import std/[browsers, logging, os, osproc, options, posix, json]
+import pkg/[jsony, owlkettle], pkg/owlkettle/[playground, adw]
 import
   ../[argparser],
   ./envparser,
@@ -31,6 +31,10 @@ viewable OnboardingApp:
 
   showSpinner:
     bool = false
+
+  showProgressBar: bool = false
+  progress: float = 0.0
+  progressText: string = "Preparing (Hope that it won't blow up)"
 
 proc gpuCheck(app: OnboardingAppState): bool =
   let node = getDriNode()
@@ -65,6 +69,19 @@ proc gpuCheck(app: OnboardingAppState): bool =
 
 method view(app: OnboardingAppState): Widget =
   proc waitForInit(): bool =
+    if fileExists("/tmp/equinox-progress.json"):
+      let content = readFile("/tmp/equinox-progress.json").fromJson()
+      let
+        speedKbps = content["speedKbps"].getFloat()
+        totalBytes = content["totalBytes"].getBiggestInt()
+        downloadedBytes = content["downloadedBytes"].getBiggestInt()
+      
+      app.showProgressBar = true
+      app.progress = (downloadedBytes / totalBytes)
+      app.progressText = $speedKbps & " KB/s"
+
+      discard app.redraw()
+
     var readfds: TFdSet
     var timeout: Timeval
 
@@ -144,7 +161,7 @@ method view(app: OnboardingAppState): Widget =
 
                     proc clicked() =
                       app.closeWindow()
-
+    
     return false
 
   result = gui:
@@ -186,6 +203,12 @@ method view(app: OnboardingAppState): Widget =
           if app.showSpinner:
             AdwSpinner()
 
+          if app.showProgressBar:
+            ProgressBar:
+              fraction = app.progress
+              showText = true
+              text = app.progressText
+
           Label:
             text = app.consentFail
             margin = 12
@@ -208,9 +231,10 @@ method view(app: OnboardingAppState): Widget =
                 var buff: array[1, uint8]
                 buff[0] = (uint8) OnboardMagic.InitEquinox
                 discard write(app.sock, buff[0].addr, 1)
-
+                
                 app.showSpinner = true
-                discard addGlobalIdleTask(waitForInit)
+                app.showProgressBar = true
+                discard addGlobalTimeout(1000, waitForInit)
 
 proc waitForCommands*(env: XdgEnv, fd: cint) =
   var running = true

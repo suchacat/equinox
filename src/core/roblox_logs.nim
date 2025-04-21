@@ -30,7 +30,7 @@ proc checkLineForEvents*(line: string) =
     let gameId = line.split("place ")[1].split(" at")[0]
 
     chan.send(EventPayload(kind: Event.GameJoin, id: gameId))
-  elif line.contains("Client:Disconnect") or line.contains("Destroying MegaReplicator."):
+  elif line.contains("Client:Disconnect"):
     chan.send(EventPayload(kind: Event.GameLeave))
 
 proc findTargetLog*(): string =
@@ -114,7 +114,7 @@ proc watcherFunc(target: string) =
     if bool(event.mask and IN_MODIFY):
       debug "watcher: log file has changed"
       let line = readLastLine(target)
-      stdout.write line
+      info "roblox: " & line
       checkLineForEvents(line)
 
   dealloc(buf)
