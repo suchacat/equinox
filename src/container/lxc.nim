@@ -274,7 +274,7 @@ proc stopLxcContainer*(force: bool = false) =
 
   if getLxcStatus() == "STOPPED":
     warn "lxc: container has already stopped"
-    quit(1)
+    return
 
   runCmd(
     "sudo lxc-stop", "-P " & config.lxc & " -n equinox" & (if force: " -k" else: "")
