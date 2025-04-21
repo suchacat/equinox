@@ -44,7 +44,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   destroyAllLogs()
   mountRootfs(input, config.imagesPath)
-  discard setupBinderNodes()
+  probeBinderDriver()
 
   var settings = loadAppConfig(input)
 

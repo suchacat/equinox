@@ -172,8 +172,6 @@ EquinoxHQ is not responsible for any of your actions.
           echo &output
   of "get-gsf-id":
     echo getGSFAndroidID()
-  of "allocate-binder-nodes":
-    discard setupBinderNodes()
   of "launch-app":
     var platform = getIPlatformService()
     platform.launchApp(input.arguments[0])

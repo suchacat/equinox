@@ -11,15 +11,6 @@ proc setupConfig*(input: Input): bool =
   loadConfig(input)
   config.arch = getHost().maybeRemap()
 
-  let driverList = setupBinderNodes()
-
-  debug "init: binder = " & driverList.binder
-  debug "init: vndbinder = " & driverList.vndbinder
-  debug "init: hwbinder = " & driverList.hwbinder
-  config.binder = driverList.binder
-  config.vndbinder = driverList.vndbinder
-  config.hwbinder = driverList.hwbinder
-
   return true
 
 proc initialize*(input: Input) =

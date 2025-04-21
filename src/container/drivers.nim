@@ -128,41 +128,13 @@ proc probeBinderDriver*() =
       discard runCmd("sudo", "ln -s " & node & " /dev/" & nam)
       discard runCmd("sudo", "chmod 666 /dev/" & nam)
 
+    config.binder = binderDevNodes[0]
+    config.hwbinder = binderDevNodes[1]
+    config.vndbinder = binderDevNodes[2]
+
   for _, node in walkDir("/dev/binderfs"):
     let nam = node.split("/dev/binderfs/")[1]
     discard runCmd("sudo", "chmod 666 /dev/" & nam)
-
-proc setupBinderNodes*(): Drivers =
-  probeBinderDriver()
-  var hasBinder = false
-  for node in BINDER_DRIVERS:
-    if devExists("/dev" / node):
-      debug "drivers: found binder driver: " & node
-      hasBinder = true
-      result.binder = node
-
-  if not hasBinder:
-    raise newException(Defect, "Cannot find binder node \"binder\"")
-
-  var hasVndbinder = false
-  for node in VNDBINDER_DRIVERS:
-    if devExists("/dev" / node):
-      debug "drivers: found VND binder driver: " & node
-      hasVndbinder = true
-      result.vndbinder = node
-
-  if not hasVndbinder:
-    raise newException(Defect, "Cannot find VND Binder node")
-
-  var hasHwbinder = false
-  for node in HWBINDER_DRIVERS:
-    if devExists("/dev" / node):
-      debug "drivers: found HW binder driver: " & node
-      hasHwbinder = true
-      result.hwbinder = node
-
-  if not hasHwbinder:
-    raise newException(Defect, "Cannot find HW Binder node")
 
 proc loadBinderNodes*() =
   let binderDesc = readFile(config.work / "binders").splitLines()
