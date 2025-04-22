@@ -25,3 +25,5 @@ requires "owlkettle >= 3.0.0"
 requires "db_connector >= 0.1.0"
 requires "https://github.com/equinoxhq/libgbinder-nim >= 0.1.0"
 requires "discord_rpc >= 0.2.0"
+
+requires "shakar >= 0.1.0"

@@ -1,7 +1,7 @@
 ## Roblox thumbnails API wrapper
 ## Copyright (C) 2024 Trayambak Rai
 ## Copyright (C) 2025 the EquinoxHQ team
-import std/[strutils, logging]
+import std/[strutils, logging, options]
 import pkg/[curly, jsony]
 import ./games
 
@@ -30,6 +30,23 @@ type
     state*: ThumbnailState
     imageUrl*, version*: string
 
+  ThumbnailRequest* = object
+    requestId*: Option[string]
+    targetId*: uint64
+    `type`*: string
+    size*: string
+    format*: string
+    isCircular*: bool
+
+  ThumbnailResponse* = object
+    requestId*: Option[string]
+    errorCode*: int32
+    errorMessage*: string
+    targetId*: uint64
+    state*: string
+    imageUrl*: Option[string]
+    version*: string
+
 proc getGameIcon*(id: UniverseID): Thumbnail =
   let
     url =
@@ -42,3 +59,18 @@ proc getGameIcon*(id: UniverseID): Thumbnail =
   let payload = fromJson(resp, StubData[Thumbnail]).data[0]
 
   payload
+
+proc getThumbnailUrl*(request: ThumbnailRequest): ThumbnailResponse =
+  let
+    url =
+      "https://thumbnails.roblox.com/v1/batch"
+
+    resp = curl.post(
+      url,
+      body = toJson request
+    ).body.fromJson(ThumbnailResponse)
+
+  if resp.errorCode != 0:
+    error "thumbnails: API error: " & resp.errorMessage & " (" & $resp.errorCode & ')'
+
+  resp

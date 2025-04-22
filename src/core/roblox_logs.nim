@@ -1,8 +1,9 @@
 ## Roblox logs manager
-import std/[atomics, inotify, logging, os, posix, strutils]
-import pkg/[colored_logger]
+import std/[atomics, inotify, logging, os, posix, strutils, json]
+import pkg/[colored_logger, jsony]
 import ../container/[configuration]
-import ./event_manager/[types, dispatcher]
+import ./event_manager/[types, dispatcher],
+       ./bloxstrap_rpc
 
 type
   NoLogTargetFound* = object of CatchableError
@@ -32,6 +33,25 @@ proc checkLineForEvents*(line: string) =
     chan.send(EventPayload(kind: Event.GameJoin, id: gameId))
   elif line.contains("Client:Disconnect"):
     chan.send(EventPayload(kind: Event.GameLeave))
+  elif line.contains("[BloxstrapRPC]"):
+    debug "detected potential BloxstrapRPC payload"
+    let splitted = line.split("[BloxstrapRPC] ")
+    if splitted.len < 2:
+      warn "malformed BloxstrapRPC payload received, ignoring."
+      return
+    
+    try:
+      let payload = fromJson(splitted[1], BloxstrapRPCPayload)
+
+      case payload.command
+      of SetRichPresence:
+        debug "set BloxstrapRPC rich presence"
+        chan.send(EventPayload(kind: Event.BloxstrapRPC, payload: payload.data))
+      else: warn "TODO: unhandled BloxstrapRPC command: " & $payload.command
+    except jsony.JsonError as exc:
+      warn "malformed BloxstrapRPC payload received: " & exc.msg
+      warn "this game is sending bad payloads, it seems like."
+      return
 
 proc findTargetLog*(): string =
   info "equinox: finding latest log file"
@@ -114,7 +134,7 @@ proc watcherFunc(target: string) =
     if bool(event.mask and IN_MODIFY):
       debug "watcher: log file has changed"
       let line = readLastLine(target)
-      info "roblox: " & line
+      info "roblox: " & line.strip()
       checkLineForEvents(line)
 
   dealloc(buf)

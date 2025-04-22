@@ -37,6 +37,9 @@ proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
   of Event.GameLeave:
     info "equinox: user left game."
     handleIdleRPC(rpc)
+  of Event.BloxstrapRPC:
+    info "equinox: received BloxstrapRPC payload"
+    handleBloxstrapRPC(rpc, event.payload)
 
 proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   info "equinox: starting android runtime"
