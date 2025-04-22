@@ -5,6 +5,7 @@ type
     GameJoin
     GameLeave
     BloxstrapRPC
+    RobloxClose
 
   EventPayload* = object
     case kind*: Event
@@ -12,7 +13,7 @@ type
       id*: string
     of Event.BloxstrapRPC:
       payload*: JsonNode
-    of Event.GameLeave: discard
+    of Event.GameLeave, Event.RobloxClose: discard
 
   EventDispatcher* = object
     queue*: seq[EventPayload]

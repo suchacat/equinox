@@ -52,6 +52,9 @@ proc checkLineForEvents*(line: string) =
       warn "malformed BloxstrapRPC payload received: " & exc.msg
       warn "this game is sending bad payloads, it seems like."
       return
+  elif line.contains("finished destroying luaApp."):
+    debug "watcher: looks like roblox is stopping."
+    chan.send(EventPayload(kind: Event.RobloxClose))
 
 proc findTargetLog*(): string =
   info "equinox: finding latest log file"
@@ -152,6 +155,6 @@ proc startLogWatcher*() =
     return
 
 proc stopLogWatcher*() =
-  info "Stopping log watcher thread"
+  info "equinox: stopping log watcher thread"
   running.store(false)
-  info "Stopped log watcher thread"
+  info "equinox: stopped log watcher thread"

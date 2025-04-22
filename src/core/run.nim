@@ -40,6 +40,9 @@ proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
   of Event.BloxstrapRPC:
     info "equinox: received BloxstrapRPC payload"
     handleBloxstrapRPC(rpc, event.payload)
+  of Event.RobloxClose:
+    info "equinox: roblox has exited; flagging dispatcher state as exited"
+    dispatcher.running = false
 
 proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   info "equinox: starting android runtime"
@@ -63,6 +66,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   generateSessionLxcConfig()
 
   var dispatcher = initEventDispatcher()
+  dispatcher.running = true
 
   if getLxcStatus() == "RUNNING":
     debug "equinox: container is already running"
@@ -75,9 +79,6 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
     if launchRoblox:
       startRobloxClient(platform)
-
-      let pid = parseUint(&readOutput("pidof", "com.roblox.client"))
-      debug "equinox: waiting for roblox to exit: pid=" & $pid
 
       putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
         # Fixes a crash because we don't have that defined since we run as root.
@@ -94,18 +95,18 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
         rpc = nil
 
       rpc.handleIdleRPC()
-
       patchProperties()
 
-      while kill(Pid(pid), 0) == 0 or errno != ESRCH:
+      while dispatcher.running:
         sleep(100)
         processEvents(dispatcher, rpc)
-
+      
+      info "equinox: app deinit started"
       stopLogWatcher()
       stopNetworkService()
       stopLxcContainer()
       umountAll(config.rootfs)
-    # deinitHardwareService(hwsvc)
+      info "equinox: app cleanup completed gracefully"
 
 type PlaceURI* = distinct string
 

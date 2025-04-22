@@ -38,10 +38,13 @@ proc umountAllList*(prefix: string, source: string = "/proc/mounts"): seq[string
   ensureMove(ret)
 
 proc umountAll*(folder: string) =
+  info "equinox: unmounting rootfs"
   let list = umountAllList(folder)
 
   for mnt in list:
     runCmd "sudo umount", mnt
+
+  info "equinox: unmounted rootfs"
 
 proc mount*(
     source, dest: string,

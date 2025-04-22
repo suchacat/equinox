@@ -164,6 +164,7 @@ proc initNetworkService*() =
   writeFile(VarRun / "network_up", newString(0))
 
 proc stopNetworkService*() =
+  info "equinox: stopping network bridge"
   if not fileExists(VarRun / "network_up"):
     warn "net: service is already stopped"
     return

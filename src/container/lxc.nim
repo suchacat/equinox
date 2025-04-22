@@ -269,10 +269,7 @@ proc startLxcContainer*(input: Input, authAgent: string = "sudo") =
     runCmd("sudo chown", "1000 " & &debugLog)
 
 proc stopLxcContainer*(force: bool = false) =
-  debug "lxc: stopping container"
-
-  if force:
-    warn "lxc: forcefully stopping container. This might cause wonky stuff to happen in the next run."
+  info "equinox: stopping container"
 
   if getLxcStatus() == "STOPPED":
     warn "lxc: container has already stopped"

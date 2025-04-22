@@ -38,7 +38,6 @@ proc handleBloxstrapRPC*(rpc: DiscordRPC, payload: JsonNode) =
     )
   )
   
-  assert off, thumbnailLarge.imageUrl.get()
   var activity = Activity(
     details: details,
     state: state,
