@@ -123,10 +123,9 @@ proc probeBinderDriver*() =
 
     allocBinderNodes(binderDevNodes)
 
-    #[ for _, node in walkDir("/dev/binderfs"):
+    for _, node in walkDir("/dev/binderfs"):
       let nam = node.split("/dev/binderfs/")[1]
       discard runCmd("sudo", "ln -s " & node & " /dev/" & nam)
-      discard runCmd("sudo", "chmod 666 /dev/" & nam) ]#
 
     config.binder = binderDevNodes[0]
     config.hwbinder = binderDevNodes[1]
