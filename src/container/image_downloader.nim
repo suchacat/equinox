@@ -37,8 +37,10 @@ type
   ImageDownloadFailed* = object of CatchableError
 
 const
-  SystemImageURL = "https://media.githubusercontent.com/media/equinoxhq/mirror/refs/heads/main/system.img"
-  VendorImageURL = "https://media.githubusercontent.com/media/equinoxhq/mirror/refs/heads/main/vendor.img"
+  SystemImageURL =
+    "https://media.githubusercontent.com/media/equinoxhq/mirror/refs/heads/main/system.img"
+  VendorImageURL =
+    "https://media.githubusercontent.com/media/equinoxhq/mirror/refs/heads/main/vendor.img"
 
 proc getVendorType*(): string =
   #[ let vndkStr = getProp("ro.vndk.version")

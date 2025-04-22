@@ -24,7 +24,7 @@ proc initialize*(input: Input) =
     return
 
   discard existsOrCreateDir(config.work)
-  
+
   assert(config.equinoxData.len > 0)
   discard existsOrCreateDir(config.equinoxData)
   # discard runCmd("sudo", "chmod 666 -R " & config.equinoxData)
@@ -38,7 +38,7 @@ proc initialize*(input: Input) =
   discard existsOrCreateDir(config.work / "images")
   discard existsOrCreateDir(config.lxc)
   discard existsOrCreateDir(config.lxc / "equinox")
-  
+
   let imagesExist =
     fileExists(config.imagesPath / "system.img") and
     fileExists(config.imagesPath / "vendor.img")

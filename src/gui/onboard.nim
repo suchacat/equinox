@@ -32,9 +32,12 @@ viewable OnboardingApp:
   showSpinner:
     bool = false
 
-  showProgressBar: bool = false
-  progress: float = 0.0
-  progressText: string = "Preparing (Hope that it won't blow up)"
+  showProgressBar:
+    bool = false
+  progress:
+    float = 0.0
+  progressText:
+    string = "Preparing (Hope that it won't blow up)"
 
 proc gpuCheck(app: OnboardingAppState): bool =
   let node = getDriNode()
@@ -75,7 +78,7 @@ method view(app: OnboardingAppState): Widget =
         speedKbps = content["speedKbps"].getFloat()
         totalBytes = content["totalBytes"].getBiggestInt()
         downloadedBytes = content["downloadedBytes"].getBiggestInt()
-      
+
       app.showProgressBar = true
       app.progress = (downloadedBytes / totalBytes)
       app.progressText = $speedKbps & " KB/s"
@@ -161,7 +164,7 @@ method view(app: OnboardingAppState): Widget =
 
                     proc clicked() =
                       app.closeWindow()
-    
+
     return false
 
   result = gui:
@@ -231,7 +234,7 @@ method view(app: OnboardingAppState): Widget =
                 var buff: array[1, uint8]
                 buff[0] = (uint8) OnboardMagic.InitEquinox
                 discard write(app.sock, buff[0].addr, 1)
-                
+
                 app.showSpinner = true
                 app.showProgressBar = true
                 discard addGlobalTimeout(1000, waitForInit)
@@ -266,7 +269,11 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
       discard write(fd, buff[0].addr, 1)
     of OnboardMagic.GoogleAuthPhase:
       let gsfId =
-        &readOutput("pkexec", env.equinoxPath & " get-gsf-id --user:" & env.user & " --uid:" & $getuid() & " --gid:" & $getgid() & " --xdg-runtime-dir:" & getEnv("XDG_RUNTIME_DIR"))
+        &readOutput(
+          "pkexec",
+          env.equinoxPath & " get-gsf-id --user:" & env.user & " --uid:" & $getuid() &
+            " --gid:" & $getgid() & " --xdg-runtime-dir:" & getEnv("XDG_RUNTIME_DIR"),
+        )
 
       debug "gui/onboard: gsf id = " & gsfId
 

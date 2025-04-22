@@ -4,7 +4,7 @@ import ./argparser
 import
   container/[
     certification, lxc, image_downloader, configuration, init, sugar, properties,
-    app_manager, platform, network, apk_fetcher, drivers
+    app_manager, platform, network, apk_fetcher, drivers,
   ],
   core/[run]
 
@@ -84,7 +84,7 @@ EquinoxHQ is not responsible for any of your actions.
       if consent != "y":
         error "equinox: aborted."
         quit(1)
-    
+
     initNetworkService()
     startAndroidRuntime(input, launchRoblox = false)
 

@@ -2,8 +2,7 @@
 import std/[atomics, inotify, logging, os, posix, strutils, json]
 import pkg/[colored_logger, jsony]
 import ../container/[configuration]
-import ./event_manager/[types, dispatcher],
-       ./bloxstrap_rpc
+import ./event_manager/[types, dispatcher], ./bloxstrap_rpc
 
 type
   NoLogTargetFound* = object of CatchableError
@@ -39,7 +38,7 @@ proc checkLineForEvents*(line: string) =
     if splitted.len < 2:
       warn "malformed BloxstrapRPC payload received, ignoring."
       return
-    
+
     try:
       let payload = fromJson(splitted[1], BloxstrapRPCPayload)
 
@@ -47,7 +46,8 @@ proc checkLineForEvents*(line: string) =
       of SetRichPresence:
         debug "set BloxstrapRPC rich presence"
         chan.send(EventPayload(kind: Event.BloxstrapRPC, payload: payload.data))
-      else: warn "TODO: unhandled BloxstrapRPC command: " & $payload.command
+      else:
+        warn "TODO: unhandled BloxstrapRPC command: " & $payload.command
     except jsony.JsonError as exc:
       warn "malformed BloxstrapRPC payload received: " & exc.msg
       warn "this game is sending bad payloads, it seems like."

@@ -12,7 +12,8 @@ proc hasSELinux*(): bool {.inline.} =
     return true
 
   for distro in SELinuxDistros:
-    if detectOsImpl(distro) and not execCmdEx("sestatus".findExe).output.contains("permissive"):
+    if detectOsImpl(distro) and
+        not execCmdEx("sestatus".findExe).output.contains("permissive"):
       return true
 
   false

@@ -2,7 +2,7 @@ import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
-    rootfs, app_config, fflags, properties, drivers
+    rootfs, app_config, fflags, properties, drivers,
   ]
 import pkg/[discord_rpc]
 import ../argparser
@@ -100,7 +100,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
       while dispatcher.running:
         sleep(100)
         processEvents(dispatcher, rpc)
-      
+
       info "equinox: app deinit started"
       stopLogWatcher()
       stopNetworkService()

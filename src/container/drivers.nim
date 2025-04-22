@@ -24,17 +24,16 @@ proc devExists*(file: string): bool =
 
   return false
 
-type
-  BinderNode {.packed.}  = object
-    name: array[0 .. 255, char]
-    ctl0, ctl1: uint32
+type BinderNode {.packed.} = object
+  name: array[0 .. 255, char]
+  ctl0, ctl1: uint32
 
-proc ioctl(fd: cint, request: uint, data: pointer): cint {.importc, header: "<sys/ioctl.h>".}
+proc ioctl(
+  fd: cint, request: uint, data: pointer
+): cint {.importc, header: "<sys/ioctl.h>".}
 
 proc isBinderfsLoaded*(): bool =
-  for line in readFile(
-    "/proc/filesystems"
-  ).splitLines():
+  for line in readFile("/proc/filesystems").splitLines():
     let words = line.split()
     if words.len >= 2 and words[1] == "binder":
       return true
@@ -55,11 +54,12 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
     Read = 0x2
 
   func ioc(direction, typ, num, size: uint): uint {.inline.} =
-    (direction shl DirShift) or (typ shl TypeShift) or (num shl NumShift) or (size shl SizeShift)
+    (direction shl DirShift) or (typ shl TypeShift) or (num shl NumShift) or
+      (size shl SizeShift)
 
   func iowr(typ, num, size: uint): uint {.inline.} =
     ioc(Read or Write, typ, num, size)
-  
+
   let binderCtlAdd = iowr(98, 1, 264)
   var binderCtlFd = open("/dev/binderfs/binder-control", O_RDONLY)
   if binderCtlFd < 0:
@@ -79,8 +79,10 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
 
     if ioctl(binderCtlFd, binderCtlAdd, nodeStruct.addr) < 0 and errno != EEXIST:
       error "drivers: an error occured while allocating binder node: " & node
-      raise newException(Defect, "Cannot allocate binder node `" & node & "`: " & $strerror(errno))
-  
+      raise newException(
+        Defect, "Cannot allocate binder node `" & node & "`: " & $strerror(errno)
+      )
+
   debug "drivers: allocated binder nodes successfully"
   discard close(binderCtlFd)
 
@@ -113,7 +115,7 @@ proc probeBinderDriver*() =
 
   if not hasVndbinder:
     binderDevNodes &= VNDBINDER_DRIVERS[0]
-  
+
   if binderDevNodes.len > 0 and isBinderfsLoaded():
     debug "drivers: creating /dev/binderfs"
     discard existsOrCreateDir("/dev/binderfs")
@@ -130,7 +132,7 @@ proc probeBinderDriver*() =
     config.binder = binderDevNodes[0]
     config.hwbinder = binderDevNodes[1]
     config.vndbinder = binderDevNodes[2]
-  
+
   assert(config.binder.len > 0)
   assert(config.hwbinder.len > 0)
   assert(config.vndbinder.len > 0)

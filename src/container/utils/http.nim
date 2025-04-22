@@ -1,4 +1,8 @@
-import std/[os, httpclient, asyncdispatch, logging, options, importutils, locks, terminal, math, json]
+import
+  std/[
+    os, httpclient, asyncdispatch, logging, options, importutils, locks, terminal, math,
+    json,
+  ]
 import pkg/curly # {.all.}
 
 # privateAccess(RequestWrapObj)
@@ -6,7 +10,9 @@ import pkg/curly # {.all.}
 
 var curl {.global.} = newCurly()
 
-proc httpGet*(url: string, headers: httpheaders.HttpHeaders = emptyHttpHeaders()): curly.Response =
+proc httpGet*(
+    url: string, headers: httpheaders.HttpHeaders = emptyHttpHeaders()
+): curly.Response =
   debug "http: GET: " & url
   let resp = curl.get(url, headers, timeout = -1)
 

@@ -62,13 +62,9 @@ proc getGameIcon*(id: UniverseID): Thumbnail =
 
 proc getThumbnailUrl*(request: ThumbnailRequest): ThumbnailResponse =
   let
-    url =
-      "https://thumbnails.roblox.com/v1/batch"
+    url = "https://thumbnails.roblox.com/v1/batch"
 
-    resp = curl.post(
-      url,
-      body = toJson request
-    ).body.fromJson(ThumbnailResponse)
+    resp = curl.post(url, body = toJson request).body.fromJson(ThumbnailResponse)
 
   if resp.errorCode != 0:
     error "thumbnails: API error: " & resp.errorMessage & " (" & $resp.errorCode & ')'

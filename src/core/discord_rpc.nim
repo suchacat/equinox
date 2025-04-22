@@ -34,10 +34,10 @@ proc handleBloxstrapRPC*(rpc: DiscordRPC, payload: JsonNode) =
       `type`: "Asset",
       size: "512x512",
       format: "png",
-      isCircular: false
+      isCircular: false,
     )
   )
-  
+
   var activity = Activity(
     details: details,
     state: state,
@@ -46,8 +46,7 @@ proc handleBloxstrapRPC*(rpc: DiscordRPC, payload: JsonNode) =
         if *thumbnailLarge.imageUrl:
           &thumbnailLarge.imageUrl
         else:
-          newString(0)
-      ,
+          newString(0),
       largeText: largeImage["hoverText"].getStr(),
       smallImage: "lucem",
       smallText: "Equinox is a FOSS containerized runtime for Roblox on Linux.",
