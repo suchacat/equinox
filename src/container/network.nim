@@ -110,6 +110,17 @@ proc startIptables*() =
       " -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill"
   )
 
+proc stopNetworkService*() =
+  info "equinox: stopping network bridge"
+  if not fileExists(VarRun / "network_up"):
+    warn "net: service is already stopped"
+    return
+
+  exec("sudo kill -TERM $(pidof dnsmasq)")
+  removeFile(VarRun / "network_up")
+  removeFile("/tmp" / "dnsmasq-equinox.log")
+  disableIf()
+
 proc initNetworkService*() =
   # TODO: nftables support
   debug "net: initializing service"
@@ -122,7 +133,7 @@ proc initNetworkService*() =
   debug "net: attaching signal handlers to: SIGKILL, SIGTERM, SIGINT, SIGHUP"
   onSignal SIGKILL, SIGTERM, SIGINT, SIGHUP:
     fatal "net: caught deadly signal; exiting"
-    disableIf()
+    stopNetworkService()
 
   debug "net: setting up LXC network"
   if not dirExists("/sys" / "class" / "net" / LxcBridge):
@@ -162,14 +173,3 @@ proc initNetworkService*() =
 
   debug "net: writing lock"
   writeFile(VarRun / "network_up", newString(0))
-
-proc stopNetworkService*() =
-  info "equinox: stopping network bridge"
-  if not fileExists(VarRun / "network_up"):
-    warn "net: service is already stopped"
-    return
-
-  exec("sudo kill -TERM $(pidof dnsmasq)")
-  removeFile(VarRun / "network_up")
-  removeFile("/tmp" / "dnsmasq-equinox.log")
-  disableIf()
