@@ -1,0 +1,31 @@
+Equinox Legal Notice
+Author: Trayambak Rai (xtrayambak at disroot dot org)
+Last Updated: 22nd of April, 2025 (7:00 PM Indian Standard Time / GMT+5:30)
+
+* TERMS
+- The program ("Equinox").
+- The developers ("The EquinoxHQ Team").
+- The service providers ("Roblox Corporation")
+
+* PREAMBLE
+Equinox is a runtime for Roblox on Linux that uses containerization.
+It is a research project that aims to see how well an Android application can be integrated into a Linux desktop.
+
+* MONETARY ASPECTS
+Equinox generates no income for its developers. We do not charge any forms of payment for our program.
+We do not accept any forms of donations. The developers might individually accept sponsorships and other donations,
+but there are no official ways to donate to our collective.
+
+* TAMPERING & SECURITY
+Equinox is an open-source program. As such, it does not implement any protections to prevent the misuse of the Roblox platform.
+However, it lets Roblox's anticheat ("Hyperion") run unrestricted in the container environment with no artificial limits imposed.
+This means that Equinox facilitates no more or less potential for abuse of the Roblox platform than a standard Android device.
+The program does not facilitate the distribution or execution of tools that tamper with Roblox ("cheats").
+
+* COPYRIGHT
+Equinox respects ALL copyrights and trademarks of Roblox Corporation and its affiliates. It does not illicitly distribute any copyrighted Roblox materials, intellectual properties, software or assets.
+
+* LIABILITY & CONTACT
+The Equinox team holds zero responsibility for any damage you incur by using the program.
+The Equinox team is not affiliated with Roblox Corporation or its affiliates.
+Any inquiries can be sent to the author of this document at his/her/their email address.
