@@ -2,8 +2,8 @@
 
 version = "0.1.0"
 author = "xTrayambak"
-description = "Waydroid approach"
-license = "GPL-3.0-or-later"
+description = "Equinox is a runtime for Roblox on Linux."
+license = "MIT"
 srcDir = "src"
 bin = @["equinox", "equinox_gui"]
 
@@ -25,5 +25,4 @@ requires "owlkettle >= 3.0.0"
 requires "db_connector >= 0.1.0"
 requires "https://github.com/equinoxhq/libgbinder-nim >= 0.1.0"
 requires "discord_rpc >= 0.2.0"
-
 requires "shakar >= 0.1.0"

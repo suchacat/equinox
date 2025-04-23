@@ -268,7 +268,7 @@ proc startLxcContainer*(input: Input, authAgent: string = "sudo") =
   if *debugLog:
     runCmd("sudo chown", "1000 " & &debugLog)
 
-proc stopLxcContainer*(force: bool = false) =
+proc stopLxcContainer*(force: bool = true) =
   info "equinox: stopping container"
 
   if getLxcStatus() == "STOPPED":

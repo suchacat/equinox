@@ -86,10 +86,10 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
       try:
         let res = rpc.connect()
-        info "equinox: connected to Discord RPC."
-        info "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
+        debug "equinox: connected to Discord RPC."
+        debug "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
           res.config.apiEndpoint & ", env = " & res.config.environment
-        info "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
+        debug "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
       except CatchableError as exc:
         debug "equinox: cannot connect to Discord RPC: " & exc.msg
         rpc = nil
