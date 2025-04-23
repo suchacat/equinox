@@ -6,32 +6,38 @@ import
     certification, lxc, image_downloader, configuration, init, sugar, properties,
     app_manager, platform, network, apk_fetcher, drivers,
   ],
-  core/[run]
+  core/[run, meta]
 
-const Splashes = [
-  "\"pc game support when\" bro im not even done installing my rootkits on your pc -tray",
-  "all hail the NT flying horse",
-  "\"im in a perpetual state of shitting myself\" -hippoz, 2025",
-  "compiled with the full clanger soyboy toolchain, complete with mimalloc",
-  "eternal hunger", "iltam zumra rashupti elatim", "total soong death",
-]
+proc showMeta() =
+  echo """
+Equinox $1
+Copyright (C) 2025 The EquinoxHQ Team
+This software is licensed under the MIT license.
+
+* Compiled with Nim $2
+* Compiled on $3
+* Roblox target: $4""" % [
+    Version, NimVersion, CompileTime, SelectedVersion
+  ]
 
 proc showHelp(code: int = 0) {.noReturn.} =
   echo """
 Usage: equinox [mode] [arguments] ...
 
 equinox is a runtime for Roblox on Linux that uses LXC containers.
-All commands need root access.
+All commands need root access. Do not use this command if you do not know what you're doing!
+Use the GUI (equinox_gui) instead.
 
 Modes:
-  init                 Initialize Equinox. Download the Android runtime images and Roblox.
-  run                  Start the Equinox container with Roblox.
+  init                 Initialize Equinox. Download the Android runtime images.
+  run                  Start the Equinox container and launch Roblox.
   halt                 Stop the Equinox container.
 
   net
     start              Start the networking bridge. This is already called by `run` upon starting up.
     stop               Stop the networking bridge. This is already called by `run` upon exiting.
-
+  
+  meta                 Get build metadata
   shell                Run a shell command in the Android container
   sh                   Run a shell REPL in the Android container
   install              Automatically fetch and install Roblox
@@ -202,6 +208,8 @@ EquinoxHQ is not responsible for any of your actions.
 
     let uri = cast[PlaceURI](input.arguments[0])
     launchRobloxGame(input, uri)
+  of "meta":
+    showMeta()
   else:
     error "equinox: invalid command: " & input.command
     quit(1)
