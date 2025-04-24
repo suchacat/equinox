@@ -6,6 +6,7 @@ import
     certification, lxc, image_downloader, configuration, init, sugar, properties,
     app_manager, platform, network, apk_fetcher, drivers,
   ],
+  container/utils/mount,
   core/[run, meta]
 
 proc showMeta() =
@@ -72,6 +73,9 @@ proc main() {.inline.} =
   case input.command
   of "init":
     initialize(input)
+  of "unmount":
+    loadConfig(input)
+    umountAll(config.rootfs)
   of "install-apk":
     if input.arguments.len < 1:
       error "equinox: expected 1 argument, got none."

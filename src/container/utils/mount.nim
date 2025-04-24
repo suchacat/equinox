@@ -1,4 +1,4 @@
-import std/[os, logging, strutils]
+import std/[algorithm, os, logging, strutils]
 import ./[exec]
 import ../selinux
 
@@ -20,7 +20,7 @@ proc umountAllList*(prefix: string, source: string = "/proc/mounts"): seq[string
 
   let prefix = absolutePath(prefix)
 
-  for line in source.readFile().splitLines():
+  for line in source.readFile().splitLines().reversed():
     if line.len < 1:
       continue
 
@@ -33,7 +33,8 @@ proc umountAllList*(prefix: string, source: string = "/proc/mounts"): seq[string
     if mountpoint.startsWith(prefix):
       if mountpoint.endsWith("\40(deleted)"):
         mountpoint = mountpoint[0 ..< "\40(deleted)".len]
-        ret &= ensureMove(mountpoint)
+      
+      ret &= mountpoint
 
   ensureMove(ret)
 
