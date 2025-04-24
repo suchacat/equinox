@@ -292,7 +292,7 @@ proc waitForContainerBoot*(maxAttempts: uint64 = 32'u64) =
 
     debug "lxc: wait #" & $attempts
     inc attempts
-    sleep(10) # professional locking mechanism
+    sleep(80) # professional locking mechanism
 
   if getLxcStatus() != "RUNNING":
     raise newException(

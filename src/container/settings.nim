@@ -11,7 +11,7 @@ proc settingsPut*(namespace: string, key: string, value: bool | string | SomeInt
     cmd &= $int(value)
 
   when value is string:
-    cmd &= '"' & value & '"'
+    cmd &= value
 
   when value is SomeInteger:
     cmd &= $value

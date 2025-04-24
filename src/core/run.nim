@@ -73,6 +73,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     return
   else:
     startLxcContainer(input)
+    waitForContainerBoot()
 
     var platform = getIPlatformService()
     platform.setProperty("waydroid.active_apps", "com.roblox.client")
@@ -90,6 +91,10 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     settingsPut("system", "hide_rotation_lock_toggle_for_accessibility", true)
     settingsPut("system", "hearing_aid", false) # UD method (set it to true for the funnies)
     settingsPut("system", "theater_mode_on", true) # Make sure no Android garbage shows up
+    settingsPut("secure", "screensaver_enabled", false)
+    settingsPut("secure", "volume_hush_gesture", false)
+    settingsPut("secure", "sysui_nav_bar", false)
+    settingsPut("global", "policy_control", "immersive.status=*")
 
     if launchRoblox:
       startRobloxClient(platform)
@@ -122,7 +127,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
       umountAll(config.rootfs)
       info "equinox: app cleanup completed gracefully"
 
-type PlaceURI* = distinct string
+type PlaceURI* = string
 
 proc launchRobloxGame*(input: Input, id: PlaceURI | string) =
   info "equinox: sending VIEW intent to roblox client"
@@ -133,5 +138,5 @@ proc launchRobloxGame*(input: Input, id: PlaceURI | string) =
     showUI(launch = false)
 
   var platform = getIPlatformService()
-  platform.launchIntent("android.intent.action.VIEW", "roblox://placeId=" & id)
+  platform.launchIntent("android.intent.action.VIEW", "roblox://placeId=" & $id)
   platform.setProperty("waydroid.active_apps", "com.roblox.client")

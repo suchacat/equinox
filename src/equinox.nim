@@ -11,14 +11,14 @@ import
 
 proc showMeta() =
   echo """
-Equinox $1
+Equinox $1 ($5)
 Copyright (C) 2025 The EquinoxHQ Team
 This software is licensed under the MIT license.
 
 * Compiled with Nim $2
 * Compiled on $3
 * Roblox target: $4""" % [
-    Version, NimVersion, CompileTime, SelectedVersion
+    Version, NimVersion, CompileTime, SelectedVersion, CommitHash
   ]
 
 proc showHelp(code: int = 0) {.noReturn.} =
