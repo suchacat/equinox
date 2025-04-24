@@ -87,7 +87,7 @@ method view(app: LauncherState): Widget =
                         version = NimblePkgVersion
                         supportUrl = "https://discord.gg/Z5m3n9fjcU"
                         issueUrl = "https://github.com/equinoxhq/equinox/issues"
-                        website = "https://github.com/equinoxhq/equinox/"
+                        website = "https://equinoxhq.github.io"
                         copyright =
                           """
 Copyright (C) 2025 xTrayambak and the EquinoxHQ Team
