@@ -252,7 +252,7 @@ proc getIPlatformService*(): IPlatform =
       raise newException(Defect, "Cannot get service: " & ServiceName)
     else:
       debug "platform: failed to get service: " & ServiceName & "; retrying"
-      sleep(10)
+      sleep(100)
       remote = gbinder_servicemanager_get_service_sync(
         serviceMgr, ServiceName.cstring, status.addr
       )
