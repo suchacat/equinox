@@ -2,7 +2,7 @@ import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/[
     lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
-    rootfs, app_config, fflags, properties, drivers,
+    rootfs, app_config, fflags, properties, drivers, settings
   ]
 import pkg/[discord_rpc]
 import ../argparser
@@ -69,13 +69,27 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   dispatcher.running = true
 
   if getLxcStatus() == "RUNNING":
-    debug "equinox: container is already running"
-    showUI()
+    warn "equinox: container is already running"
+    return
   else:
     startLxcContainer(input)
 
     var platform = getIPlatformService()
     platform.setProperty("waydroid.active_apps", "com.roblox.client")
+
+    settingsPut("system", "dim_screen", false) # Don't dim the screen.
+    settingsPut("system", "screen_brightness", 100)
+    settingsPut("system", "screen_brightness_float", 1)
+    settingsPut("system", "volume_notification", 0)
+    settingsPut("system", "volume_ring", 0)
+    settingsPut("system", "volume_system", 0)
+    settingsPut("system", "volume_alarm", 0)
+    settingsPut("system", "ringtone_set", false)
+    settingsPut("system", "notification_sound_set", false)
+    settingsPut("system", "notification_light_pulse", false)
+    settingsPut("system", "hide_rotation_lock_toggle_for_accessibility", true)
+    settingsPut("system", "hearing_aid", false) # UD method (set it to true for the funnies)
+    settingsPut("system", "theater_mode_on", true) # Make sure no Android garbage shows up
 
     if launchRoblox:
       startRobloxClient(platform)
@@ -119,12 +133,5 @@ proc launchRobloxGame*(input: Input, id: PlaceURI | string) =
     showUI(launch = false)
 
   var platform = getIPlatformService()
-
-  while isEmptyOrWhitespace(&readOutput("pidof", "com.roblox.client")):
-    # FIXME: please don't do this
-    when id is string:
-      platform.launchIntent("android.intent.action.VIEW", "roblox://placeId=" & id)
-    else:
-      platform.launchIntent("android.intent.action.VIEW", cast[string](id))
-
+  platform.launchIntent("android.intent.action.VIEW", "roblox://placeId=" & id)
   platform.setProperty("waydroid.active_apps", "com.roblox.client")
