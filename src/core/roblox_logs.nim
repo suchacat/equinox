@@ -52,7 +52,7 @@ proc checkLineForEvents*(line: string) =
       warn "malformed BloxstrapRPC payload received: " & exc.msg
       warn "this game is sending bad payloads, it seems like."
       return
-  elif line.contains("Warning [FLog::Graphics] RenderView destroyed"):
+  elif line.contains("setTaskSchedulerBackgroundMode() enable:true context:ASMA.stop"):
     debug "watcher: looks like roblox is stopping."
     chan.send(EventPayload(kind: Event.RobloxClose))
 
