@@ -1,5 +1,6 @@
 lxc.uts.name = waydroid
 
+lxc.apparmor.profile = unconfined
 lxc.seccomp.profile = WORKING/lxc/equinox/equinox.seccomp
 
 lxc.no_new_privs = 1
