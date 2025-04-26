@@ -1,13 +1,13 @@
-import std/[os, logging, terminal, random, rdstdin, strutils]
-import pkg/[colored_logger, pretty, noise]
+import std/[logging, terminal, random, rdstdin, strutils]
+import pkg/[colored_logger, noise]
 import ./argparser
 import
   container/[
-    certification, lxc, image_downloader, configuration, init, sugar, properties,
-    app_manager, platform, network, apk_fetcher, drivers,
+    certification, lxc, configuration, init, sugar, properties,
+    app_manager, platform, network,
   ],
   container/utils/mount,
-  core/[run, meta]
+  core/[apk_fetcher, run, meta]
 
 proc showMeta() =
   echo """
