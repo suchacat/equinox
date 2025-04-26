@@ -1,8 +1,8 @@
 import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/[
-    lxc, configuration, cpu, drivers, hal, platform, network, sugar, hardware_service,
-    rootfs, app_config, fflags, properties, drivers, settings
+    lxc, configuration, drivers, platform, network, sugar,
+    rootfs, app_config, fflags, settings
   ]
 import pkg/[discord_rpc]
 import ../argparser

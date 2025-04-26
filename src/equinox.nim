@@ -1,24 +1,33 @@
 import std/[logging, terminal, random, rdstdin, strutils]
-import pkg/[colored_logger, noise]
+import pkg/[colored_logger, noise],
+       pkg/nimsimd/runtimecheck
 import ./argparser
 import
   container/[
     certification, lxc, configuration, init, sugar, properties,
-    app_manager, platform, network,
+    app_manager, platform, network, cpu
   ],
   container/utils/mount,
   core/[apk_fetcher, run, meta]
 
 proc showMeta() =
-  echo """
+  stdout.write """
 Equinox $1 ($5)
 Copyright (C) 2025 The EquinoxHQ Team
 This software is licensed under the MIT license.
 
 * Compiled with Nim $2
 * Compiled on $3
-* Roblox target: $4""" % [
-    Version, NimVersion, CompileTime, SelectedVersion, CommitHash
+* Roblox target: $4
+
+* Detected CPU Architecture: $6
+* Supports SSE3: $7
+* Supports SSE4.2: $8
+* Supports AVX2: $9
+""" % [
+    Version, NimVersion, CompileTime, SelectedVersion, CommitHash,
+    getArchStr().maybeRemap(), $checkInstructionSets({SSE3}),
+    $checkInstructionSets({SSE42}), $checkInstructionSets({AVX2})
   ]
 
 proc showHelp(code: int = 0) {.noReturn.} =
