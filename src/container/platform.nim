@@ -240,6 +240,8 @@ proc getIPlatformService*(): IPlatform =
     if not serviceMgr.waitForManager:
       error "platform: binder service manager never initialized itself"
 
+    info "platform: binder service manager has appeared, continuing."
+
   var status: int32
   var remote = gbinder_servicemanager_get_service_sync(
     serviceMgr, ServiceName.cstring, status.addr

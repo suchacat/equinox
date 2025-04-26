@@ -14,6 +14,10 @@ const EquinoxLogPreallocBufferSize {.intdefine.} = 512
 var watcher {.threadvar.}: Thread[string]
 var running: Atomic[bool]
 
+type
+  LogWatcherState* = object
+    webviewOpened*: bool = false
+
 proc getLogDir(): string =
   config.equinoxData / "data" / "com.roblox.client" / "files" / "appData" / "logs"
 
@@ -25,7 +29,7 @@ proc destroyAllLogs*() =
 
     removeFile(path)
 
-proc checkLineForEvents*(line: string) =
+proc checkLineForEvents*(line: string, state: var LogWatcherState) =
   if line.contains("! Joining game"):
     let gameId = line.split("place ")[1].split(" at")[0]
 
@@ -52,9 +56,18 @@ proc checkLineForEvents*(line: string) =
       warn "malformed BloxstrapRPC payload received: " & exc.msg
       warn "this game is sending bad payloads, it seems like."
       return
-  elif line.contains("setTaskSchedulerBackgroundMode() enable:true context:ASMA.stop"):
-    debug "watcher: looks like roblox is stopping."
-    chan.send(EventPayload(kind: Event.RobloxClose))
+  elif line.contains("[FLog::AndroidGLView] rbx.datamodel: setTaskSchedulerBackgroundMode() enable:true context:ASMA.stop"):
+    debug "watcher: roblox task scheduler is stopping"
+
+    if not state.webviewOpened:
+      info "watcher: roblox is preparing to exit. Notifying dispatcher in the main thread."
+      chan.send(EventPayload(kind: Event.RobloxClose))
+  elif line.contains("[DFLog::DMNotificationMonitor] DM notification received. Type 20"):
+    info "equinox: WebView has been opened"
+    state.webviewOpened = true
+  elif line.contains("[DFLog::DMNotificationMonitor] DM notification received. Type 10"):
+    debug "equinox: WebView has been closed"
+    state.webviewOpened = false
 
 proc findTargetLog*(): string =
   info "equinox: finding latest log file"
@@ -126,6 +139,7 @@ proc watcherFunc(target: string) =
 
   let size = sizeof(INotifyEvent) + PC_NAME_MAX + 1
   var buf = cast[ptr UncheckedArray[byte]](alloc(size))
+  var state: LogWatcherState
   while running.load():
     let len = read(fd, buf[0].addr, size)
     if len == -1:
@@ -138,7 +152,7 @@ proc watcherFunc(target: string) =
       debug "watcher: log file has changed"
       let line = readLastLine(target)
       info "roblox: " & line.strip()
-      checkLineForEvents(line)
+      checkLineForEvents(line, state)
 
   dealloc(buf)
   debug "watcher: thread is exiting loop"
