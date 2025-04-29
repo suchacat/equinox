@@ -1,8 +1,9 @@
 ## Launcher GUI
 import std/[os, logging, options, osproc, posix]
-import pkg/owlkettle, pkg/owlkettle/[playground, adw]
+import pkg/owlkettle, pkg/owlkettle/[playground, adw],
+       pkg/[shakar]
 import ./envparser, ../argparser
-import ../container/selinux
+import ../container/network
 
 const
   NimblePkgVersion {.strdefine.} = "???"
@@ -38,9 +39,37 @@ viewable Launcher:
   sock:
     cint
 
-
 template settingsMenu(): Widget =
   Window()
+
+proc networkCheck(app: LauncherState): bool =
+  let 
+    device = getNetworkDevice()
+    offline = !device or not isOnline(&device)
+  
+  result = offline
+  
+  if offline:
+    discard app.open: gui:
+      Window:
+        defaultSize = (480, 320)
+        title = "You are offline."
+      
+        Clamp:
+          maximumSize = 500
+          margin = 12
+
+          Box:
+            orient = OrientY
+            spacing = 12
+
+            Icon:
+              name = "network-cellular-disabled-symbolic"
+              pixelSize = 200
+
+            Label:
+              text = "<span size=\"large\">Equinox could not find an active network connection. Without it, <b>Roblox won't run.</b></span>"
+              useMarkup = true
 
 method view(app: LauncherState): Widget =
   result = gui:
@@ -129,6 +158,9 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
               text = "Launch Roblox"
               tooltip = "This will start Roblox through Equinox."
               proc clicked() =
+                if networkCheck(app):
+                  return
+
                 var buff: array[1, uint8]
                 buff[0] = (uint8) LauncherMagic.Launch
                 discard write(app.sock, buff[0].addr, 1) == 0
