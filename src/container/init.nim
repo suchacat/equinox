@@ -27,7 +27,6 @@ proc initialize*(input: Input) =
 
   assert(config.equinoxData.len > 0)
   discard existsOrCreateDir(config.equinoxData)
-  # discard runCmd("sudo", "chmod 666 -R " & config.equinoxData)
   discard existsOrCreateDir(config.hostPerms)
   discard existsOrCreateDir(config.rootfs)
   discard existsOrCreateDir(config.overlay)

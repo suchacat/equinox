@@ -1,4 +1,6 @@
-import std/[os, osproc, strutils, logging, posix]
+import std/[os, osproc, options, strutils, logging, posix]
+import pkg/[shakar]
+import ./utils/exec
 
 const
   vnic = "equi0"
@@ -50,26 +52,30 @@ proc disableIf*() =
   exec("sudo ip addr flush dev " & LxcBridge)
   exec("sudo ip link set dev " & LxcBridge & " down")
 
+proc getNetworkDevice*(): Option[string] =
+  for _, dev in walkDir("/sys" / "class" / "net"):
+    let iface = dev.splitPath().tail
+    if iface.startsWith("eth") or iface.startsWith("wlo") or iface.startsWith("enp") or
+        iface.startsWith("wlp") or iface.startsWith("wlan"):
+      return some(iface)
+
+proc isOnline*(iface: string): bool =
+  let output = &readOutput("ip", "addr show " & iface)
+  output.contains("state UP")
+
 proc startIptables*() =
   let
     iptablesBin = "iptables"
     ip6tablesBin = findExe("ip6tables")
 
-  let device = block:
-    var x: string
-    for _, dev in walkDir("/sys" / "class" / "net"):
-      let iface = dev.splitPath().tail
-      if iface.startsWith("eth") or iface.startsWith("wlo") or iface.startsWith("enp") or
-          iface.startsWith("wlp") or iface.startsWith("wlan"):
-        x = iface
-
-    ensureMove(x)
-
-  if device.len < 1:
+  let dev = getNetworkDevice()
+  if !dev:
     error "net: cannot find suitable network device!"
     raise newException(
       NoSuitableNetDevice, "Cannot find a suitable network device. Is the host offline?"
     )
+
+  let device = &dev
 
   debug "net: target device: " & device
 
