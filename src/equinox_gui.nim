@@ -2,7 +2,7 @@
 import std/[os, osproc, logging, posix]
 import pkg/[colored_logger]
 import ./gui/[onboard, icons, launcher, envparser, desktop_files, apk_install]
-import ./container/[apk_fetcher]
+import ./core/[apk_fetcher]
 import ./[argparser]
 
 proc isFirstRun*(input: Input): bool =

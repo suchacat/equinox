@@ -38,6 +38,10 @@ viewable Launcher:
   sock:
     cint
 
+
+template settingsMenu(): Widget =
+  Window()
+
 method view(app: LauncherState): Widget =
   result = gui:
     Window:
@@ -45,8 +49,10 @@ method view(app: LauncherState): Widget =
       title = app.title
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
-        insert(app.toAutoFormMenu(sizeRequest = (600, 500))) {.addRight.}
-          # for tweaking or whatever
+        
+        MenuButton {.addRight.}:
+          icon = "preferences-other-symbolic"
+          style = [ButtonFlat]
 
         MenuButton {.addLeft.}:
           icon = "open-menu"
@@ -62,19 +68,6 @@ method view(app: LauncherState): Widget =
               orient = OrientY
               margin = 4
               spacing = 3
-
-              ModelButton:
-                text = "Tools"
-                menuName = "tools"
-                proc clicked() =
-                  debug "gui: opened the tooling section"
-
-              Separator()
-
-              ModelButton:
-                text = "Preferences"
-                proc clicked() =
-                  echo "WIP"
 
               ModelButton:
                 text = "About Equinox"
