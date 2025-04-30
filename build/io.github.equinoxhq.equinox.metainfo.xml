@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>io.github.equinoxhq.equinox</id>
+
+	<name>Equinox</name>
+	<summary>An open source runtime for Roblox on Linux</summary>
+	
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>MIT</project_license>
+	<developer_name>EquinoxHQ</developer_name>
+
+	<url type="homepage">https://equinoxhq.github.io</url>
+	<url type="bugtracker">https://github.com/equinoxhq/equinox/issues</url>
+	<url type="help">https://github.com/equinoxhq/equinox</url>
+	<url type="contact">https://discord.gg/Z5m3n9fjcU</url>
+
+	<supports>
+		<control>pointing</control>
+		<control>keyboard</control>
+		<control>touch</control>
+		<control>tablet</control>
+	</supports>
+	
+	<description>
+		<p>
+		Equinox is a new open-source runtime for Roblox on Linux that uses containerization to run a full Android userspace on your system in order to run Roblox.
+		You can think of it as an unofficial native port for Roblox to Linux, since Roblox won't do it themselves.
+		</p>
+	</description>
+	
+	<screenshots>
+		<screenshot type="default">
+			<image>https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox002.jpg</image>
+		</screenshot>
+		<screenshot type="launcher">
+			<image>https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox004.jpg</image>
+		</screenshot>
+		<screenshot type="initializer">
+			<image>https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox003.jpg</image>
+		</screenshot>
+	</screenshots>
+
+	<releases></releases>
+
+	<!-- TODO:(xTrayambak): What do we do about this? Roblox doesn't inherently have this stuff, but games inside of it do sometimes have 'em. -->
+	<content_rating type="oars-1.1">
+		<content_attribute id="violence-cartoon">intense</content_attribute>
+		<content_attribute id="violence-fantasy">intense</content_attribute>
+		<content_attribute id="violence-realistic">intense</content_attribute>
+		<content_attribute id="violence-bloodshed">mild</content_attribute>
+		<content_attribute id="violence-desecration">mild</content_attribute>
+		<content_attribute id="drugs-alcohol">mild</content_attribute>
+		<content_attribute id="sex-themes">mild</content_attribute>
+		<content_attribute id="language-profanity">mild</content_attribute>
+		<content_attribute id="social-chat">moderate</content_attribute>
+		<content_attribute id="social-info">intense</content_attribute>
+		<content_attribute id="social-audio">intense</content_attribute>
+		<content_attribute id="social-contacts">intense</content_attribute>
+		<content_attribute id="money-purchasing">intense</content_attribute>
+		<content_attribute id="money-advertising">intense</content_attribute>
+		<content_attribute id="money-gambling">moderate</content_attribute>
+	</content_rating>
+</component>
