@@ -1,6 +1,6 @@
 ## Forked (master-slave) IPC implementation
 ## Copyright (C) 2025 EquinoxHQ
-import std/[posix, logging]
+import std/[posix, logging, options]
 
 type
   IPCError* = object of OSError
@@ -24,7 +24,25 @@ proc initIpcFds*(): IPCFds =
 
 proc send*[X: enum](fd: cint, op: X): bool {.discardable.} =
   ## Send an enum of type `X` to the other side.
+  debug "ipc: sending op: " & $op
   write(fd, op.addr, 1) == 1
+
+proc receive*[X: enum](fd: cint): Option[X] =
+  ## Receive an `Option[X]` which will be full only
+  ## if the file descriptor has incoming data.
+  var readfds: TFdSet
+  var timeout: Timeval
+
+  FD_ZERO(readfds)
+  FD_SET(fd, readfds)
+  var ret = select(fd + 1.cint, readfds.addr, nil, nil, timeout.addr)
+  if ret < 0 or not bool(FD_ISSET(fd, readfds)):
+    return # We have no incoming data. If we call read, we'll probs end up blocking.
+  
+  var op: X
+  assert(read(fd, op.addr, 1) == 1, "BUG: read() failed: " & $strerror(errno) & " (errno " & $errno & ')')
+
+  some(ensureMove(op))
 
 proc close*(fds: var IPCFds) =
   ## Close both the IPC file descriptors.
