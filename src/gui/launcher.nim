@@ -1,16 +1,15 @@
 ## Launcher GUI
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw], pkg/[shakar]
-import ./envparser, ../argparser
-import ../container/network
+import ../container/network,
+       ../core/[forked_ipc],
+       ./envparser, ../argparser
 
 const
   NimblePkgVersion {.strdefine.} = "???"
   License = staticRead("../../LICENSE")
 
 type
-  CantMakeSocketPair = object of OSError
-
   LauncherMagic {.pure, size: sizeof(uint8).} = enum
     Launch = 0 ## Launch Equinox.
     Halt = 1 ## Halt Equinox.
@@ -181,14 +180,7 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   var running = true
   while running:
     debug "launcher/child: waiting for opcode"
-    var opcode: array[1, byte]
-    if (let status = read(fd, opcode[0].addr, 1); status != 1):
-      error "launcher/child: read() returned " & $status & ": " & $strerror(errno) &
-        " (errno " & $errno & ')'
-      error "launcher/child: i think the launcher has crashed or something idk"
-      break
-
-    var op = cast[LauncherMagic](cast[uint8](opcode[0]))
+    let op = fd.receive(LauncherMagic)
     debug "launcher/child: opcode -> " & $op
 
     case op
@@ -220,25 +212,16 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   quit(0)
 
 proc runLauncher*(input: Input) =
-  var pair: array[2, cint]
-  if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
-    raise newException(
-      CantMakeSocketPair,
-      "socketpair() returned " & $status & ": " & $strerror(errno) & " (errno " & $errno &
-        ')',
-    )
-
+  let pair = initIpcFds()
   let pid = fork()
   let env = getXdgEnv(input)
 
   # If we're the parent - we launch the GUI.
   # Else, we'll sit around waiting for commands to act upon.
   if pid != 0:
-    adw.brew(gui(Launcher(sock = pair[0], env = env)))
+    adw.brew(gui(Launcher(sock = pair.master, env = env)))
 
     # Tell the child to die.
-    var buff: array[1, uint8]
-    buff[0] = (uint8) LauncherMagic.Die
-    discard write(pair[0], buff[0].addr, 1)
+    pair.master.send(LauncherMagic.Die)
   else:
-    waitForCommands(env, pair[1])
+    waitForCommands(env, pair.slave)
