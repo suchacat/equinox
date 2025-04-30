@@ -27,16 +27,16 @@ proc send*[X: enum](fd: cint, op: X): bool {.discardable.} =
   debug "ipc: sending op: " & $op
   write(fd, op.addr, 1) == 1
 
-proc receive*[X: enum](fd: cint): Option[X] =
+proc receive*[X: enum](fd: cint, typ: typedesc[X]): X =
   var op: X
   assert(
     read(fd, op.addr, 1) == 1,
     "BUG: read() failed: " & $strerror(errno) & " (errno " & $errno & ')',
   )
 
-  some(ensureMove(op))
+  ensureMove(op)
 
-proc receiveNonBlocking*[X: enum](fd: cint): Option[X] =
+proc receiveNonBlocking*[X: enum](fd: cint, typ: typedesc[X]): Option[X] =
   ## Receive an `Option[X]` which will be full only
   ## if the file descriptor has incoming data.
   var readfds: TFdSet

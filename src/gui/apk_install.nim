@@ -1,18 +1,13 @@
 ## APK fetcher GUI
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw]
-import ../bindings/[libadwaita]
-import ../argparser
-import ./envparser
+import ../bindings/[libadwaita], ../core/[forked_ipc], ../argparser, ./envparser
 
-type
-  CantMakeSocketPair = object of OSError
-
-  FetcherMagic {.pure, size: sizeof(uint8).} = enum
-    Fetch = 0 ## Fetch the APK
-    Success = 1 ## Successful fetch
-    Fail = 2 ## Failed fetch
-    Die = 3 ## Kill yourself.
+type FetcherMagic {.pure, size: sizeof(uint8).} = enum
+  Fetch = 0 ## Fetch the APK
+  Success = 1 ## Successful fetch
+  Fail = 2 ## Failed fetch
+  Die = 3 ## Kill yourself.
 
 viewable APKFetcher:
   title:
@@ -35,6 +30,7 @@ viewable APKFetcher:
 
   sock:
     cint
+
   addedTask:
     bool
 
@@ -132,14 +128,7 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   var running = true
   while running:
     debug "install/child: waiting for opcode"
-    var opcode: array[1, uint8]
-    if (let status = read(fd, opcode[0].addr, 1); status != 1):
-      error "install/child: read() returned " & $status & ": " & $strerror(errno) &
-        " (errno " & $errno & ')'
-      error "install/child: i think the launcher has crashed or something idk"
-      break
-
-    var op = cast[FetcherMagic](opcode[0])
+    let op = fd.receive(FetcherMagic)
     debug "install/child: opcode -> " & $op
 
     case op
@@ -187,26 +176,17 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   quit(0)
 
 proc runApkFetcher*(input: Input) =
-  var pair: array[2, cint]
-  if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
-    raise newException(
-      CantMakeSocketPair,
-      "socketpair() returned " & $status & ": " & $strerror(errno) & " (errno " & $errno &
-        ')',
-    )
-
+  let pair = initIpcFds()
   let pid = fork()
   let env = getXdgEnv(input)
 
   # If we're the parent - we launch the GUI.
   # Else, we'll sit around waiting for commands to act upon.
   if pid != 0:
-    var buff: array[1, uint8]
-    buff[0] = (uint8) FetcherMagic.Fetch
-    discard write(pair[0], buff[0].addr, 1)
+    pair.master.send(FetcherMagic.Fetch)
 
     adw.brew(
-      gui(APKFetcher(sock = pair[0], env = env)),
+      gui(APKFetcher(sock = pair.master, env = env)),
       stylesheets = [
         newStylesheet(
           """
@@ -225,7 +205,6 @@ proc runApkFetcher*(input: Input) =
     )
 
     # Tell the child to die.
-    buff[0] = (uint8) FetcherMagic.Die
-    discard write(pair[0], buff[0].addr, 1)
+    pair.master.send(FetcherMagic.Die)
   else:
-    waitForCommands(env, pair[1])
+    waitForCommands(env, pair.slave)
