@@ -8,7 +8,9 @@
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>MIT</project_license>
 	<developer_name>EquinoxHQ</developer_name>
+	
 
+  	<launchable type="desktop-id">equinox.desktop</launchable>
 	<url type="homepage">https://equinoxhq.github.io</url>
 	<url type="bugtracker">https://github.com/equinoxhq/equinox/issues</url>
 	<url type="help">https://github.com/equinoxhq/equinox</url>
