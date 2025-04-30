@@ -1,11 +1,10 @@
 import std/[logging, terminal, random, rdstdin, strutils]
-import pkg/[colored_logger, noise],
-       pkg/nimsimd/runtimecheck
+import pkg/[colored_logger, noise], pkg/nimsimd/runtimecheck
 import ./argparser
 import
   container/[
-    certification, lxc, configuration, init, sugar, properties,
-    app_manager, platform, network, cpu
+    certification, lxc, configuration, init, sugar, properties, app_manager, platform,
+    network, cpu,
   ],
   container/utils/mount,
   core/[apk_fetcher, run, meta]
@@ -24,10 +23,17 @@ This software is licensed under the MIT license.
 * Supports SSE3: $7
 * Supports SSE4.2: $8
 * Supports AVX2: $9
-""" % [
-    Version, NimVersion, CompileTime, SelectedVersion, CommitHash,
-    getArchStr().maybeRemap(), $checkInstructionSets({SSE3}),
-    $checkInstructionSets({SSE42}), $checkInstructionSets({AVX2})
+""" %
+  [
+    Version,
+    NimVersion,
+    CompileTime,
+    SelectedVersion,
+    CommitHash,
+    getArchStr().maybeRemap(),
+    $checkInstructionSets({SSE3}),
+    $checkInstructionSets({SSE42}),
+    $checkInstructionSets({AVX2}),
   ]
 
 proc showHelp(code: int = 0) {.noReturn.} =

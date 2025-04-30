@@ -1,8 +1,8 @@
 import std/[os, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/[
-    lxc, configuration, drivers, platform, network, sugar,
-    rootfs, app_config, fflags, settings
+    lxc, configuration, drivers, platform, network, sugar, rootfs, app_config, fflags,
+    settings,
   ]
 import pkg/[discord_rpc]
 import ../argparser
@@ -89,8 +89,10 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     settingsPut("system", "notification_sound_set", false)
     settingsPut("system", "notification_light_pulse", false)
     settingsPut("system", "hide_rotation_lock_toggle_for_accessibility", true)
-    settingsPut("system", "hearing_aid", false) # UD method (set it to true for the funnies)
-    settingsPut("system", "theater_mode_on", true) # Make sure no Android garbage shows up
+    settingsPut("system", "hearing_aid", false)
+      # UD method (set it to true for the funnies)
+    settingsPut("system", "theater_mode_on", true)
+      # Make sure no Android garbage shows up
     settingsPut("secure", "screensaver_enabled", false)
     settingsPut("secure", "volume_hush_gesture", false)
     settingsPut("secure", "sysui_nav_bar", false)

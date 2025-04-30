@@ -33,7 +33,7 @@ proc umountAllList*(prefix: string, source: string = "/proc/mounts"): seq[string
     if mountpoint.startsWith(prefix):
       if mountpoint.endsWith("\40(deleted)"):
         mountpoint = mountpoint[0 ..< "\40(deleted)".len]
-      
+
       ret &= mountpoint
 
   ensureMove(ret)

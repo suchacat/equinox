@@ -5,7 +5,7 @@ import std/[posix, logging]
 type
   IPCError* = object of OSError
   CantMakeSocketPair = object of IPCError
-  
+
   IPCFds* = object
     master*, slave*: cint
 
@@ -31,7 +31,13 @@ proc close*(fds: var IPCFds) =
   ## **WARNING**: This must only be called by the master! If you call it from the slave, there might be unexpected behaviour.
   debug "ipc: closing file descriptors"
 
-  assert(fds.master.close() == 0, "BUG: Failed to close master fd: " & $strerror(errno) & " (errno " & $errno & ')')
-  assert(fds.slave.close() == 0, "BUG: Failed to close master fd: " & $strerror(errno) & " (errno " & $errno & ')')
+  assert(
+    fds.master.close() == 0,
+    "BUG: Failed to close master fd: " & $strerror(errno) & " (errno " & $errno & ')',
+  )
+  assert(
+    fds.slave.close() == 0,
+    "BUG: Failed to close master fd: " & $strerror(errno) & " (errno " & $errno & ')',
+  )
 
   debug "ipc: closed file descriptors"

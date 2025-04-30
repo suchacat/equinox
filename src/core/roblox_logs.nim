@@ -14,9 +14,8 @@ const EquinoxLogPreallocBufferSize {.intdefine.} = 512
 var watcher {.threadvar.}: Thread[string]
 var running: Atomic[bool]
 
-type
-  LogWatcherState* = object
-    webviewOpened*: bool = false
+type LogWatcherState* = object
+  webviewOpened*: bool = false
 
 proc getLogDir(): string =
   config.equinoxData / "data" / "com.roblox.client" / "files" / "appData" / "logs"
@@ -56,7 +55,9 @@ proc checkLineForEvents*(line: string, state: var LogWatcherState) =
       warn "malformed BloxstrapRPC payload received: " & exc.msg
       warn "this game is sending bad payloads, it seems like."
       return
-  elif line.contains("[FLog::AndroidGLView] rbx.datamodel: setTaskSchedulerBackgroundMode() enable:true context:ASMA.stop"):
+  elif line.contains(
+    "[FLog::AndroidGLView] rbx.datamodel: setTaskSchedulerBackgroundMode() enable:true context:ASMA.stop"
+  ):
     debug "watcher: roblox task scheduler is stopping"
 
     if not state.webviewOpened:

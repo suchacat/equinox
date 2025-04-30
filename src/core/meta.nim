@@ -10,5 +10,5 @@ const
     "\"im in a perpetual state of shitting myself\" -hippoz, 2025",
     "compiled with the full clanger soyboy toolchain, complete with mimalloc",
     "eternal hunger", "iltam zumra rashupti elatim", "total soong death",
-    "never forget the april 2025 chmod incident"
+    "never forget the april 2025 chmod incident",
   ]

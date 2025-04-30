@@ -1,9 +1,10 @@
 ## Fetch Roblox's APK from Kirbix's Github endpoint
 import std/[os, tables, logging]
 import pkg/[jsony]
-import ../container/[configuration, properties, lxc, platform],
-       ../container/utils/[exec, http],
-       ../argparser
+import
+  ../container/[configuration, properties, lxc, platform],
+  ../container/utils/[exec, http],
+  ../argparser
 
 const
   APKEndpoint* = "https://equinoxhq.github.io/equinox-json/equinox.json"

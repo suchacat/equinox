@@ -1,8 +1,7 @@
 ## Android settings
 ## Copyright (C) 2025 the EquinoxHQ team
 import std/[logging]
-import ./[lxc],
-       ./utils/exec
+import ./[lxc], ./utils/exec
 
 proc settingsPut*(namespace: string, key: string, value: bool | string | SomeInteger) =
   var cmd = "/bin/cmd settings put " & namespace & ' ' & key & ' '
@@ -15,5 +14,5 @@ proc settingsPut*(namespace: string, key: string, value: bool | string | SomeInt
 
   when value is SomeInteger:
     cmd &= $value
-  
+
   discard runCmdInContainer(move(cmd))

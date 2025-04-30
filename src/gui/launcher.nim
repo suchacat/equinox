@@ -1,7 +1,6 @@
 ## Launcher GUI
 import std/[os, logging, options, osproc, posix]
-import pkg/owlkettle, pkg/owlkettle/[playground, adw],
-       pkg/[shakar]
+import pkg/owlkettle, pkg/owlkettle/[playground, adw], pkg/[shakar]
 import ./envparser, ../argparser
 import ../container/network
 
@@ -43,33 +42,35 @@ template settingsMenu(): Widget =
   Window()
 
 proc networkCheck(app: LauncherState): bool =
-  let 
+  let
     device = getNetworkDevice()
     offline = !device or not isOnline(&device)
-  
+
   result = offline
-  
+
   if offline:
-    discard app.open: gui:
-      Window:
-        defaultSize = (480, 320)
-        title = "You are offline."
-      
-        Clamp:
-          maximumSize = 500
-          margin = 12
+    discard app.open:
+      gui:
+        Window:
+          defaultSize = (480, 320)
+          title = "You are offline."
 
-          Box:
-            orient = OrientY
-            spacing = 12
+          Clamp:
+            maximumSize = 500
+            margin = 12
 
-            Icon:
-              name = "network-cellular-disabled-symbolic"
-              pixelSize = 200
+            Box:
+              orient = OrientY
+              spacing = 12
 
-            Label:
-              text = "<span size=\"large\">Equinox could not find an active network connection. Without it, <b>Roblox won't run.</b></span>"
-              useMarkup = true
+              Icon:
+                name = "network-cellular-disabled-symbolic"
+                pixelSize = 200
+
+              Label:
+                text =
+                  "<span size=\"large\">Equinox could not find an active network connection. Without it, <b>Roblox won't run.</b></span>"
+                useMarkup = true
 
 method view(app: LauncherState): Widget =
   result = gui:
@@ -78,7 +79,7 @@ method view(app: LauncherState): Widget =
       title = app.title
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
-        
+
         MenuButton {.addRight.}:
           icon = "preferences-other-symbolic"
           style = [ButtonFlat]
