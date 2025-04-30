@@ -48,7 +48,7 @@ proc receiveNonBlocking*[X: enum](fd: cint, typ: typedesc[X]): Option[X] =
   if ret < 0 or not bool(FD_ISSET(fd, readfds)):
     return # We have no incoming data. If we call read, we'll probs end up blocking.
 
-  some(receive(fd))
+  some(receive(fd, typ))
 
 proc close*(fds: var IPCFds) =
   ## Close both the IPC file descriptors.

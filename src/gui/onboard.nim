@@ -7,11 +7,10 @@ import
   ../container/[lxc, gpu, sugar, certification],
   ../container/utils/exec,
   ../bindings/libadwaita,
+  ../core/[forked_ipc],
   ./clipboard
 
 type
-  CantMakeSocketPair = object of OSError
-
   OnboardMagic {.pure, size: sizeof(uint8).} = enum
     InitEquinox = 0 ## Call the Equinox initialization command
     InitSuccess = 1 ## Successful initialization has taken place
@@ -85,19 +84,11 @@ method view(app: OnboardingAppState): Widget =
 
       discard app.redraw()
 
-    var readfds: TFdSet
-    var timeout: Timeval
-
-    FD_ZERO(readfds)
-    FD_SET(app.sock, readfds)
-    var ret = select(app.sock + 1.cint, readfds.addr, nil, nil, timeout.addr)
-    if ret < 0 or not bool(FD_ISSET(app.sock, readfds)):
+    let op = app.sock.receiveNonBlocking(OnboardMagic)
+    if !op:
       return true
 
-    var buff: array[1, uint8]
-    discard read(app.sock, buff[0].addr, 1)
-
-    case (OnboardMagic) buff[0]
+    case &op
     of OnboardMagic.InitEquinox, OnboardMagic.Die, OnboardMagic.GoogleAuthPhase:
       discard
     of OnboardMagic.InitFailure:
@@ -125,8 +116,7 @@ method view(app: OnboardingAppState): Widget =
                     "Equinox has failed to initialize the container. Please run this launcher from your terminal and send the logs to the Lucem Discord server."
                   margin = 24
     of OnboardMagic.InitSuccess:
-      buff[0] = (uint8) OnboardMagic.GoogleAuthPhase
-      discard write(app.sock, buff[0].addr, 1)
+      app.sock.send(OnboardMagic.GoogleAuthPhase)
 
       discard app.open:
         gui:
@@ -286,22 +276,15 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
       running = false
 
 proc runOnboardingApp*(input: Input) =
-  var pair: array[2, cint]
-  if (let status = socketpair(AF_UNIX, SOCK_STREAM, 0, pair); status != 0):
-    raise newException(
-      CantMakeSocketPair,
-      "socketpair() returned " & $status & ": " & $strerror(errno) & " (errno " & $errno &
-        ')',
-    )
-
+  let pair = initIpcFds()
   let pid = fork()
   let env = getXdgEnv(input)
 
   if pid == 0:
-    waitForCommands(env, pair[0])
+    waitForCommands(env, pair.slave)
   else:
     adw.brew(
-      gui(OnboardingApp(sock = pair[1], env = env)),
+      gui(OnboardingApp(sock = pair.master, env = env)),
       stylesheets = [
         newStylesheet(
           """
@@ -317,6 +300,4 @@ proc runOnboardingApp*(input: Input) =
         )
       ],
     )
-    var buff: array[1, uint8]
-    buff[0] = (uint8) OnboardMagic.Die
-    discard pair[1].write(buff[0].addr, 1)
+    pair.master.send(OnboardMagic.Die)
