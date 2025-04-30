@@ -29,7 +29,10 @@ proc send*[X: enum](fd: cint, op: X): bool {.discardable.} =
 
 proc receive*[X: enum](fd: cint): Option[X] =
   var op: X
-  assert(read(fd, op.addr, 1) == 1, "BUG: read() failed: " & $strerror(errno) & " (errno " & $errno & ')')
+  assert(
+    read(fd, op.addr, 1) == 1,
+    "BUG: read() failed: " & $strerror(errno) & " (errno " & $errno & ')',
+  )
 
   some(ensureMove(op))
 
@@ -44,7 +47,7 @@ proc receiveNonBlocking*[X: enum](fd: cint): Option[X] =
   var ret = select(fd + 1.cint, readfds.addr, nil, nil, timeout.addr)
   if ret < 0 or not bool(FD_ISSET(fd, readfds)):
     return # We have no incoming data. If we call read, we'll probs end up blocking.
-  
+
   some(receive(fd))
 
 proc close*(fds: var IPCFds) =
