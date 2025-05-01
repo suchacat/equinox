@@ -87,6 +87,7 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
   discard close(binderCtlFd)
 
 proc probeBinderDriver*() =
+  debug "drivers: probing for binder driver(s)"
   var hasBinder, hasHwbinder, hasVndbinder: bool
   var binderDevNodes = newSeqOfCap[string](3)
   for binder in BINDER_DRIVERS:

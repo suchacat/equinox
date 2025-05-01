@@ -8,7 +8,7 @@ import pkg/[discord_rpc]
 import ../argparser
 import ../container/utils/[exec, mount]
 import ./event_manager/[types, dispatcher]
-import ./[discord_rpc, fflag_patches, ro_opt_patches, roblox_logs]
+import ./[discord_rpc, fflag_patches, roblox_logs]
 
 proc showUI*(launch: bool = true) =
   var platform = getIPlatformService()
@@ -69,65 +69,62 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   dispatcher.running = true
 
   if getLxcStatus() == "RUNNING":
-    warn "equinox: container is already running"
-    return
-  else:
-    startLxcContainer(input)
-    waitForContainerBoot()
+    stopLxcContainer()
 
-    var platform = getIPlatformService()
-    platform.setProperty("waydroid.active_apps", "com.roblox.client")
+  startLxcContainer(input)
+  waitForContainerBoot()
 
-    settingsPut("system", "dim_screen", false) # Don't dim the screen.
-    settingsPut("system", "screen_brightness", 100)
-    settingsPut("system", "screen_brightness_float", 1)
-    settingsPut("system", "volume_notification", 0)
-    settingsPut("system", "volume_ring", 0)
-    settingsPut("system", "volume_system", 0)
-    settingsPut("system", "volume_alarm", 0)
-    settingsPut("system", "ringtone_set", false)
-    settingsPut("system", "notification_sound_set", false)
-    settingsPut("system", "notification_light_pulse", false)
-    settingsPut("system", "hide_rotation_lock_toggle_for_accessibility", true)
-    settingsPut("system", "hearing_aid", false)
-      # UD method (set it to true for the funnies)
-    settingsPut("system", "theater_mode_on", true)
-      # Make sure no Android garbage shows up
-    settingsPut("secure", "screensaver_enabled", false)
-    settingsPut("secure", "volume_hush_gesture", false)
-    settingsPut("secure", "sysui_nav_bar", false)
-    settingsPut("global", "policy_control", "immersive.status=*")
+  var platform = getIPlatformService()
+  platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
-    if launchRoblox:
-      startRobloxClient(platform)
+  settingsPut("system", "dim_screen", false) # Don't dim the screen.
+  settingsPut("system", "screen_brightness", 100)
+  settingsPut("system", "screen_brightness_float", 1)
+  settingsPut("system", "volume_notification", 0)
+  settingsPut("system", "volume_ring", 0)
+  settingsPut("system", "volume_system", 0)
+  settingsPut("system", "volume_alarm", 0)
+  settingsPut("system", "ringtone_set", false)
+  settingsPut("system", "notification_sound_set", false)
+  settingsPut("system", "notification_light_pulse", false)
+  settingsPut("system", "hide_rotation_lock_toggle_for_accessibility", true)
+  settingsPut("system", "hearing_aid", false)
+    # UD method (set it to true for the funnies)
+  settingsPut("system", "theater_mode_on", true) # Make sure no Android garbage shows up
+  settingsPut("secure", "screensaver_enabled", false)
+  settingsPut("secure", "volume_hush_gesture", false)
+  settingsPut("secure", "sysui_nav_bar", false)
+  settingsPut("global", "policy_control", "immersive.status=*")
 
-      putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
-        # Fixes a crash because we don't have that defined since we run as root.
-      var rpc = newDiscordRpc(RPCApplicationId)
+  if launchRoblox:
+    startRobloxClient(platform)
 
-      try:
-        let res = rpc.connect()
-        debug "equinox: connected to Discord RPC."
-        debug "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
-          res.config.apiEndpoint & ", env = " & res.config.environment
-        debug "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
-      except CatchableError as exc:
-        debug "equinox: cannot connect to Discord RPC: " & exc.msg
-        rpc = nil
+    putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
+      # Fixes a crash because we don't have that defined since we run as root.
+    var rpc = newDiscordRpc(RPCApplicationId)
 
-      rpc.handleIdleRPC()
-      patchProperties()
+    try:
+      let res = rpc.connect()
+      debug "equinox: connected to Discord RPC."
+      debug "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
+        res.config.apiEndpoint & ", env = " & res.config.environment
+      debug "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
+    except CatchableError as exc:
+      debug "equinox: cannot connect to Discord RPC: " & exc.msg
+      rpc = nil
 
-      while dispatcher.running:
-        sleep(100)
-        processEvents(dispatcher, rpc)
+    rpc.handleIdleRPC()
 
-      info "equinox: app deinit started"
-      stopLogWatcher()
-      stopNetworkService()
-      stopLxcContainer()
-      umountAll(config.rootfs)
-      info "equinox: app cleanup completed gracefully"
+    while dispatcher.running:
+      sleep(100)
+      processEvents(dispatcher, rpc)
+
+    info "equinox: app deinit started"
+    stopLogWatcher()
+    stopNetworkService()
+    stopLxcContainer()
+    umountAll(config.rootfs)
+    info "equinox: app cleanup completed gracefully"
 
 type PlaceURI* = string
 
