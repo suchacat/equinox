@@ -10,13 +10,12 @@ import
   ../core/[forked_ipc],
   ./clipboard
 
-type
-  OnboardMagic {.pure, size: sizeof(uint8).} = enum
-    InitEquinox = 0 ## Call the Equinox initialization command
-    InitSuccess = 1 ## Successful initialization has taken place
-    InitFailure = 2 ## Failed initialization
-    GoogleAuthPhase = 3 ## Copy the GSF ID and open the cert site
-    Die = 4 ## Kill yourself.
+type OnboardMagic {.pure, size: sizeof(uint8).} = enum
+  InitEquinox = 0 ## Call the Equinox initialization command
+  InitSuccess = 1 ## Successful initialization has taken place
+  InitFailure = 2 ## Failed initialization
+  GoogleAuthPhase = 3 ## Copy the GSF ID and open the cert site
+  Die = 4 ## Kill yourself.
 
 viewable OnboardingApp:
   consentFail:

@@ -1,19 +1,16 @@
 ## Launcher GUI
 import std/[os, logging, options, osproc, posix]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw], pkg/[shakar]
-import ../container/network,
-       ../core/[forked_ipc],
-       ./envparser, ../argparser
+import ../container/network, ../core/[forked_ipc], ./envparser, ../argparser
 
 const
   NimblePkgVersion {.strdefine.} = "???"
   License = staticRead("../../LICENSE")
 
-type
-  LauncherMagic {.pure, size: sizeof(uint8).} = enum
-    Launch = 0 ## Launch Equinox.
-    Halt = 1 ## Halt Equinox.
-    Die = 2 ## Kill yourself.
+type LauncherMagic {.pure, size: sizeof(uint8).} = enum
+  Launch = 0 ## Launch Equinox.
+  Halt = 1 ## Halt Equinox.
+  Die = 2 ## Kill yourself.
 
 viewable Launcher:
   title:
