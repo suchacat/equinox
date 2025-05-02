@@ -100,17 +100,23 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     startRobloxClient(platform)
 
     putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
-      # Fixes a crash because we don't have that defined since we run as root.
+      # Fixes a crash with Discord RPC as we don't have XDG_RUNTIME_DIR in the environment 
+      # since we're running as root.
     var rpc = newDiscordRpc(RPCApplicationId)
 
-    try:
-      let res = rpc.connect()
-      debug "equinox: connected to Discord RPC."
-      debug "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
-        res.config.apiEndpoint & ", env = " & res.config.environment
-      debug "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
-    except CatchableError as exc:
-      debug "equinox: cannot connect to Discord RPC: " & exc.msg
+    if settings.discordRpc:
+      debug "equinox: RPC is enabled"
+      try:
+        let res = rpc.connect()
+        debug "equinox: connected to Discord RPC."
+        debug "equinox: CDN host = " & res.config.cdnHost & ", API endpoint = " &
+          res.config.apiEndpoint & ", env = " & res.config.environment
+        debug "equinox: logged in as " & res.user.username & " (" & $res.user.id & ")"
+      except CatchableError as exc:
+        debug "equinox: cannot connect to Discord RPC: " & exc.msg
+        rpc = nil
+    else:
+      debug "equinox: RPC is disabled"
       rpc = nil
 
     rpc.handleIdleRPC()

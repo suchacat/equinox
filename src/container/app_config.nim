@@ -13,6 +13,7 @@ type
     allocator*: string = "minigbm_gbm_mesa"
     renderer*: string = "vulkan"
     max_fps*: Option[uint16] = none(uint16)
+    discord_rpc*: bool = true
     fflags*: FFlagList
 
 func toRenderingBackend*(
@@ -31,6 +32,7 @@ const DefaultConfig* =
 {
         "allocator": "minigbm_gbm_mesa",
         "renderer": "vulkan",
+        "discord_rpc": true,
 	"fflags": {
 	  "DFFlagDisableDPIScale": true,
 	  "DFIntTaskSchedulerTargetFps": 60,
@@ -58,8 +60,6 @@ proc loadAppConfig*(input: Input): ConfigData =
   if *configCache:
     debug "equinox: using cached config"
     return &configCache
-
-  # discard existsOrCreateDir("/home" / &input.flag("user") / ".config" / "equinox")
 
   let path =
     if not *input.flag("config"):
