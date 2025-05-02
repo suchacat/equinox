@@ -2,9 +2,8 @@
 ## Copyright (C) 2024 Trayambak Rai
 ## Copyright (C) 2025 the EquinoxHQ team
 import std/[logging, strutils, json, options]
-import pkg/[curly, jsony]
-
-var curl = newCurly()
+import pkg/[curly, jsony, results, shakar]
+import ../http
 
 type
   PlaceID* = int64
@@ -55,10 +54,13 @@ type
     imageToken*: string
 
 proc getUniverseFromPlace*(placeId: string): UniverseID {.inline.} =
-  let payload = curl
-    .get("https://apis.roblox.com/universes/v1/places/$1/universe" % [placeId])
-    # TODO: better error handling? if we get an erroneous output we'll just shit ourselves
-    .body
+  let resp = httpGet("https://apis.roblox.com/universes/v1/places/$1/universe" % [placeId])
+  if !resp:
+    warn "equinox: getUniverseFromPlace($1): HTTP request failed: $2" % [placeId, resp.error()]
+    return
+
+  let payload =
+    (&resp)
     .parseJson()["universeId"]
     .getInt()
     .UniverseID()
@@ -66,11 +68,13 @@ proc getUniverseFromPlace*(placeId: string): UniverseID {.inline.} =
   payload
 
 proc getGameDetail*(id: UniverseID): GameDetail =
-  let
-    url = "https://games.roblox.com/v1/games/?universeIds=" & $id
-    resp = curl.get(url).body
+  let resp = httpGet("https://games.roblox.com/v1/games/?universeIds=" & $id)
 
-  debug "getGameDetail($1): $2" % [$id, resp]
-  let payload = fromJson(resp, StubData[GameDetail]).data[0]
+  if !resp:
+    warn "equinox: getGameDetail($1): HTTP request failed: $2" % [$id, resp.error()]
+    return
+
+  debug "getGameDetail($1): $2" % [$id, &resp]
+  let payload = fromJson(&resp, StubData[GameDetail]).data[0]
 
   payload

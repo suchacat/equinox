@@ -2,10 +2,9 @@
 ## Copyright (C) 2024 Trayambak Rai
 ## Copyright (C) 2025 the EquinoxHQ team
 import std/[strutils, logging, options]
-import pkg/[curly, jsony]
-import ./games
-
-var curl = newCurly()
+import pkg/[results, shakar, jsony]
+import ./games,
+       ../http
 
 type
   ThumbnailState* {.pure.} = enum
@@ -49,24 +48,28 @@ type
 
 proc getGameIcon*(id: UniverseID): Thumbnail =
   let
-    url =
-      "https://thumbnails.roblox.com/v1/games/icons?universeIds=$1&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false" %
-      [$id]
-    resp = curl.get(url).body
+    resp = httpGet(
+        "https://thumbnails.roblox.com/v1/games/icons?universeIds=$1&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false" %
+        [$id]
+    )
 
-  debug "getGameIcon($1): $2 ($3)" % [$id, resp, url]
+  if !resp:
+    warn "equinox: getGameIcon($1): HTTP request failed: $2" % [$id, resp.error()]
+    return
 
-  let payload = fromJson(resp, StubData[Thumbnail]).data[0]
+  debug "getGameIcon($1): $2" % [$id, &resp]
+
+  let payload = fromJson(&resp, StubData[Thumbnail]).data[0]
 
   payload
 
 proc getThumbnailUrl*(request: ThumbnailRequest): ThumbnailResponse =
-  let
-    url = "https://thumbnails.roblox.com/v1/batch"
+  let resp = httpPost("https://thumbnails.roblox.com/v1/batch", body = request)
+  if !resp:
+    warn "equinox: getThumbnailUrl(): HTTP request failed: " & resp.error()
+    return
 
-    resp = curl.post(url, body = toJson request).body.fromJson(ThumbnailResponse)
-
-  if resp.errorCode != 0:
-    error "thumbnails: API error: " & resp.errorMessage & " (" & $resp.errorCode & ')'
-
-  resp
+  (&resp)
+    .fromJson(
+      ThumbnailResponse
+    )
