@@ -2,7 +2,7 @@ import std/[os, options, logging, strutils, tables, times, posix]
 import pkg/[glob]
 import utils/exec
 import ../argparser
-import ./[lxc_config, sugar, cpu, gpu, configuration, drivers]
+import ./[lxc_config, sugar, cpu, gpu, configuration, drivers, mac]
 
 type BinaryNotFound* = object of Defect
 
@@ -161,12 +161,14 @@ proc setLxcConfig*() =
         configs &=
           (
             case ver
-            of 3: CONFIG_3
+            of 3: CONFIG_3 
             of 4: CONFIG_4
             else:
               assert(false, "Unreachable")
               ""
           ).multiReplace(substituteTable)
+
+        configs &= getLXCConfigForMAC(detectMACKind())
 
   discard existsOrCreateDir(config.lxc)
 
