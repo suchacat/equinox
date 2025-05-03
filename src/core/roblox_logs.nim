@@ -156,6 +156,7 @@ proc watcherFunc(target: string) =
       checkLineForEvents(line, state)
 
   dealloc(buf)
+  discard close(fd)
   debug "watcher: thread is exiting loop"
 
 proc startLogWatcher*() =
