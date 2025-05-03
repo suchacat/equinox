@@ -61,7 +61,7 @@ proc close*(fds: var IPCFds) =
   )
   assert(
     fds.slave.close() == 0,
-    "BUG: Failed to close master fd: " & $strerror(errno) & " (errno " & $errno & ')',
+    "BUG: Failed to close slave fd: " & $strerror(errno) & " (errno " & $errno & ')',
   )
 
   debug "ipc: closed file descriptors"
