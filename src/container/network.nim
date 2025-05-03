@@ -60,8 +60,10 @@ proc getNetworkDevice*(): Option[string] =
       return some(iface)
 
 proc isOnline*(iface: string): bool =
-  let output = &readOutput("ip", "addr show " & iface)
-  output.contains("state UP")
+  return true # FIXME: borked.
+
+  # let output = &readOutput("ip", "addr show " & iface)
+  # output.contains("state UP")
 
 proc startIptables*() =
   let

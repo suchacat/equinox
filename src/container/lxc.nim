@@ -303,7 +303,7 @@ proc waitForContainerBoot*(maxAttempts: uint64 = 32'u64) =
         " iterations. It might be deadlocked.\nConsider running the following command to forcefully kill it:\nsudo equinox halt -F\n",
     )
 
-  info "lxc: container booted up after " & $attempts & " attempts."
+  info "lxc: container booted up after " & $(attempts + 1) & " attempts."
 
 proc runCmdInContainer*(cmd: string): Option[string] =
   readOutput("sudo lxc-attach", "-P " & config.lxc & " -n equinox -- " & cmd)
