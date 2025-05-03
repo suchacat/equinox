@@ -1,10 +1,10 @@
-import std/[os, logging, strutils, sequtils, posix, tables, json]
+import std/[os, options, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/[
-    lxc, configuration, drivers, platform, network, sugar, rootfs, app_config, fflags,
+    lxc, configuration, drivers, platform, network, rootfs, app_config, fflags,
     settings,
   ]
-import pkg/[discord_rpc]
+import pkg/[discord_rpc, shakar]
 import ../argparser
 import ../container/utils/[exec, mount]
 import ./event_manager/[types, dispatcher]
@@ -25,7 +25,26 @@ proc startRobloxClient*(platform: var IPlatform) =
 
   startLogWatcher()
 
-proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
+proc pidof*(name: string): Option[uint] =
+  for kind, dir in walkDir("/proc"):
+    if kind != pcDir: continue
+    if not fileExists(dir / "cmdline"): continue
+    
+    let target = readFile(dir / "cmdline")
+    debug "equinox: " & dir & ": " & target
+
+    if target.contains(name):
+      let pid = splitPath(dir).tail.parseUint()
+      # procTraversalCache.add(CachedPid(name: name, pid: pid))
+      return some(pid)
+
+proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =    
+  let pid = pidof("com.roblox.client")
+  if !pid:
+    info "equinox: com.roblox.client has exited, setting dispatcher flag to false"
+    dispatcher.running = false
+    return
+
   let (event, exhausted) = dispatcher.poll()
   if exhausted:
     return
