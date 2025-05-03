@@ -62,7 +62,7 @@ proc checkLineForEvents*(line: string, state: var LogWatcherState) =
 
     if not state.webviewOpened:
       info "watcher: roblox is preparing to exit. Notifying dispatcher in the main thread."
-      chan.send(EventPayload(kind: Event.RobloxClose))
+      # chan.send(EventPayload(kind: Event.RobloxClose))
   elif line.contains("[DFLog::DMNotificationMonitor] DM notification received. Type 20"):
     info "equinox: WebView has been opened"
     state.webviewOpened = true
