@@ -74,8 +74,8 @@ method view(app: OnboardingAppState): Widget =
       let content = readFile("/tmp/equinox-progress.json").fromJson()
       let
         speedKbps = content["speedKbps"].getFloat()
-        totalBytes = content["totalBytes"].getBiggestInt()
-        downloadedBytes = content["downloadedBytes"].getBiggestInt()
+        totalBytes = content["totalBytes"].getFloat()
+        downloadedBytes = content["downloadedBytes"].getFloat()
 
       app.showProgressBar = true
       app.progress = (downloadedBytes / totalBytes)
@@ -248,8 +248,8 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
       if runCmd(
         "pkexec",
         env.equinoxPath & " init --xdg-runtime-dir:" & env.runtimeDir &
-          " --verbose --wayland-display:" & env.waylandDisplay & " --user:" & env.user &
-          " --uid:" & $getuid() & " --gid:" & $getgid(),
+          " --wayland-display:" & env.waylandDisplay & " --user:" & env.user & " --uid:" &
+          $getuid() & " --gid:" & $getgid(),
       ):
         buff[0] = (uint8) OnboardMagic.InitSuccess
       else:

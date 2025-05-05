@@ -73,35 +73,9 @@ proc downloadImages*() =
   info "container/image: downloading image pair"
 
   info "container/image: downloading system image: " & SystemImageURL
-  let systemReq = download(SystemImageURL)
-
-  info "container/image: downloaded system image: " &
-    $(systemReq.len.float / (2'f32.pow(30))) & " GB (compressed)"
+  assert download(SystemImageURL, config.imagesPath / "system.img")
 
   info "container/image: downloading vendor image: " & VendorImageURL
-  let vendorReq = download(VendorImageURL)
-
-  info "container/image: downloaded system image: " &
-    $(vendorReq.len.float / (1024'f32.pow(3))) & " GB (compressed)"
-
-  info "container/image: writing system image"
-  writeFile(config.imagesPath / "system.img", systemReq)
-  writeFile(config.imagesPath / "vendor.img", vendorReq)
-  #[ var readerSys: ZipArchive
-  assert(
-    readerSys.open(config.imagesPath / "system.img.proto"),
-    "Failed to open compressed system image",
-  )
-  readerSys.extractFile("system.img", config.imagesPath / "system.img")
-  removeFile(config.imagesPath / "system.img.proto")
-
-  info "container/image: writing vendor image"
-  var readerVendor: ZipArchive
-  assert(
-    readerVendor.open(config.imagesPath / "vendor.img.proto"),
-    "Failed to open compressed vendor image",
-  )
-  readerVendor.extractFile("vendor.img", config.imagesPath / "vendor.img")
-  removeFile(config.imagesPath / "vendor.img.proto")]#
+  assert download(VendorImageURL, config.imagesPath / "vendor.img")
 
   info "container/image: downloaded Android container images successfully!"

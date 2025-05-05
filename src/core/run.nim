@@ -1,9 +1,10 @@
 import std/[os, options, logging, strutils, sequtils, posix, tables, json]
 import
-  ../container/[
-    lxc, configuration, drivers, platform, network, rootfs, app_config, fflags,
-    settings,
-  ]
+  ../container/
+    [
+      lxc, configuration, drivers, platform, network, rootfs, app_config, fflags,
+      settings,
+    ]
 import pkg/[discord_rpc, shakar]
 import ../argparser
 import ../container/utils/[exec, mount]
@@ -27,9 +28,11 @@ proc startRobloxClient*(platform: var IPlatform) =
 
 proc pidof*(name: string): Option[uint] =
   for kind, dir in walkDir("/proc"):
-    if kind != pcDir: continue
-    if not fileExists(dir / "cmdline"): continue
-    
+    if kind != pcDir:
+      continue
+    if not fileExists(dir / "cmdline"):
+      continue
+
     let target = readFile(dir / "cmdline")
     debug "equinox: " & dir & ": " & target
 
@@ -38,7 +41,7 @@ proc pidof*(name: string): Option[uint] =
       # procTraversalCache.add(CachedPid(name: name, pid: pid))
       return some(pid)
 
-proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =    
+proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
   let pid = pidof("com.roblox.client")
   if !pid:
     info "equinox: com.roblox.client has exited, setting dispatcher flag to false"

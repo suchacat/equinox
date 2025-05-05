@@ -3,8 +3,7 @@
 ## Copyright (C) 2025 the EquinoxHQ team
 import std/[strutils, logging, options]
 import pkg/[results, shakar, jsony]
-import ./games,
-       ../http
+import ./games, ../http
 
 type
   ThumbnailState* {.pure.} = enum
@@ -47,11 +46,10 @@ type
     version*: string
 
 proc getGameIcon*(id: UniverseID): Thumbnail =
-  let
-    resp = httpGet(
-        "https://thumbnails.roblox.com/v1/games/icons?universeIds=$1&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false" %
-        [$id]
-    )
+  let resp = httpGet(
+    "https://thumbnails.roblox.com/v1/games/icons?universeIds=$1&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false" %
+      [$id]
+  )
 
   if !resp:
     warn "equinox: getGameIcon($1): HTTP request failed: $2" % [$id, resp.error()]
@@ -69,7 +67,4 @@ proc getThumbnailUrl*(request: ThumbnailRequest): ThumbnailResponse =
     warn "equinox: getThumbnailUrl(): HTTP request failed: " & resp.error()
     return
 
-  (&resp)
-    .fromJson(
-      ThumbnailResponse
-    )
+  (&resp).fromJson(ThumbnailResponse)

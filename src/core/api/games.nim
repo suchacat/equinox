@@ -54,16 +54,14 @@ type
     imageToken*: string
 
 proc getUniverseFromPlace*(placeId: string): UniverseID {.inline.} =
-  let resp = httpGet("https://apis.roblox.com/universes/v1/places/$1/universe" % [placeId])
+  let resp =
+    httpGet("https://apis.roblox.com/universes/v1/places/$1/universe" % [placeId])
   if !resp:
-    warn "equinox: getUniverseFromPlace($1): HTTP request failed: $2" % [placeId, resp.error()]
+    warn "equinox: getUniverseFromPlace($1): HTTP request failed: $2" %
+      [placeId, resp.error()]
     return
 
-  let payload =
-    (&resp)
-    .parseJson()["universeId"]
-    .getInt()
-    .UniverseID()
+  let payload = (&resp).parseJson()["universeId"].getInt().UniverseID()
 
   payload
 

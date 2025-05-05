@@ -161,7 +161,7 @@ proc setLxcConfig*() =
         configs &=
           (
             case ver
-            of 3: CONFIG_3 
+            of 3: CONFIG_3
             of 4: CONFIG_4
             else:
               assert(false, "Unreachable")

@@ -24,7 +24,7 @@ proc setFflags*(list: FFlagList) =
 
   let clientSettings = getRobloxStorageDir() / "files" / "exe" / "ClientSettings"
   debug "equinox: client settings path: " & clientSettings
-  
+
   try:
     discard existsOrCreateDir(clientSettings)
     writeFile(clientSettings / "ClientAppSettings.json", serialized)
