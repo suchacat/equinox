@@ -70,18 +70,24 @@ proc gpuCheck(app: OnboardingAppState): bool =
 
 method view(app: OnboardingAppState): Widget =
   proc waitForInit(): bool =
-    if fileExists("/tmp/equinox-progress.json"):
-      let content = readFile("/tmp/equinox-progress.json").fromJson()
+    try:
+      let content = readFile("/tmp/equinox-progress.json").parseJson()
       let
         speedKbps = content["speedKbps"].getFloat()
         totalBytes = content["totalBytes"].getFloat()
         downloadedBytes = content["downloadedBytes"].getFloat()
 
       app.showProgressBar = true
-      app.progress = (downloadedBytes / totalBytes)
-      app.progressText = $speedKbps & " KB/s"
+
+      if totalBytes != 0f:
+        app.progress = (downloadedBytes / totalBytes)
+        app.progressText = $speedKbps & " KB/s"
+      else:
+        app.progress = 0.0f
+        app.progressText = "Preparing to download images"
 
       discard app.redraw()
+    except JsonParsingError: discard
 
     let op = app.sock.receiveNonBlocking(OnboardMagic)
     if !op:
@@ -226,7 +232,7 @@ method view(app: OnboardingAppState): Widget =
 
                 app.showSpinner = true
                 app.showProgressBar = true
-                discard addGlobalTimeout(1000, waitForInit)
+                discard addGlobalTimeout(100, waitForInit)
 
 proc waitForCommands*(env: XdgEnv, fd: cint) =
   var running = true
