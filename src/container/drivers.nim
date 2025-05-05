@@ -75,8 +75,6 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
 
       nodeStruct.name[i] = c
 
-    echo nodeStruct.name
-
     if ioctl(binderCtlFd, binderCtlAdd, nodeStruct.addr) < 0 and errno != EEXIST:
       error "drivers: an error occured while allocating binder node: " & node
       raise newException(
