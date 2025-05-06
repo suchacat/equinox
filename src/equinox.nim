@@ -1,4 +1,4 @@
-import std/[logging, terminal, random, rdstdin, strutils]
+import std/[os, logging, terminal, random, rdstdin, strutils]
 import pkg/[colored_logger, noise], pkg/nimsimd/runtimecheck
 import ./argparser
 import
@@ -180,6 +180,10 @@ EquinoxHQ is not responsible for any of your actions.
       force = input.enabled("force", "F") or input.enabled("my-time-has-value")
     )
   of "sh":
+    if not isAdmin():
+      error "equinox: this command requires root privileges"
+      quit(1)
+
     var noise = Noise.init()
     let prompt = Styler.init(fgGreen, "sh", resetStyle, "> ")
     noise.setPrompt(prompt)
