@@ -152,6 +152,9 @@ proc watcherFunc(target: string) =
     if bool(event.mask and IN_MODIFY):
       debug "watcher: log file has changed"
       let line = readLastLine(target)
+      if line.len < 1:
+        continue
+
       info "roblox: " & line.strip()
       checkLineForEvents(line, state)
 
