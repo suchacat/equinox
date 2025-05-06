@@ -69,25 +69,32 @@ proc gpuCheck(app: OnboardingAppState): bool =
   false
 
 method view(app: OnboardingAppState): Widget =
+  let hasToDownloadImages = 
+    not (
+      fileExists("/var" / "lib" / "equinox" / "images" / "system.img") and
+      fileExists("/var" / "lib" / "equinox" / "images" / "vendor.img")
+    )
+
   proc waitForInit(): bool =
-    try:
-      let content = readFile("/tmp/equinox-progress.json").parseJson()
-      let
-        speedKbps = content["speedKbps"].getFloat()
-        totalBytes = content["totalBytes"].getFloat()
-        downloadedBytes = content["downloadedBytes"].getFloat()
+    if hasToDownloadImages:
+      try:
+        let content = readFile("/tmp/equinox-progress.json").parseJson()
+        let
+          speedKbps = content["speedKbps"].getFloat()
+          totalBytes = content["totalBytes"].getFloat()
+          downloadedBytes = content["downloadedBytes"].getFloat()
 
-      app.showProgressBar = true
+        app.showProgressBar = true
 
-      if totalBytes != 0f:
-        app.progress = (downloadedBytes / totalBytes)
-        app.progressText = $speedKbps & " KB/s"
-      else:
-        app.progress = 0.0f
-        app.progressText = "Preparing to download images"
+        if totalBytes != 0f:
+          app.progress = (downloadedBytes / totalBytes)
+          app.progressText = $speedKbps & " KB/s"
+        else:
+          app.progress = 0.0f
+          app.progressText = "Preparing to download images"
 
-      discard app.redraw()
-    except JsonParsingError: discard
+        discard app.redraw()
+      except JsonParsingError: discard
 
     let op = app.sock.receiveNonBlocking(OnboardMagic)
     if !op:
@@ -159,6 +166,8 @@ method view(app: OnboardingAppState): Widget =
 
                     proc clicked() =
                       app.closeWindow()
+                      app.sock.send(OnboardMagic.Die)
+                      quit(0)
 
     return false
 
@@ -230,8 +239,8 @@ method view(app: OnboardingAppState): Widget =
                 buff[0] = (uint8) OnboardMagic.InitEquinox
                 discard write(app.sock, buff[0].addr, 1)
 
-                app.showSpinner = true
-                app.showProgressBar = true
+                app.showSpinner = hasToDownloadImages
+                app.showProgressBar = hasToDownloadImages
                 discard addGlobalTimeout(100, waitForInit)
 
 proc waitForCommands*(env: XdgEnv, fd: cint) =
