@@ -132,7 +132,7 @@ EquinoxHQ is not responsible for any of your actions.
     echo "Splash: " & sample(Splashes)
 
     initNetworkService()
-    startAndroidRuntime(input)
+    startAndroidRuntime(input, not input.enabled("warmup", "W"))
   of "shell":
     if input.arguments.len < 1:
       error "Usage: `equinox shell \"your command goes here\"`"

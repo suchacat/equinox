@@ -8,18 +8,19 @@ type BinaryNotFound* = object of Defect
 
 var exeCache: Table[string, string]
 
-const
-  ANDROID_ENV = toTable {
-    "PATH": "/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin",
-    "ANDROID_ROOT": "/system",
-    "ANDROID_DATA": "/data",
-    "ANDROID_STORAGE": "/storage",
-    "ANDROID_ART_ROOT": "/apex/com.android.art",
-    "ANDROID_I18N_ROOT": "/apex/com.android.i18n",
-    "ANDROID_TZDATA_ROOT": "/apex/com.android.tzdata",
-    "ANDROID_RUNTIME_ROOT": "/apex/com.android.runtime",
-    "BOOTCLASSPATH": "/apex/com.android.art/javalib/core-oj.jar:/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/core-icu4j.jar:/apex/com.android.art/javalib/okhttp.jar:/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar:/system/framework/framework.jar:/system/framework/ext.jar:/system/framework/telephony-common.jar:/system/framework/voip-common.jar:/system/framework/ims-common.jar:/system/framework/framework-atb-backward-compatibility.jar:/apex/com.android.conscrypt/javalib/conscrypt.jar:/apex/com.android.media/javalib/updatable-media.jar:/apex/com.android.mediaprovider/javalib/framework-mediaprovider.jar:/apex/com.android.os.statsd/javalib/framework-statsd.jar:/apex/com.android.permission/javalib/framework-permission.jar:/apex/com.android.sdkext/javalib/framework-sdkextensions.jar:/apex/com.android.wifi/javalib/framework-wifi.jar:/apex/com.android.tethering/javalib/framework-tethering.jar"
-  }
+const ANDROID_ENV = toTable {
+  "PATH":
+    "/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin",
+  "ANDROID_ROOT": "/system",
+  "ANDROID_DATA": "/data",
+  "ANDROID_STORAGE": "/storage",
+  "ANDROID_ART_ROOT": "/apex/com.android.art",
+  "ANDROID_I18N_ROOT": "/apex/com.android.i18n",
+  "ANDROID_TZDATA_ROOT": "/apex/com.android.tzdata",
+  "ANDROID_RUNTIME_ROOT": "/apex/com.android.runtime",
+  "BOOTCLASSPATH":
+    "/apex/com.android.art/javalib/core-oj.jar:/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/core-icu4j.jar:/apex/com.android.art/javalib/okhttp.jar:/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar:/system/framework/framework.jar:/system/framework/ext.jar:/system/framework/telephony-common.jar:/system/framework/voip-common.jar:/system/framework/ims-common.jar:/system/framework/framework-atb-backward-compatibility.jar:/apex/com.android.conscrypt/javalib/conscrypt.jar:/apex/com.android.media/javalib/updatable-media.jar:/apex/com.android.mediaprovider/javalib/framework-mediaprovider.jar:/apex/com.android.os.statsd/javalib/framework-statsd.jar:/apex/com.android.permission/javalib/framework-permission.jar:/apex/com.android.sdkext/javalib/framework-sdkextensions.jar:/apex/com.android.wifi/javalib/framework-wifi.jar:/apex/com.android.tethering/javalib/framework-tethering.jar",
+}
 
 proc findBin*(cmd: string): string =
   debug "lxc: finding LXC related binary: " & cmd
@@ -261,8 +262,9 @@ proc generateSessionLxcConfig*() =
 
   writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
 
-proc getLxcStatus*(): string =
-  let value = readOutput("sudo lxc-info", "-P " & config.lxc & " -n equinox -sH")
+proc getLxcStatus*(authAgent: string = "sudo"): string =
+  let value =
+    readOutput(authAgent & " lxc-info", "-P " & config.lxc & " -n equinox -sH")
 
   if not *value:
     return "STOPPED"
@@ -326,4 +328,8 @@ proc androidEnvAttachOptions(): string =
   move(buffer)
 
 proc runCmdInContainer*(cmd: string): Option[string] =
-  readOutput("sudo lxc-attach", "-P " & config.lxc & " -n equinox --clear-env " & androidEnvAttachOptions() & "-- " & cmd)
+  readOutput(
+    "sudo lxc-attach",
+    "-P " & config.lxc & " -n equinox --clear-env " & androidEnvAttachOptions() & "-- " &
+      cmd,
+  )

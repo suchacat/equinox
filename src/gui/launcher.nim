@@ -1,7 +1,7 @@
 ## Launcher GUI
-import std/[os, logging, options, osproc, posix]
+import std/[os, browsers, logging, options, osproc, posix, strutils]
 import pkg/owlkettle, pkg/owlkettle/[playground, adw], pkg/[shakar]
-import ../container/network, ../core/[forked_ipc], ./envparser, ../argparser
+import ../container/network, ../core/[forked_ipc, state], ./envparser, ../argparser
 
 const
   NimblePkgVersion {.strdefine.} = "???"
@@ -11,6 +11,7 @@ type LauncherMagic {.pure, size: sizeof(uint8).} = enum
   Launch = 0 ## Launch Equinox.
   Halt = 1 ## Halt Equinox.
   Die = 2 ## Kill yourself.
+  GSM = 3
 
 viewable Launcher:
   title:
@@ -68,6 +69,33 @@ proc networkCheck(app: LauncherState): bool =
                   "<span size=\"large\">Equinox could not find an active network connection. Without it, <b>Roblox won't run.</b></span>"
                 useMarkup = true
 
+proc googleAuthPhase(app: LauncherState) =
+  var state = getAppState()
+  if not state.promptGsm:
+    return
+
+  state.promptGsm = false
+  state.save()
+  app.sock.send(LauncherMagic.GSM)
+
+  discard app.open:
+    gui:
+      Window:
+        defaultSize = (480, 320)
+        title = "Google Authentication"
+
+        Clamp:
+          maximumSize = 500
+          margin = 12
+
+          Box:
+            orient = OrientY
+            spacing = 12
+
+            Label:
+              text =
+                "Your browser has been opened up with the Google Device Certification website. Go ahead and paste the code stored in your clipboard."
+
 method view(app: LauncherState): Widget =
   result = gui:
     Window:
@@ -119,7 +147,12 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
                         designers = @["Adrien (AshtakaOOf)"]
                         artists = @[]
                         documenters = @[]
-                        credits = @{"APK Fetcher by": @["Kirby (k1yrix)"]}
+                        credits =
+                          @{
+                            "APK Fetcher by": @["Kirby (k1yrix)"],
+                            "Waydroid project developers (a special thanks!)":
+                              @["aleasto et. al"],
+                          }
 
       Clamp:
         maximumSize = 500
@@ -155,6 +188,8 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
               text = "Launch Roblox"
               tooltip = "This will start Roblox through Equinox."
               proc clicked() =
+                googleAuthPhase(app)
+
                 if networkCheck(app):
                   return
 
@@ -201,6 +236,14 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
       debug "launcher/child: cmd -> " & cmd
 
       discard execCmd(cmd)
+    of LauncherMagic.GSM:
+      let (output, code) =
+        execCmdEx("pkexec " & env.equinoxPath & " get-gsf-id --user:" & env.user)
+
+      if code == 0:
+        discard execCmd("wl-copy" & ' ' & output.strip())
+
+      openDefaultBrowser("https://www.google.com/android/uncertified")
     of LauncherMagic.Die:
       running = false
 

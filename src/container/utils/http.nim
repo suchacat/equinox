@@ -83,8 +83,34 @@ proc download*(url: string, dest: string): bool =
       )
 
       stdout.styledWriteLine(
-        fgGreen, $(dlnow / 1_000_000), resetStyle, " MB", styleBright, " / ", resetStyle, fgGreen, $(dltotal / 1_000_000), " MB",  resetStyle,
-        styleBright, " (", resetStyle, speedColor, $speedKbps, resetStyle, " kb/s", styleBright, ") [", resetStyle, downloadSpeedColor, $downloadSpeedHours, resetStyle, " hours", styleBright, "]", resetStyle
+        fgGreen,
+        $(dlnow / 1_000_000),
+        resetStyle,
+        " MB",
+        styleBright,
+        " / ",
+        resetStyle,
+        fgGreen,
+        $(dltotal / 1_000_000),
+        " MB",
+        resetStyle,
+        styleBright,
+        " (",
+        resetStyle,
+        speedColor,
+        $speedKbps,
+        resetStyle,
+        " kb/s",
+        styleBright,
+        ") [",
+        resetStyle,
+        downloadSpeedColor,
+        $downloadSpeedHours,
+        resetStyle,
+        " hours",
+        styleBright,
+        "]",
+        resetStyle,
       )
 
       0'i32,

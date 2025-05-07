@@ -52,6 +52,7 @@ proc initialize*(input: Input) =
 
   waitForContainerBoot()
   makeBaseProps(input)
-  stopLxcContainer(true) # stop it afterwards
+  stopLxcContainer(false)
+    # stop it afterwards, but give it time to do whatever it fancies.
   stopNetworkService()
   info "Initialized Equinox successfully."

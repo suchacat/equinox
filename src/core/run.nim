@@ -9,7 +9,7 @@ import pkg/[discord_rpc, shakar]
 import ../argparser
 import ../container/utils/[exec, mount]
 import ./event_manager/[types, dispatcher]
-import ./[discord_rpc, fflag_patches, roblox_logs]
+import ./[discord_rpc, fflag_patches, roblox_logs, processes]
 
 proc showUI*(launch: bool = true) =
   var platform = getIPlatformService()
@@ -25,21 +25,6 @@ proc startRobloxClient*(platform: var IPlatform) =
     sleep(100)
 
   startLogWatcher()
-
-proc pidof*(name: string): Option[uint] =
-  for kind, dir in walkDir("/proc"):
-    if kind != pcDir:
-      continue
-    if not fileExists(dir / "cmdline"):
-      continue
-
-    let target = readFile(dir / "cmdline")
-    debug "equinox: " & dir & ": " & target
-
-    if target.contains(name):
-      let pid = splitPath(dir).tail.parseUint()
-      # procTraversalCache.add(CachedPid(name: name, pid: pid))
-      return some(pid)
 
 proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
   let pid = pidof("com.roblox.client")

@@ -1,21 +1,23 @@
 ## Onboarding GUI + Setup flow
 import std/[browsers, logging, os, osproc, options, posix, json]
-import pkg/[jsony, owlkettle], pkg/owlkettle/[playground, adw]
+import pkg/[jsony, owlkettle, shakar], pkg/owlkettle/[playground, adw]
 import
   ../[argparser],
   ./envparser,
-  ../container/[lxc, gpu, sugar, certification],
+  ../container/[lxc, gpu, certification, configuration],
   ../container/utils/exec,
   ../bindings/libadwaita,
-  ../core/[forked_ipc],
+  ../core/[forked_ipc, processes],
   ./clipboard
 
 type OnboardMagic {.pure, size: sizeof(uint8).} = enum
   InitEquinox = 0 ## Call the Equinox initialization command
   InitSuccess = 1 ## Successful initialization has taken place
   InitFailure = 2 ## Failed initialization
-  GoogleAuthPhase = 3 ## Copy the GSF ID and open the cert site
   Die = 4 ## Kill yourself.
+  StartContainer = 5 ## Start the container so that it populates the data directory
+  StopContainer = 6 ## Stop the container.
+  StartedContainer = 7 ## Sent when the container has started
 
 viewable OnboardingApp:
   consentFail:
@@ -69,11 +71,13 @@ proc gpuCheck(app: OnboardingAppState): bool =
   false
 
 method view(app: OnboardingAppState): Widget =
-  let hasToDownloadImages = 
+  let hasToDownloadImages =
     not (
       fileExists("/var" / "lib" / "equinox" / "images" / "system.img") and
       fileExists("/var" / "lib" / "equinox" / "images" / "vendor.img")
     )
+
+  debug "onboarding: hasToDownloadImages: " & $hasToDownloadImages
 
   proc waitForInit(): bool =
     if hasToDownloadImages:
@@ -94,14 +98,16 @@ method view(app: OnboardingAppState): Widget =
           app.progressText = "Preparing to download images"
 
         discard app.redraw()
-      except JsonParsingError: discard
+      except JsonParsingError:
+        discard
 
     let op = app.sock.receiveNonBlocking(OnboardMagic)
     if !op:
       return true
 
     case &op
-    of OnboardMagic.InitEquinox, OnboardMagic.Die, OnboardMagic.GoogleAuthPhase:
+    of OnboardMagic.InitEquinox, OnboardMagic.Die, OnboardMagic.StartContainer,
+        OnboardMagic.StopContainer, OnboardMagic.StartedContainer:
       discard
     of OnboardMagic.InitFailure:
       app.showSpinner = false
@@ -128,46 +134,7 @@ method view(app: OnboardingAppState): Widget =
                     "Equinox has failed to initialize the container. Please run this launcher from your terminal and send the logs to the Lucem Discord server."
                   margin = 24
     of OnboardMagic.InitSuccess:
-      app.sock.send(OnboardMagic.GoogleAuthPhase)
-
-      discard app.open:
-        gui:
-          Window:
-            title = "Setup Flow"
-            defaultSize = (300, 450)
-            HeaderBar {.addTitlebar.}:
-              style = [HeaderBarFlat]
-
-            Clamp:
-              maximumSize = 450
-              margin = 12
-
-              Box:
-                orient = OrientY
-                spacing = 12
-
-                ActionRow:
-                  title =
-                    "You're about to interact with Google's Play Store, and as such, you will be subject to their terms of service."
-                  subtitle =
-                    "Make sure you've read the Google Play Terms of Service. It has just been opened in your browser."
-
-                Label:
-                  text =
-                    "Equinox's GSF ID has been copied to your clipboard. Paste it in your browser and complete the Captcha to continue."
-                  margin = 24
-
-                Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
-                  Button:
-                    style = [ButtonPill, ButtonSuggested]
-                    text = "Complete Setup"
-                    tooltip =
-                      "Click this button when you are done with the steps above. You can then launch Equinox."
-
-                    proc clicked() =
-                      app.closeWindow()
-                      app.sock.send(OnboardMagic.Die)
-                      quit(0)
+      app.sock.send(OnboardMagic.StartContainer)
 
     return false
 
@@ -271,23 +238,19 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
         buff[0] = (uint8) OnboardMagic.InitFailure
 
       discard write(fd, buff[0].addr, 1)
-    of OnboardMagic.GoogleAuthPhase:
-      let gsfId =
-        &readOutput(
-          "pkexec",
-          env.equinoxPath & " get-gsf-id --user:" & env.user & " --uid:" & $getuid() &
-            " --gid:" & $getgid() & " --xdg-runtime-dir:" & getEnv("XDG_RUNTIME_DIR"),
-        )
-
-      debug "gui/onboard: gsf id = " & gsfId
-
-      openDefaultBrowser("https://play.google.com/about/play-terms/index.html")
-      openDefaultBrowser("https://www.google.com/android/uncertified")
-      copyText(gsfId)
-    of OnboardMagic.InitFailure, OnboardMagic.InitSuccess:
+    of OnboardMagic.InitFailure, OnboardMagic.InitSuccess, OnboardMagic.StartedContainer:
       discard
     of OnboardMagic.Die:
       running = false
+    of OnboardMagic.StartContainer:
+      discard runCmd(
+        "pkexec",
+        env.equinoxPath & " run --warmup --user:" & env.user & " --uid:" & $getuid() &
+          " --gid:" & $getgid() & " --wayland-display:" & env.waylandDisplay &
+          " --xdg-runtime-dir:" & getEnv("XDG_RUNTIME_DIR"),
+      )
+    of OnboardMagic.StopContainer:
+      discard runCmd("pkexec", env.equinoxPath & " halt --force")
 
 proc runOnboardingApp*(input: Input) =
   let pair = initIpcFds()
