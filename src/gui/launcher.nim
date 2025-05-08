@@ -1,6 +1,6 @@
 ## Launcher GUI
 import std/[os, browsers, logging, options, osproc, posix, strutils]
-import pkg/owlkettle, pkg/owlkettle/[playground, adw], pkg/[shakar]
+import pkg/owlkettle, pkg/owlkettle/[adw], pkg/[shakar]
 import ../container/network, ../core/[forked_ipc, state], ./envparser, ../argparser
 
 const
@@ -149,7 +149,7 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
                         documenters = @[]
                         credits =
                           @{
-                            "APK Fetcher by": @["Kirby (k1yrix)"],
+                            "APK Fetching": @["Kirby (k1yrix)"],
                             "Waydroid project developers (a special thanks!)":
                               @["aleasto et. al"],
                           }
