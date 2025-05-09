@@ -150,7 +150,6 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
           FetcherMagic.Fail
       )
       discard write(fd, buff[0].addr, 1)
-      discard execCmd("pkexec " & env.equinoxPath & " halt --force")
     else:
       discard
 
