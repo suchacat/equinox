@@ -118,7 +118,7 @@ EquinoxHQ is not responsible for any of your actions.
 
     info "equinox: downloading packages"
     downloadApks(packages, input)
-    stopLxcContainer()
+    stopLxcContainer(force = true)
   of "remove-app":
     if input.arguments.len < 1:
       error "equinox: expected 1 argument, got none."

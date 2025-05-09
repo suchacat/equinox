@@ -135,27 +135,10 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
     of FetcherMagic.Die:
       running = false
     of FetcherMagic.Fetch:
-      if fork() == 0:
-        discard execCmd(
-          "pkexec " & env.equinoxPath & " run --user:" & env.user & " --uid:" & $getuid() &
-            " --gid:" & $getgid() & " --xdg-runtime-dir:" & env.runtimeDir &
-            " --wayland-display:" & env.waylandDisplay
-        )
-        quit(0)
-
-      while execCmd("pidof equinox") != 0:
-        sleep(100) # FIXME: use a better signalling mechanism.
-
       let code = execCmd(
         "pkexec " & env.equinoxPath & " install --user:" & env.user & " --uid:" &
           $getuid() & " --gid:" & $getgid() & " --xdg-runtime-dir:" & env.runtimeDir &
           " --wayland-display:" & env.waylandDisplay & " --consented"
-      )
-
-      discard execCmd(
-        "pkexec " & env.equinoxPath & " run --user:" & env.user & " --uid:" & $getuid() &
-          " --gid:" & $getgid() & " --wayland-display:" & env.waylandDisplay &
-          " --xdg-runtime-dir:" & env.runtimeDir
       )
 
       var buff: array[1, uint8]
