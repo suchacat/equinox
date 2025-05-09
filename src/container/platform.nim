@@ -109,11 +109,6 @@ proc installSplitApp*(base, split: string) =
   )
   discard runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
 
-  # HACK: place this somewhere that makes more sense...
-  discard runCmdInContainer(
-    "/bin/cmd package uninstall --user 0 com.android.inputmethod.latin"
-  )
-
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
 
