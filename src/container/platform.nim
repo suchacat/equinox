@@ -95,12 +95,9 @@ proc installSplitApp*(base, split: string) =
 
   let installCreate = &runCmdInContainer("/bin/cmd package install-create")
 
-  echo installCreate
   let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  discard runCmdInContainer("/bin/cmd package uninstall com.roblox.client")
-    # just do this to prevent conflicts :3
   discard runCmdInContainer(
     "/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId]
   )
