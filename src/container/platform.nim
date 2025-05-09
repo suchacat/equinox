@@ -94,7 +94,6 @@ proc installSplitApp*(base, split: string) =
     sleep(100)
 
   let installCreate = &runCmdInContainer("/bin/cmd package install-create")
-
   let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId

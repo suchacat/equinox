@@ -11,6 +11,6 @@ proc readOutput*(bin: string, cmd: string): Option[string] =
 
 proc runCmd*(bin: string, cmd: string): bool {.discardable.} =
   let command = bin & ' ' & cmd
-  debug "runCmd(" & command & ')'
+  # debug "runCmd(" & command & ')'
 
   execCmd(command) == 0
