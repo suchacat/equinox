@@ -98,7 +98,7 @@ method view(app: OnboardingAppState): Widget =
           app.progressText = "Preparing to download images"
 
         discard app.redraw()
-      except JsonParsingError:
+      except JsonParsingError, IOError:
         discard
 
     let op = app.sock.receiveNonBlocking(OnboardMagic)

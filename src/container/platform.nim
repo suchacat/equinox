@@ -98,13 +98,13 @@ proc installSplitApp*(base, split: string) =
   let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  discard runCmdInContainer(
+  echo &runCmdInContainer(
     "/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId]
   )
-  discard runCmdInContainer(
+  echo &runCmdInContainer(
     "/bin/cmd package install-write $1 1 /data/split.apk" % [sessionId]
   )
-  discard runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
+  echo &runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
