@@ -1,6 +1,6 @@
 ## APK fetcher GUI
 import std/[os, logging, options, osproc, posix]
-import pkg/owlkettle, pkg/owlkettle/[playground, adw]
+import pkg/[shakar, owlkettle], pkg/owlkettle/[playground, adw]
 import ../bindings/[libadwaita], ../core/[forked_ipc], ../argparser, ./envparser
 
 type FetcherMagic {.pure, size: sizeof(uint8).} = enum
@@ -37,57 +37,45 @@ viewable APKFetcher:
 method view(app: APKFetcherState): Widget =
   if not app.addedTask:
     proc checkUpdaterStatus(): bool =
-      var readfds: TFdSet
-      var timeout: Timeval
+      let opcode = app.sock.receiveNonBlocking(FetcherMagic)
+      if !opcode:
+        return true
 
-      FD_ZERO(readfds)
-      FD_SET(app.sock, readfds)
+      let op = &opcode
+      debug "install/parent: op -> " & $op
 
-      var ret = select(app.sock + 1.cint, readfds.addr, nil, nil, timeout.addr)
-      if ret > 0 and bool(FD_ISSET(app.sock, readfds)):
-        # We have an incoming opcode
-        var opcode: array[1, byte]
-        if (let status = read(app.sock, opcode[0].addr, 1); status != 1):
-          error "install/parent: read() returned " & $status & ": " & $strerror(errno) &
-            " (errno " & $errno & ')'
-          error "install/parent: i think the launcher has crashed or something idk"
-          return false
+      case op
+      of FetcherMagic.Success:
+        info "install: Installed Roblox APK successfully"
+        app.closeWindow()
+        return false
+      of FetcherMagic.Fail:
+        error "install: Failed to install Roblox APK"
+        discard app.open:
+          gui:
+            Window:
+              title = "An error has occurred"
+              defaultSize = (300, 450)
 
-        let op = (FetcherMagic) opcode[0]
-        debug "install/parent: op -> " & $op
+              HeaderBar {.addTitlebar.}:
+                style = [HeaderBarFlat]
 
-        case op
-        of FetcherMagic.Success:
-          info "install: Installed Roblox APK successfully"
-          app.closeWindow()
-          return false
-        of FetcherMagic.Fail:
-          error "install: Failed to install Roblox APK"
-          discard app.open:
-            gui:
-              Window:
-                title = "An error has occurred"
-                defaultSize = (300, 450)
+              Box:
+                orient = OrientY
+                Box {.hAlign: AlignCenter, vAlign: AlignStart.}:
+                  Icon:
+                    name = "abrt-symbolic"
+                    pixelSize = 200
 
-                HeaderBar {.addTitlebar.}:
-                  style = [HeaderBarFlat]
+                Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
+                  Label:
+                    text = "Failed to install the Roblox APK."
+                    margin = 24
 
-                Box:
-                  orient = OrientY
-                  Box {.hAlign: AlignCenter, vAlign: AlignStart.}:
-                    Icon:
-                      name = "abrt-symbolic"
-                      pixelSize = 200
-
-                  Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
-                    Label:
-                      text = "Failed to install the Roblox APK."
-                      margin = 24
-
-          app.closeWindow()
-          return false
-        else:
-          discard
+        app.closeWindow()
+        return false
+      else:
+        discard
 
       true
 
@@ -141,15 +129,10 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
           " --wayland-display:" & env.waylandDisplay & " --consented"
       )
 
-      var buff: array[1, uint8]
-      buff[0] = (uint8)(
-        if code == 0:
-          FetcherMagic.Success
-        else:
-          debug "install/child: updater exited with non-zero exit code: " & $code
-          FetcherMagic.Fail
-      )
-      discard write(fd, buff[0].addr, 1)
+      if code == 0:
+        fd.send(FetcherMagic.Success)
+      else:
+        fd.send(FetcherMagic.Fail)
     else:
       discard
 

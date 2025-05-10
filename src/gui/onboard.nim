@@ -203,9 +203,7 @@ method view(app: OnboardingAppState): Widget =
                   return
 
                 # Init command
-                var buff: array[1, uint8]
-                buff[0] = (uint8) OnboardMagic.InitEquinox
-                discard write(app.sock, buff[0].addr, 1)
+                app.sock.send(OnboardMagic.InitEquinox)
 
                 app.showSpinner = hasToDownloadImages
                 app.showProgressBar = hasToDownloadImages
@@ -214,31 +212,21 @@ method view(app: OnboardingAppState): Widget =
 proc waitForCommands*(env: XdgEnv, fd: cint) =
   var running = true
   while running:
-    debug "launcher/child: waiting for opcode"
-    var opcode: array[1, byte]
-    if (let status = read(fd, opcode[0].addr, 1); status != 1):
-      error "launcher/child: read() returned " & $status & ": " & $strerror(errno) &
-        " (errno " & $errno & ')'
-      error "launcher/child: i think the launcher has crashed or something idk"
-      break
-
-    var op = cast[OnboardMagic](cast[uint8](opcode[0]))
-    debug "launcher/child: opcode -> " & $op
+    debug "onboard/child: waiting for opcode"
+    var op = fd.receive(OnboardMagic)
+    debug "onboard/child: opcode -> " & $op
 
     case op
     of OnboardMagic.InitEquinox:
-      var buff: array[1, uint8]
       if runCmd(
         "pkexec",
         env.equinoxPath & " init --xdg-runtime-dir:" & env.runtimeDir &
           " --wayland-display:" & env.waylandDisplay & " --user:" & env.user & " --uid:" &
           $getuid() & " --gid:" & $getgid(),
       ):
-        buff[0] = (uint8) OnboardMagic.InitSuccess
+        fd.send(OnboardMagic.InitSuccess)
       else:
-        buff[0] = (uint8) OnboardMagic.InitFailure
-
-      discard write(fd, buff[0].addr, 1)
+        fd.send(OnboardMagic.InitFailure)
     of OnboardMagic.InitFailure, OnboardMagic.InitSuccess, OnboardMagic.StartedContainer:
       discard
     of OnboardMagic.Die:

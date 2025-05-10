@@ -193,18 +193,14 @@ The Roblox logo and branding are registered trademarks of Roblox Corporation.
                 if networkCheck(app):
                   return
 
-                var buff: array[1, uint8]
-                buff[0] = (uint8) LauncherMagic.Launch
-                discard write(app.sock, buff[0].addr, 1) == 0
+                app.sock.send(LauncherMagic.Launch)
 
             Button:
               style = [ButtonPill, ButtonDestructive]
               text = "Stop Equinox"
               tooltip = "Gracefully shut down the Equinox container."
               proc clicked() =
-                var buff: array[1, uint8]
-                buff[0] = (uint8) LauncherMagic.Halt
-                discard write(app.sock, buff[0].addr, 1) == 0
+                app.sock.send(LauncherMagic.Halt)
 
 proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
   debug "launcher/child: waiting for commands"
