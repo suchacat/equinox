@@ -117,9 +117,13 @@ proc download*(url: string, dest: string): bool =
   )
 
   var fd = open(dest.cstring, O_WRONLY or O_APPEND or O_CREAT, 0644)
+  if fd < 1:
+    error "http: open() returned < 0"
+    raise newException(IOError, "Failed to download file: " & $strerror(errno))
 
-  # discard lcurl.easy_setopt(libcurl.OPT_USERAGENT, "Mozilla/5.0")
+  discard lcurl.easy_setopt(libcurl.OPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0")
   discard lcurl.easy_setopt(libcurl.OPT_HTTPGET, 1)
+  discard lcurl.easy_setopt(libcurl.OPT_FOLLOWLOCATION, 1)
   discard lcurl.easy_setopt(libcurl.OPT_WRITEDATA, fd.addr)
   discard lcurl.easy_setopt(libcurl.OPT_URL, url.cstring)
   discard lcurl.easy_setopt(

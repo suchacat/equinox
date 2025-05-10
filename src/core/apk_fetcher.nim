@@ -44,8 +44,11 @@ proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion)
 
   discard existsOrCreateDir(config.work / "apk")
 
+  let apkDir = config.work / "apk" / ver
+
+  discard existsOrCreateDir(apkDir)
+
   let
-    apkDir = config.work / "apk" / ver
     baseApkPath = apkDir / "base.apk"
     splitApkPath = apkDir / "split.apk"
 
