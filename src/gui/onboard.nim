@@ -134,13 +134,14 @@ method view(app: OnboardingAppState): Widget =
                     "Equinox has failed to initialize the container. Please run this launcher from your terminal and send the logs to the Lucem Discord server."
                   margin = 24
     of OnboardMagic.InitSuccess:
-      app.sock.send(OnboardMagic.StartContainer)
+      app.sock.send(OnboardMagic.Die)
+      quit(0)
 
     return false
 
   result = gui:
     Window:
-      defaultSize = (300, 400)
+      defaultSize = (590, 760)
       title = "Equinox"
       HeaderBar {.addTitlebar.}:
         style = [HeaderBarFlat]
