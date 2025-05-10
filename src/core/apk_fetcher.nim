@@ -12,6 +12,7 @@ const
 
 type
   APKNotFound* = object of ValueError
+  APKDownloadFailed* = object of IOError
 
   APKVersion* = object
     expired*: bool
@@ -37,32 +38,25 @@ proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion)
     "Cannot download expired APK! It'll probably just cause Roblox to not work.",
   )
 
-  var useCache = false
-
   #[ if not input.enabled("force-no-cache", "J") and dirExists(config.work / "apk" / ver):
     debug "apk: using cached version"
     useCache = true ]#
 
-  let
-    baseApk =
-      if not useCache:
-        httpGet(pkg.base).body
-      else:
-        readFile(config.work / "apk" / ver / "base.apk")
-
-    splitApk =
-      if not useCache:
-        httpGet(pkg.split).body
-      else:
-        readFile(config.work / "apk" / ver / "split.apk")
-
-  debug "apk: caching results"
   discard existsOrCreateDir(config.work / "apk")
-  discard existsOrCreateDir(config.work / "apk" / ver)
 
-  writeFile(config.work / "apk" / ver / "base.apk", baseApk)
-  writeFile(config.work / "apk" / ver / "split.apk", splitApk)
+  let
+    apkDir = config.work / "apk" / ver
+    baseApkPath = apkDir / "base.apk"
+    splitApkPath = apkDir / "split.apk"
 
-  installSplitApp(
-    config.work / "apk" / ver / "base.apk", config.work / "apk" / ver / "split.apk"
-  )
+  let baseApk = download(pkg.base, baseApkPath)
+
+  if not baseApk:
+    raise newException(APKDownloadFailed, "Failed to download base APK")
+
+  let splitApk = download(pkg.split, splitApkPath)
+
+  if not splitApk:
+    raise newException(APKDownloadFailed, "Failed to download split APK")
+
+  installSplitApp(baseApkPath, splitApkPath)
