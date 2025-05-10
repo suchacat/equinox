@@ -57,9 +57,7 @@ proc patchOutOSK*() =
   while not isServiceOn("package"):
     continue
 
-  discard &runCmdInContainer(
-    "pm uninstall --user 0 com.android.inputmethod.latin"
-  )
+  discard &runCmdInContainer("pm uninstall --user 0 com.android.inputmethod.latin")
 
 proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   info "equinox: starting android runtime"

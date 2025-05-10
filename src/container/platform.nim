@@ -101,30 +101,36 @@ proc installSplitApp*(base, split: string) =
   debug "platform: obtained session ID: " & sessionId
   var success = true
 
-  let installWrite = &runCmdInContainer(
-    "/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId]
-  )
+  let installWrite =
+    &runCmdInContainer(
+      "/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId]
+    )
   if "Success" notin installWrite:
     error "platform: Writing the base APK to the installation transaction has failed!"
     error "platform: " & installWrite
     success = false
-  
-  let addBase = &runCmdInContainer(
-    "/bin/cmd package install-write $1 1 /data/split.apk" % [sessionId]
-  )
+
+  let addBase =
+    &runCmdInContainer(
+      "/bin/cmd package install-write $1 1 /data/split.apk" % [sessionId]
+    )
   if "Success" notin addBase:
     error "platform: Writing the split APK to the installation transaction has failed!"
     error "platform: " & addBase
     success = false
-  
-  let installCommit = &runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
+
+  let installCommit =
+    &runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
   if "Success" notin installCommit:
     error "platform: Installation transaction commit command has failed!"
     error "platform: " & installCommit
     success = false
 
   if not success:
-    raise newException(FailedToInstallApp, "One or more steps have failed while installing the APK. Check the above logs for more info.")
+    raise newException(
+      FailedToInstallApp,
+      "One or more steps have failed while installing the APK. Check the above logs for more info.",
+    )
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
