@@ -39,9 +39,9 @@ proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion)
 
   var useCache = false
 
-  if not input.enabled("force-no-cache", "J") and dirExists(config.work / "apk" / ver):
+  #[ if not input.enabled("force-no-cache", "J") and dirExists(config.work / "apk" / ver):
     debug "apk: using cached version"
-    useCache = true
+    useCache = true ]#
 
   let
     baseApk =

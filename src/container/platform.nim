@@ -8,6 +8,8 @@ const
   ServiceName = "waydroidplatform"
 
 type
+  FailedToInstallApp* = object of OSError
+
   Transaction* {.pure, size: sizeof(uint32).} = enum
     GetProp = 1
     SetProp = 2
@@ -97,13 +99,25 @@ proc installSplitApp*(base, split: string) =
   let sessionId = installCreate.split('[')[1].split(']')[0]
 
   debug "platform: obtained session ID: " & sessionId
-  echo &runCmdInContainer(
+  var success = true
+  if "Success" notin &runCmdInContainer(
     "/bin/cmd package install-write $1 0 /data/base.apk" % [sessionId]
-  )
-  echo &runCmdInContainer(
+  ):
+    error "platform: Writing the base APK to the installation transaction has failed!"
+    success = false
+
+  if "Success" notin &runCmdInContainer(
     "/bin/cmd package install-write $1 1 /data/split.apk" % [sessionId]
-  )
-  echo &runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId])
+  ):
+    error "platform: Writing the split APK to the installation transaction has failed!"
+    success = false
+
+  if "Success" notin &runCmdInContainer("/bin/cmd package install-commit $1" % [sessionId]):
+    error "platform: Installation transaction commit command has failed!"
+    success = false
+
+  if not success:
+    raise newException(FailedToInstallApp, "One or more steps have failed while installing the APK. Check the above logs for more info.")
 
 proc launchApp*(iface: var IPlatform, id: string) =
   debug "platform: launching app: " & id
