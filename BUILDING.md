@@ -3,21 +3,24 @@ This aims to be a comprehensive guide to compiling Equinox from scratch. If your
 
 # Installation
 ## Dependencies Required (For people interested in packaging Equinox)
-### Runtime Dependencies
+### Library Dependencies
 1. glib
 2. [libgbinder](https://github.com/mer-hybris/libgbinder)
 3. pcre2
 4. gtk4
 5. libadwaita
 
-### Compile-time Dependencies
+### Compile-Time Dependencies
 1. clang
 2. make
+
+### Runtime Dependencies
+1. lxc
 
 ## Arch
 Run the following command to gather all dependencies needed by Equinox on Arch Linux.
 ```
-# pacman -S clang make gtk4 libadwaita glib2 glib2-devel pcre2
+# pacman -S clang make gtk4 libadwaita glib2 glib2-devel pcre2 lxc
 ```
 Now, you need to install libgbinder, which you can do by using your favourite AUR helper (we're using `yay` in this example, but you can use any AUR helper you fancy.)
 
@@ -34,7 +37,7 @@ Some users have reported that the following command fails. If it does, run this 
 ## Fedora
 Run the following command to gather all dependencies needed by Equinox on Fedora.
 ```
-# dnf install build-essential clang gtk4 gtk4-devel libadwaita libadwaita-devel pcre2 pcre2-devel glib2 glib2-devel
+# dnf install build-essential clang gtk4 gtk4-devel libadwaita libadwaita-devel pcre2 pcre2-devel glib2 glib2-devel lxc
 ```
 
 Now, unfortunately, Fedora does not have a libgbinder package in its repositories. You'll need to manually clone the repository and compile it instead. 
@@ -55,7 +58,7 @@ You'll need to run this every reboot.
 ## Ubuntu
 Run the following command to gather all dependencies needed by Equinox on Ubuntu.
 ```
-# apt-get update && apt-get install clang make gtk4 libgtk-4-dev libadwaita-1 libadwaita-1-dev pcre2 libpcre2-dev glib2.0 libglib2.0-dev 
+# apt-get update && apt-get install clang make gtk4 libgtk-4-dev libadwaita-1 libadwaita-1-dev pcre2 libpcre2-dev glib2.0 libglib2.0-dev lxc lxc-templates uidmap lxc-utils bridge-utils
 ```
 
 Now, unfortunately, just like Fedora, Ubuntu does not have a libgbinder package in its repositories. You'll need to manually clone the repository and compile it instead.
