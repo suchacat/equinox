@@ -51,6 +51,16 @@ proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
     info "equinox: roblox has exited; flagging dispatcher state as exited"
     dispatcher.running = false
 
+proc patchOutOSK*() =
+  debug "equinox: trying to uninstall OSK"
+
+  while not isServiceOn("package"):
+    continue
+
+  discard &runCmdInContainer(
+    "pm uninstall --user 0 com.android.inputmethod.latin"
+  )
+
 proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   info "equinox: starting android runtime"
   debug "equinox: starting prep for android runtime"
@@ -105,6 +115,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
 
   if launchRoblox:
     startRobloxClient(platform)
+    patchOutOSK()
 
     putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
       # Fixes a crash with Discord RPC as we don't have XDG_RUNTIME_DIR in the environment 
