@@ -2,10 +2,8 @@ import std/[os, logging, terminal, random, rdstdin, strutils]
 import pkg/[colored_logger, noise], pkg/nimsimd/runtimecheck
 import ./argparser
 import
-  container/[
-    certification, lxc, configuration, init, sugar, properties, app_manager, platform,
-    network, cpu,
-  ],
+  container/
+    [certification, lxc, configuration, init, sugar, properties, platform, network, cpu],
   container/utils/mount,
   core/[apk_fetcher, run, meta]
 
@@ -57,7 +55,6 @@ Modes:
   shell                Run a shell command in the Android container
   sh                   Run a shell REPL in the Android container
   install              Automatically fetch and install Roblox
-  install-apk          Install Roblox from an APK/APKM file supplied by the user
   get-property         Fetch propert(y/ies) from the Android container
   get-gsf-id           Get the Google Services Framework Android ID from the container
   remove-app           Remove an application
@@ -91,13 +88,6 @@ proc main() {.inline.} =
   of "unmount":
     loadConfig(input)
     umountAll(config.rootfs)
-  of "install-apk":
-    if input.arguments.len < 1:
-      error "equinox: expected 1 argument, got none."
-      error "equinox: Run equinox --help for more information."
-      quit(1)
-
-    installRobloxClient(input.arguments[0])
   of "install":
     if not input.enabled("consented", "C"):
       echo """
