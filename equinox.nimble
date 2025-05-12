@@ -1,6 +1,6 @@
 # Package
 
-version = "0.1.3"
+version = "0.1.31"
 author = "xTrayambak"
 description = "Equinox is a runtime for Roblox on Linux."
 license = "MIT"
