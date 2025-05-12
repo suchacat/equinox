@@ -2,7 +2,7 @@ import std/[os]
 import pkg/[jsony]
 
 type AppState* = object
-  promptGsm*: bool
+  promptGsm*: bool = true
 
 proc save*(state: AppState) =
   var directory: string
