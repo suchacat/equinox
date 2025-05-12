@@ -3,7 +3,7 @@ import pkg/[colored_logger, noise], pkg/nimsimd/runtimecheck
 import ./argparser
 import
   container/
-    [certification, lxc, configuration, init, sugar, properties, platform, network, cpu],
+    [certification, lxc, configuration, init, sugar, properties, rootfs, platform, network, cpu],
   container/utils/mount,
   core/[apk_fetcher, run, meta]
 

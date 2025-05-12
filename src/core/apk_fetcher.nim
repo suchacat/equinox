@@ -2,7 +2,7 @@
 import std/[os, tables, logging]
 import pkg/[jsony]
 import
-  ../container/[configuration, properties, lxc, platform],
+  ../container/[properties, lxc, platform, paths],
   ../container/utils/[exec, http],
   ../argparser
 
@@ -38,14 +38,9 @@ proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion)
     "Cannot download expired APK! It'll probably just cause Roblox to not work.",
   )
 
-  #[ if not input.enabled("force-no-cache", "J") and dirExists(config.work / "apk" / ver):
-    debug "apk: using cached version"
-    useCache = true ]#
+  discard existsOrCreateDir(getApkStorePath())
 
-  discard existsOrCreateDir(config.work / "apk")
-
-  let apkDir = config.work / "apk" / ver
-
+  let apkDir = getApkStorePathForVersion(ver)
   discard existsOrCreateDir(apkDir)
 
   let
