@@ -1,15 +1,15 @@
 ## Container filesystem utilities
 import std/[os, logging]
-import ./[configuration]
+import ./[paths]
 
 proc containerHasFile*(name: string): bool =
-  fileExists(config.rootfs / name)
+  fileExists(getRootfsPath() / name)
 
 proc containerHasDir*(name: string): bool =
-  dirExists(config.rootfs / name)
+  dirExists(getRootfsPath() / name)
 
 proc containerRemoveFile*(name: string) =
-  removeFile(config.rootfs / name)
+  removeFile(getRootfsPath() / name)
 
 proc containerRemoveDir*(name: string) =
-  removeDir(config.rootfs / name)
+  removeDir(getRootfsPath() / name)

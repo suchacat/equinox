@@ -1,6 +1,6 @@
 ## Fetch Roblox's APK from Kirbix's Github endpoint
 import std/[os, tables, logging]
-import pkg/[jsony]
+import pkg/[jsony, shakar]
 import
   ../container/[properties, lxc, platform, paths],
   ../container/utils/[exec, http],
@@ -57,4 +57,4 @@ proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion)
   if not splitApk:
     raise newException(APKDownloadFailed, "Failed to download split APK")
 
-  installSplitApp(baseApkPath, splitApkPath)
+  installSplitApp(baseApkPath, splitApkPath, &input.flag("user"))

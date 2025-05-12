@@ -1,6 +1,6 @@
 import std/[logging, locks]
 import pkg/[colored_logger]
-import ./[hardware, configuration]
+import ./[hardware, paths]
 import ./utils/objects
 
 proc startHardwareService*(): ptr HWService =

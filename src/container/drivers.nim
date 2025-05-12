@@ -1,14 +1,12 @@
-import std/[os, logging, strutils, posix]
+import std/[os, logging, strutils, posix, options]
+import pkg/shakar
 import ./utils/exec
-import ./[configuration, selinux]
+import ./[paths, selinux]
 
 const
   BINDER_DRIVERS = ["anbox-binder", "puddlejumper", "bonder", "binder"]
   VNDBINDER_DRIVERS = ["anbox-vndbinder", "vndpuddlejumper", "vndbonder", "vndbinder"]
   HWBINDER_DRIVERS = ["anbox-hwbinder", "hwpuddlejumper", "hwbonder", "hwbinder"]
-
-type Drivers* = object
-  binder*, vndbinder*, hwbinder*: string
 
 proc devExists*(file: string): bool =
   var sb: Stat
@@ -24,9 +22,13 @@ proc devExists*(file: string): bool =
 
   return false
 
-type BinderNode {.packed.} = object
-  name: array[0 .. 255, char]
-  ctl0, ctl1: uint32
+type
+  BinderDriver* = object
+    binder*, hwbinder*, vndbinder*: Option[string]
+
+  BinderNode {.packed.} = object
+    name: array[0 .. 255, char]
+    ctl0, ctl1: uint32
 
 proc ioctl(
   fd: cint, request: uint, data: pointer
@@ -40,8 +42,8 @@ proc isBinderfsLoaded*(): bool =
 
   false
 
-proc allocBinderNodes*(binderDevNodes: openArray[string]) =
-  debug "drivers: allocating binder nodes"
+proc allocateBinderNode*(node: string) =
+  debug "drivers: allocating binder node: " & node
   const
     NumBits = 8
     TypeBits = 8
@@ -67,80 +69,68 @@ proc allocBinderNodes*(binderDevNodes: openArray[string]) =
     error "drivers: hint: does your kernel not have binder support?"
     raise newException(Defect, "Cannot allocate binder nodes")
 
-  for node in binderDevNodes:
-    var nodeStruct = BinderNode(ctl0: 0, ctl1: 0)
-    for i, c in node:
-      if i > 255:
-        break
+  var nodeStruct = BinderNode(ctl0: 0, ctl1: 0)
+  for i, c in node:
+    if i > 255:
+      break
 
-      nodeStruct.name[i] = c
+    nodeStruct.name[i] = c
 
-    if ioctl(binderCtlFd, binderCtlAdd, nodeStruct.addr) < 0 and errno != EEXIST:
-      error "drivers: an error occured while allocating binder node: " & node
-      raise newException(
-        Defect, "Cannot allocate binder node `" & node & "`: " & $strerror(errno)
-      )
+  if ioctl(binderCtlFd, binderCtlAdd, nodeStruct.addr) < 0 and errno != EEXIST:
+    error "drivers: an error occured while allocating binder node: " & node
+    raise newException(
+      Defect, "Cannot allocate binder node `" & node & "`: " & $strerror(errno)
+    )
 
-  debug "drivers: allocated binder nodes successfully"
   discard close(binderCtlFd)
 
-proc probeBinderDriver*() =
+proc allocBinderNodes*(nodes: BinderDriver) =
+  debug "drivers: allocating binder nodes"
+
+  allocateBinderNode(&nodes.binder)
+  allocateBinderNode(&nodes.hwbinder)
+  allocateBinderNode(&nodes.vndbinder)
+
+  debug "drivers: allocated binder nodes successfully"
+
+proc probeBinderDriver*(): BinderDriver =
   debug "drivers: probing for binder driver(s)"
-  var hasBinder, hasHwbinder, hasVndbinder: bool
   var binderDevNodes = newSeqOfCap[string](3)
+  var drivers: BinderDriver
+
   for binder in BINDER_DRIVERS:
     if devExists("/dev" / binder):
-      config.binder = binder
-      hasBinder = true
+      drivers.binder = some(binder)
       break
 
   for hwbinder in HWBINDER_DRIVERS:
     if devExists("/dev" / hwbinder):
-      config.hwbinder = hwbinder
-      hasHwbinder = true
+      drivers.hwbinder = some(hwbinder)
       break
 
   for vndbinder in VNDBINDER_DRIVERS:
     if devExists("/dev" / vndbinder):
-      config.vndbinder = vndbinder
-      hasVndbinder = true
+      drivers.vndbinder = some(vndbinder)
       break
 
-  if not hasBinder:
-    binderDevNodes &= BINDER_DRIVERS[0]
-
-  if not hasHwbinder:
-    binderDevNodes &= HWBINDER_DRIVERS[0]
-
-  if not hasVndbinder:
-    binderDevNodes &= VNDBINDER_DRIVERS[0]
-
-  if binderDevNodes.len > 0 and isBinderfsLoaded():
+  if not (*drivers.binder and *drivers.hwbinder and *drivers.vndbinder) and isBinderfsLoaded():
     debug "drivers: creating /dev/binderfs"
     discard existsOrCreateDir("/dev/binderfs")
 
     debug "drivers: mounting binder at /dev/binderfs"
     discard runCmd("sudo", "mount -t binder binder /dev/binderfs")
 
-    allocBinderNodes(binderDevNodes)
+    drivers.binder = some(BINDER_DRIVERS[0])
+    drivers.hwbinder = some(HWBINDER_DRIVERS[0])
+    drivers.vndbinder = some(VNDBINDER_DRIVERS[0])
+    allocBinderNodes(drivers)
 
     for _, node in walkDir("/dev/binderfs"):
       let nam = node.split("/dev/binderfs/")[1]
       discard runCmd("sudo", "ln -s " & node & " /dev/" & nam)
 
-    config.binder = binderDevNodes[0]
-    config.hwbinder = binderDevNodes[1]
-    config.vndbinder = binderDevNodes[2]
+  discard runCmd("sudo", "chmod 666 /dev/" & &drivers.binder)
+  discard runCmd("sudo", "chmod 666 /dev/" & &drivers.hwbinder)
+  discard runCmd("sudo", "chmod 666 /dev/" & &drivers.vndbinder)
 
-  assert(config.binder.len > 0)
-  assert(config.hwbinder.len > 0)
-  assert(config.vndbinder.len > 0)
-  discard runCmd("sudo", "chmod 666 /dev/" & config.binder)
-  discard runCmd("sudo", "chmod 666 /dev/" & config.hwbinder)
-  discard runCmd("sudo", "chmod 666 /dev/" & config.vndbinder)
-
-proc loadBinderNodes*() =
-  let binderDesc = readFile(config.work / "binders").splitLines()
-  config.binder = binderDesc[0]
-  config.hwbinder = binderDesc[1]
-  config.vndbinder = binderDesc[2]
+  drivers

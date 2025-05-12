@@ -1,5 +1,6 @@
 import std/[os, options, logging]
-import ./[lxc, sugar]
+import pkg/shakar
+import ./lxc
 
 proc getProp*(prop: string): Option[string] =
   let property = runCmdInContainer("/bin/getprop \"" & prop.quoteShellPosix() & '"')

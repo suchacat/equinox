@@ -1,6 +1,6 @@
 import std/[os, options, logging, strutils, tables]
-import pkg/[jsony]
-import ./[fflags, sugar]
+import pkg/[jsony, shakar]
+import ./[fflags]
 import ../[argparser]
 
 type

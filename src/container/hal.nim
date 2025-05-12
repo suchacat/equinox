@@ -1,7 +1,8 @@
 ## Hardware abstraction layer utilities
-import std/[os, logging, strutils]
+import std/[os, logging, strutils, options]
+import pkg/shakar
 import ../argparser
-import ./[configuration, properties, filesystem, sugar, gpu, lxc, app_config]
+import ./[paths, properties, filesystem, gpu, lxc, app_config]
 
 proc findHal*(hardware: string): Option[string] =
   debug "lxc: finding hardware abstraction layer for hardware: " & hardware
@@ -112,10 +113,10 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "persist.waydroid.multi_windows", value: "false")
   props &= (key: "waydroid.stub_sensors_hal", value: "1") # we don't need any sensors
   props &= (key: "ro.sf.lcd_density", value: "162") # 180
-  props &= (key: "waydroid.xdg_runtime_dir", value: config.containerXdgRuntimeDir)
-  props &= (key: "waydroid.wayland_display", value: config.containerWaylandDisplay)
-  props &= (key: "waydroid.pulse_runtime_path", value: config.containerPulseRuntimePath)
-  props &= (key: "waydroid.host_data_path", value: config.equinoxData / "data")
+  props &= (key: "waydroid.xdg_runtime_dir", value: getContainerXdgRuntimeDir())
+  props &= (key: "waydroid.wayland_display", value: getWaylandDisplay(input))
+  props &= (key: "waydroid.pulse_runtime_path", value: getContainerPulseRuntimePath())
+  props &= (key: "waydroid.host_data_path", value: getEquinoxDataPath(&input.flag("user")))
   props &= (key: "ro.config.notification_sound", value: "earbleed.ogg")
 
   var builder = newStringOfCap(1800)
@@ -123,4 +124,4 @@ proc makeBaseProps*(input: Input) =
   for prop in props:
     builder &= prop.key & '=' & prop.value & '\n'
 
-  writeFile(config.work / "equinox.prop", builder)
+  writeFile(getWorkPath() / "equinox.prop", builder)

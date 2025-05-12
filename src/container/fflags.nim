@@ -1,28 +1,24 @@
 ## Fastflag manager
 import std/[os, tables, logging, json]
-import ./[configuration]
-import pkg/[pretty, jsony]
+import ./paths, ../argparser
+import pkg/[pretty, jsony, shakar]
 
 type FFlagList* = Table[string, JsonNode]
 
-proc getRobloxStorageDir*(): string =
-  let robloxDir = config.equinoxData / "data" / "com.roblox.client"
-
-  robloxDir
-
-proc setFflags*(list: FFlagList) =
+proc setFflags*(input: Input, list: FFlagList) =
   debug "equinox: setting fflags (num: " & $list.len & ')'
   print list
 
   let serialized = toJson(list)
 
   debug "equinox: fflag json:\n" & serialized
-
-  if not dirExists(getRobloxStorageDir() / "files"):
+  
+  let storageDir = getAppDataPath(&input.flag("user"), "com.roblox.client")
+  if not dirExists(storageDir / "files"):
     warn "equinox: TODO: first-boot fflag patching support"
     return
 
-  let clientSettings = getRobloxStorageDir() / "files" / "exe" / "ClientSettings"
+  let clientSettings = storageDir / "files" / "exe" / "ClientSettings"
   debug "equinox: client settings path: " & clientSettings
 
   try:

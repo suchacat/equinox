@@ -1,7 +1,7 @@
 ## Roblox logs manager
 import std/[atomics, inotify, logging, os, posix, strutils, json]
 import pkg/[colored_logger, jsony]
-import ../container/[configuration]
+import ../container/paths
 import ./event_manager/[types, dispatcher], ./bloxstrap_rpc
 
 type
@@ -17,12 +17,12 @@ var running: Atomic[bool]
 type LogWatcherState* = object
   webviewOpened*: bool = false
 
-proc getLogDir(): string =
-  config.equinoxData / "data" / "com.roblox.client" / "files" / "appData" / "logs"
+proc getLogDir(user: string, ): string =
+  getAppDataPath(user, "com.roblox.client") / "files" / "appData" / "logs"
 
-proc destroyAllLogs*() =
+proc destroyAllLogs*(user: string) =
   info "Clearing all previous logs"
-  for kind, path in walkDir(getLogDir()):
+  for kind, path in walkDir(getLogDir(user)):
     if kind != pcFile:
       continue
 
@@ -70,12 +70,12 @@ proc checkLineForEvents*(line: string, state: var LogWatcherState) =
     debug "equinox: WebView has been closed"
     state.webviewOpened = false
 
-proc findTargetLog*(): string =
+proc findTargetLog*(user: string): string =
   info "equinox: finding latest log file"
 
   var iters = 0
   while iters < int(uint16.high):
-    for kind, path in walkDir(getLogDir()):
+    for kind, path in walkDir(getLogDir(user)):
       if kind != pcFile:
         continue
       info "Target Roblox log file: " & path
@@ -162,10 +162,10 @@ proc watcherFunc(target: string) =
   discard close(fd)
   debug "watcher: thread is exiting loop"
 
-proc startLogWatcher*() =
+proc startLogWatcher*(user: string) =
   info "Starting log watcher thread"
   try:
-    let target = findTargetLog()
+    let target = findTargetLog(user)
     running.store(true)
     createThread(watcher, watcherFunc, (ensureMove(target)))
   except NoLogTargetFound as exc:
