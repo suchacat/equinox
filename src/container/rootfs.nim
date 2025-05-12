@@ -12,4 +12,6 @@ proc mountRootfs*(input: Input, imagesDir: string) =
   mount(imagesDir / "vendor.img", getRootfsPath() / "vendor")
 
   makeBaseProps(input)
-  mountFile(getWorkPath() / "equinox.prop", getRootfsPath() / "vendor" / "waydroid.prop")
+  mountFile(
+    getWorkPath() / "equinox.prop", getRootfsPath() / "vendor" / "waydroid.prop"
+  )

@@ -1,6 +1,5 @@
 import std/[os, osproc, options, strutils, logging, posix]
 import pkg/[shakar]
-import ./utils/exec
 
 const
   vnic = "equi0"

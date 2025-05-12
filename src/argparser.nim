@@ -1,7 +1,6 @@
 ## Argument parser for Lucem, based on `std/parseopt`
 ## Copyright (C) 2024 Trayambak Rai
-import std/[os, options, parseopt, logging, tables, strutils]
-import pkg/shakar
+import std/[os, options, parseopt, logging, tables]
 
 type Input* = object
   command*: string

@@ -1,8 +1,6 @@
-import std/[os, options, logging, strutils, tables, times, posix]
+import std/[os, options, logging, strutils, tables, posix]
 import pkg/[glob, shakar]
-import ./[lxc_config, cpu, gpu, paths, drivers, mac],
-       ./utils/exec,
-       ../argparser
+import ./[lxc_config, cpu, gpu, paths, drivers, mac], ./utils/exec, ../argparser
 
 type BinaryNotFound* = object of Defect
 
@@ -226,8 +224,7 @@ proc generateSessionLxcConfig*(input: Input) =
   let
     waylandContainerSocket =
       absolutePath(getContainerXdgRuntimeDir() / getWaylandDisplay(input))
-    waylandHostSocket =
-      absolutePath(getXdgRuntimeDir(input) / getWaylandDisplay(input))
+    waylandHostSocket = absolutePath(getXdgRuntimeDir(input) / getWaylandDisplay(input))
 
   if not entry(
     waylandHostSocket, waylandContainerSocket[1 ..< waylandContainerSocket.len].some
@@ -245,7 +242,9 @@ proc generateSessionLxcConfig*(input: Input) =
 
   entry pulseHostSocket, pulseContainerSocket[1 ..< pulseContainerSocket.len].some
 
-  if not entry(getEquinoxLocalPath(&input.flag("user")), "data".some, options = "rbind 0 0"):
+  if not entry(
+    getEquinoxLocalPath(&input.flag("user")), "data".some, options = "rbind 0 0"
+  ):
     raise newException(OSError, "Failed to bind userdata")
 
   nodes &= "lxc.environment=WAYLAND_DISPLAY=" & getWaylandDisplay(input)

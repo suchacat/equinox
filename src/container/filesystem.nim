@@ -1,5 +1,5 @@
 ## Container filesystem utilities
-import std/[os, logging]
+import std/[os]
 import ./[paths]
 
 proc containerHasFile*(name: string): bool =

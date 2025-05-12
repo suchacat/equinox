@@ -1,5 +1,5 @@
 ## Roblox logs manager
-import std/[atomics, inotify, logging, os, posix, strutils, json]
+import std/[atomics, inotify, logging, os, posix, json, strutils]
 import pkg/[colored_logger, jsony]
 import ../container/paths
 import ./event_manager/[types, dispatcher], ./bloxstrap_rpc
@@ -17,7 +17,7 @@ var running: Atomic[bool]
 type LogWatcherState* = object
   webviewOpened*: bool = false
 
-proc getLogDir(user: string, ): string =
+proc getLogDir(user: string): string =
   getAppDataPath(user, "com.roblox.client") / "files" / "appData" / "logs"
 
 proc destroyAllLogs*(user: string) =

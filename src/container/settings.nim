@@ -1,7 +1,6 @@
 ## Android settings
 ## Copyright (C) 2025 the EquinoxHQ team
-import std/[logging]
-import ./[lxc], ./utils/exec
+import ./[lxc]
 
 proc settingsPut*(namespace: string, key: string, value: bool | string | SomeInteger) =
   var cmd = "/bin/cmd settings put " & namespace & ' ' & key & ' '

@@ -1,14 +1,9 @@
-import std/[os, options, logging, strutils, sequtils, posix, tables, json]
+import std/[os, options, logging, strutils, posix, tables, json]
 import
-  ../container/
-    [
-      lxc, drivers, platform, network, rootfs, app_config, fflags,
-      settings,
-    ]
+  ../container/[lxc, drivers, platform, network, rootfs, app_config, fflags, settings]
 import pkg/[discord_rpc, shakar]
 import ../argparser
-import ../container/utils/[exec, mount],
-       ../container/paths
+import ../container/utils/[exec, mount], ../container/paths
 import ./event_manager/[types, dispatcher]
 import ./[discord_rpc, fflag_patches, roblox_logs, processes]
 

@@ -17,12 +17,7 @@ proc getGSFAndroidID*(user: string): string =
       "GSF has not been initialized yet. Has this container never booted before?",
     )
 
-  let db = open(
-    appDataPath / "databases" / "gservices.db",
-    "",
-    "",
-    "",
-  )
+  let db = open(appDataPath / "databases" / "gservices.db", "", "", "")
   let rows = db.getAllRows(sql"select * from main where name = 'android_id';")
 
   debug "certification: query rows count: " & $rows.len

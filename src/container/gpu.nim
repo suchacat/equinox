@@ -1,4 +1,4 @@
-import std/[algorithm, os, logging, options, strutils, sequtils, tables]
+import std/[os, logging, options, strutils, sequtils, tables]
 import pkg/[glob]
 
 const UnsupportedGPUDrivers* = [
@@ -44,12 +44,7 @@ proc getCardFromRenderNode*(device: string): string =
   "/dev" / "dri" / matches[0].splitPath().tail
 
 proc getDriNode*(): Option[DRINode] =
-  when defined(equinoxTrayExperimentDedicatedNodes):
-    let nodes = glob("/dev/dri/renderD*").walkGlob.toSeq.sortedByIt(
-        (char) (((uint8) it[it.len - 1]) - ((uint8) '0'))
-      )
-  else:
-    let nodes = glob("/dev/dri/renderD*").walkGlob.toSeq()
+  let nodes = glob("/dev/dri/renderD*").walkGlob.toSeq()
 
   for node in nodes:
     let split = splitPath(node).tail

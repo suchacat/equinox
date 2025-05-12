@@ -1,6 +1,6 @@
 ## APK fetcher GUI
-import std/[os, logging, options, osproc, posix]
-import pkg/[shakar, owlkettle], pkg/owlkettle/[playground, adw]
+import std/[logging, options, osproc, posix]
+import pkg/[shakar, owlkettle], pkg/owlkettle/adw
 import ../bindings/[libadwaita], ../core/[forked_ipc], ../argparser, ./envparser
 
 type FetcherMagic {.pure, size: sizeof(uint8).} = enum

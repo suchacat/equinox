@@ -1,7 +1,6 @@
 import std/[os, logging, strutils, posix, options]
 import pkg/shakar
 import ./utils/exec
-import ./[paths, selinux]
 
 const
   BINDER_DRIVERS = ["anbox-binder", "puddlejumper", "bonder", "binder"]
@@ -113,7 +112,8 @@ proc probeBinderDriver*(): BinderDriver =
       drivers.vndbinder = some(vndbinder)
       break
 
-  if not (*drivers.binder and *drivers.hwbinder and *drivers.vndbinder) and isBinderfsLoaded():
+  if not (*drivers.binder and *drivers.hwbinder and *drivers.vndbinder) and
+      isBinderfsLoaded():
     debug "drivers: creating /dev/binderfs"
     discard existsOrCreateDir("/dev/binderfs")
 

@@ -2,8 +2,7 @@ import std/[os, logging, terminal, random, rdstdin, strutils]
 import pkg/[colored_logger, noise, shakar], pkg/nimsimd/runtimecheck
 import ./argparser
 import
-  container/
-    [certification, lxc, init, properties, platform, network, cpu, paths],
+  container/[certification, lxc, init, properties, platform, network, cpu, paths],
   container/utils/mount,
   core/[apk_fetcher, run, meta]
 

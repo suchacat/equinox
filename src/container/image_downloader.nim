@@ -1,7 +1,6 @@
-import std/[algorithm, logging, math, os, strutils, sequtils]
-import pkg/[curly, jsony, shakar, zip/zipfiles, pretty]
+import std/[logging, math, os]
 import utils/http
-import ./[paths, properties]
+import ./[paths]
 
 type
   ImageFetchFailure* = object of Defect

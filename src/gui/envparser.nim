@@ -1,4 +1,4 @@
-import std/[os, logging, options]
+import std/[os, options]
 import ../[argparser]
 
 type XdgEnv* = object

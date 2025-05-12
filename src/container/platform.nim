@@ -1,6 +1,5 @@
-import std/[os, logging, strutils, times, options, posix]
-import ./[paths, lxc, drivers, rootfs, paths]
-import ../argparser
+import std/[os, logging, strutils, options, posix]
+import ./[paths, lxc, drivers, paths]
 import pkg/[shakar, libgbinder]
 
 const
@@ -277,4 +276,6 @@ proc getIPlatformService*(user: string): IPlatform =
       )
     dec tries
 
-  IPlatform(client: cast[pointer](gbinder_client_new(remote, InterfaceName)), user: user)
+  IPlatform(
+    client: cast[pointer](gbinder_client_new(remote, InterfaceName)), user: user
+  )

@@ -2,7 +2,7 @@
 ## Copyright (C) 2024 Trayambak Rai
 ## Copyright (C) 2025 the EquinoxHQ team
 import std/[logging, strutils, json, options]
-import pkg/[curly, jsony, results, shakar]
+import pkg/[jsony, results, shakar]
 import ../http
 
 type

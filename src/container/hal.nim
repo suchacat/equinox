@@ -116,7 +116,8 @@ proc makeBaseProps*(input: Input) =
   props &= (key: "waydroid.xdg_runtime_dir", value: getContainerXdgRuntimeDir())
   props &= (key: "waydroid.wayland_display", value: getWaylandDisplay(input))
   props &= (key: "waydroid.pulse_runtime_path", value: getContainerPulseRuntimePath())
-  props &= (key: "waydroid.host_data_path", value: getEquinoxDataPath(&input.flag("user")))
+  props &=
+    (key: "waydroid.host_data_path", value: getEquinoxDataPath(&input.flag("user")))
   props &= (key: "ro.config.notification_sound", value: "earbleed.ogg")
 
   var builder = newStringOfCap(1800)

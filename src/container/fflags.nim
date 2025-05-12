@@ -12,7 +12,7 @@ proc setFflags*(input: Input, list: FFlagList) =
   let serialized = toJson(list)
 
   debug "equinox: fflag json:\n" & serialized
-  
+
   let storageDir = getAppDataPath(&input.flag("user"), "com.roblox.client")
   if not dirExists(storageDir / "files"):
     warn "equinox: TODO: first-boot fflag patching support"

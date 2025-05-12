@@ -1,4 +1,4 @@
-import std/[os, logging]
+import std/[os]
 import pkg/[jsony]
 
 type AppState* = object

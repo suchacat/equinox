@@ -1,11 +1,6 @@
 import std/[os, logging]
 import pkg/shakar
-import
-  ./[
-    lxc, cpu, drivers, image_downloader, hal, rootfs, paths,
-    network,
-  ]
-import ./utils/exec
+import ./[lxc, image_downloader, hal, rootfs, paths, network]
 import ../argparser
 
 proc initialize*(input: Input) =

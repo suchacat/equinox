@@ -1,14 +1,13 @@
 ## Onboarding GUI + Setup flow
-import std/[browsers, logging, os, osproc, options, posix, json]
-import pkg/[jsony, owlkettle, shakar], pkg/owlkettle/[playground, adw]
+import std/[logging, os, options, posix, json]
+import pkg/[owlkettle, shakar], pkg/owlkettle/adw
 import
   ../[argparser],
   ./envparser,
-  ../container/[lxc, gpu, certification],
+  ../container/[gpu],
   ../container/utils/exec,
   ../bindings/libadwaita,
-  ../core/[forked_ipc, processes],
-  ./clipboard
+  ../core/[forked_ipc]
 
 type OnboardMagic {.pure, size: sizeof(uint8).} = enum
   InitEquinox = 0 ## Call the Equinox initialization command
