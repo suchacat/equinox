@@ -4,7 +4,7 @@ import pkg/[jsony, owlkettle, shakar], pkg/owlkettle/[playground, adw]
 import
   ../[argparser],
   ./envparser,
-  ../container/[lxc, gpu, certification, configuration],
+  ../container/[lxc, gpu, certification],
   ../container/utils/exec,
   ../bindings/libadwaita,
   ../core/[forked_ipc, processes],

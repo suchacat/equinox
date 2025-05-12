@@ -1,9 +1,9 @@
 import std/[os, logging, terminal, random, rdstdin, strutils]
-import pkg/[colored_logger, noise], pkg/nimsimd/runtimecheck
+import pkg/[colored_logger, noise, shakar], pkg/nimsimd/runtimecheck
 import ./argparser
 import
   container/
-    [certification, lxc, configuration, init, sugar, properties, platform, network, cpu],
+    [certification, lxc, init, properties, platform, network, cpu, paths],
   container/utils/mount,
   core/[apk_fetcher, run, meta]
 
@@ -72,8 +72,6 @@ proc main() {.inline.} =
   if input.enabled("verbose", "v"):
     setLogFilter(lvlAll)
 
-  loadConfig(input)
-
   let lxcVersion = getLxcVersion()
   debug "lxc version: " & lxcVersion
 
@@ -86,8 +84,7 @@ proc main() {.inline.} =
   of "init":
     initialize(input)
   of "unmount":
-    loadConfig(input)
-    umountAll(config.rootfs)
+    umountAll(getRootfsPath())
   of "install":
     if not input.enabled("consented", "C"):
       echo """
@@ -115,7 +112,7 @@ EquinoxHQ is not responsible for any of your actions.
       error "equinox: Run equinox --help for more information."
       quit(1)
 
-    var platform = getIPlatformService()
+    var platform = getIPlatformService(&input.flag("user"))
     platform.removeApp(input.arguments[0])
   of "run":
     randomize()
@@ -191,9 +188,9 @@ EquinoxHQ is not responsible for any of your actions.
         if *output:
           echo &output
   of "get-gsf-id":
-    echo getGSFAndroidID()
+    echo getGSFAndroidID(&input.flag("user"))
   of "launch-app":
-    var platform = getIPlatformService()
+    var platform = getIPlatformService(&input.flag("user"))
     platform.launchApp(input.arguments[0])
   of "net":
     if input.arguments.len < 1:

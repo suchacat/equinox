@@ -1,7 +1,7 @@
 ## obtain the heckin certifications from the keanu reeves 420 updoot kind stranger google
 import std/[os, logging]
 import pkg/db_connector/db_sqlite
-import ./[configuration]
+import ./paths
 
 type
   AndroidIdFetchFailed* = object of CatchableError
@@ -9,15 +9,16 @@ type
   InsufficientIDEntryError* = object of AndroidIdFetchFailed
   GSFNotInitialized* = object of AndroidIdFetchFailed
 
-proc getGSFAndroidID*(): string =
-  if not dirExists(config.equinoxData / "data" / "com.google.android.gsf"):
+proc getGSFAndroidID*(user: string): string =
+  let appDataPath = getAppDataPath(user, "com.google.android.gsf")
+  if not dirExists(appDataPath):
     raise newException(
       GSFNotInitialized,
       "GSF has not been initialized yet. Has this container never booted before?",
     )
 
   let db = open(
-    config.equinoxData / "data" / "com.google.android.gsf" / "databases" / "gservices.db",
+    appDataPath / "databases" / "gservices.db",
     "",
     "",
     "",

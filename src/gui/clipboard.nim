@@ -1,7 +1,7 @@
 ## Clipboard implementation
 import std/[os, osproc, options, logging]
+import pkg/shakar
 # import pkg/simdutf/bindings
-import ../container/sugar
 
 var cachedWlCopy: Option[string]
 var cachedWlPaste: Option[string]

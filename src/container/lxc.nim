@@ -1,8 +1,8 @@
 import std/[os, options, logging, strutils, tables, times, posix]
-import pkg/[glob]
-import utils/exec
-import ../argparser
-import ./[lxc_config, sugar, cpu, gpu, configuration, drivers, mac]
+import pkg/[glob, shakar]
+import ./[lxc_config, cpu, gpu, paths, drivers, mac],
+       ./utils/exec,
+       ../argparser
 
 type BinaryNotFound* = object of Defect
 
@@ -79,7 +79,7 @@ proc generateNodesLxcConfig*(): seq[string] =
   ): bool {.discardable.} =
     addNodeEntry(nodes, src, dest, mntType, options, check)
 
-  probeBinderDriver()
+  let drivers = probeBinderDriver()
 
   entry "tmpfs", some("dev"), "tmpfs", "nosuid 0 0", false
   entry "/dev/zero"
@@ -119,15 +119,9 @@ proc generateNodesLxcConfig*(): seq[string] =
     for node in glob("/dev/dma_heap/*").walkGlob:
       entry node
 
-  entry "/dev" / config.binder, some("dev/binder"), check = false
-  entry "/dev" / config.vndbinder, some("dev/vndbinder"), check = false
-  entry "/dev" / config.hwbinder, some("dev/hwbinder"), check = false
-
-  if config.vendorType != "MAINLINE":
-    if not entry("/dev/hwbinder", some("dev/host_hwbinder")):
-      raise newException(Defect, "Binder node \"hwbinder\" of host not found!")
-
-    entry "/vendor", some("vendor_extra"), "rbind,optional 0 0"
+  entry "/dev" / &drivers.binder, some("dev/binder"), check = false
+  entry "/dev" / &drivers.vndbinder, some("dev/vndbinder"), check = false
+  entry "/dev" / &drivers.hwbinder, some("dev/hwbinder"), check = false
 
   entry "none",
     some("dev/pts"),
@@ -153,17 +147,17 @@ proc generateNodesLxcConfig*(): seq[string] =
 
   nodes
 
-proc setLxcConfig*() =
+proc setLxcConfig*(input: Input) =
   info "lxc: setting up configuration"
-  debug "lxc: working directory = " & config.work
+  debug "lxc: working directory = " & getWorkPath()
   debug "lxc: LXCARCH = " & getArchStr()
   let lxcMajor = getLxcMajor()
-  let lxcPath = config.lxc / "equinox"
+  let lxcPath = getEquinoxLxcConfigPath()
 
   let substituteTable = {
     "LXCARCH": getArchStr(),
-    "WORKING": config.work,
-    "WLDISPLAY": config.containerWaylandDisplay,
+    "WORKING": getWorkPath(),
+    "WLDISPLAY": getWaylandDisplay(input),
   }
 
   var configs = @[CONFIG_BASE.multiReplace(substituteTable)]
@@ -184,7 +178,7 @@ proc setLxcConfig*() =
 
         configs &= getLXCConfigForMAC(detectMACKind())
 
-  discard existsOrCreateDir(config.lxc)
+  discard existsOrCreateDir(getEquinoxLxcConfigPath())
 
   debug "lxc: creating LXC path"
   discard existsOrCreateDir(lxcPath)
@@ -206,7 +200,7 @@ proc setLxcConfig*() =
   # Write an empty file to config_session. It'll be overwritten every run.
   writeFile(lxcPath / "config_session", newString(0))
 
-proc generateSessionLxcConfig*() =
+proc generateSessionLxcConfig*(input: Input) =
   ## Generate session-specific LXC configurations
 
   var nodes: seq[string]
@@ -225,15 +219,15 @@ proc generateSessionLxcConfig*() =
 
     addNodeEntry(nodes, src, dest, mntType, options, check = false)
 
-  if not entry("tmpfs", config.containerXdgRuntimeDir.some, options = "create=dir 0 0"):
+  if not entry("tmpfs", some(getContainerXdgRuntimeDir()), options = "create=dir 0 0"):
     fatal "lxc: failed to create runtime dir mount point. We'll now crash. :("
     raise newException(OSError, "Failed to create XDG_RUNTIME_DIR mount point!")
 
   let
     waylandContainerSocket =
-      absolutePath(config.containerXdgRuntimeDir / config.containerWaylandDisplay)
+      absolutePath(getContainerXdgRuntimeDir() / getWaylandDisplay(input))
     waylandHostSocket =
-      absolutePath(config.hostXdgRuntimeDir / config.containerWaylandDisplay)
+      absolutePath(getXdgRuntimeDir(input) / getWaylandDisplay(input))
 
   if not entry(
     waylandHostSocket, waylandContainerSocket[1 ..< waylandContainerSocket.len].some
@@ -246,25 +240,25 @@ proc generateSessionLxcConfig*() =
     )
 
   let
-    pulseHostSocket = config.hostXdgRuntimeDir / "pulse" / "native"
-    pulseContainerSocket = config.containerPulseRuntimePath / "native"
+    pulseHostSocket = getXdgRuntimeDir(input) / "pulse" / "native"
+    pulseContainerSocket = getContainerPulseRuntimePath() / "native"
 
   entry pulseHostSocket, pulseContainerSocket[1 ..< pulseContainerSocket.len].some
 
-  if not entry(config.equinoxData, "data".some, options = "rbind 0 0"):
+  if not entry(getEquinoxLocalPath(&input.flag("user")), "data".some, options = "rbind 0 0"):
     raise newException(OSError, "Failed to bind userdata")
 
-  nodes &= "lxc.environment=WAYLAND_DISPLAY=" & config.containerWaylandDisplay
+  nodes &= "lxc.environment=WAYLAND_DISPLAY=" & getWaylandDisplay(input)
 
   var buffer: string
   for node in nodes:
     buffer &= node & '\n'
 
-  writeFile(config.lxc / "equinox" / "config_session", ensureMove(buffer))
+  writeFile(getEquinoxLxcConfigPath() / "config_session", ensureMove(buffer))
 
 proc getLxcStatus*(authAgent: string = "sudo"): string =
   let value =
-    readOutput(authAgent & " lxc-info", "-P " & config.lxc & " -n equinox -sH")
+    readOutput(authAgent & " lxc-info", "-P " & getLxcPath() & " -n equinox -sH")
 
   if not *value:
     return "STOPPED"
@@ -278,7 +272,7 @@ proc startLxcContainer*(input: Input, authAgent: string = "sudo") =
 
   runCmd(
     authAgent & " lxc-start",
-    "-l DEBUG -P " & config.lxc & (if *debugLog: " -o " & &debugLog else: "") &
+    "-l DEBUG -P " & getLxcPath() & (if *debugLog: " -o " & &debugLog else: "") &
       " -n equinox -- /init",
   )
 
@@ -293,7 +287,7 @@ proc stopLxcContainer*(force: bool = true) =
     return
 
   runCmd(
-    "sudo lxc-stop", "-P " & config.lxc & " -n equinox" & (if force: " -k" else: "")
+    "sudo lxc-stop", "-P " & getLxcPath() & " -n equinox" & (if force: " -k" else: "")
   )
 
   info "equinox: stopped container."
@@ -330,6 +324,6 @@ proc androidEnvAttachOptions(): string =
 proc runCmdInContainer*(cmd: string): Option[string] =
   readOutput(
     "sudo lxc-attach",
-    "-P " & config.lxc & " -n equinox --clear-env " & androidEnvAttachOptions() & "-- " &
+    "-P " & getLxcPath() & " -n equinox --clear-env " & androidEnvAttachOptions() & "-- " &
       cmd,
   )

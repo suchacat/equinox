@@ -1,5 +1,5 @@
 import std/[os, logging, locks]
-import ./[configuration]
+import ./paths
 import ./utils/[objects]
 import ../bindings/[glib2]
 import pkg/libgbinder

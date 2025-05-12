@@ -1,15 +1,15 @@
 import std/[os, logging]
 import ../argparser
-import ./utils/mount, ./[hal, configuration]
+import ./utils/mount, ./[hal, paths]
 
 proc mountRootfs*(input: Input, imagesDir: string) =
   info "equinox: mounting rootfs"
 
   debug "container/run: mounting system image"
-  mount(imagesDir / "system.img", config.rootfs, umount = true)
+  mount(imagesDir / "system.img", getRootfsPath(), umount = true)
 
   debug "container/run: mounting vendor image"
-  mount(imagesDir / "vendor.img", config.rootfs / "vendor")
+  mount(imagesDir / "vendor.img", getRootfsPath() / "vendor")
 
   makeBaseProps(input)
-  mountFile(config.work / "equinox.prop", config.rootfs / "vendor" / "waydroid.prop")
+  mountFile(getWorkPath() / "equinox.prop", getRootfsPath() / "vendor" / "waydroid.prop")

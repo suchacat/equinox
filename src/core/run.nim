@@ -2,29 +2,30 @@ import std/[os, options, logging, strutils, sequtils, posix, tables, json]
 import
   ../container/
     [
-      lxc, configuration, drivers, platform, network, rootfs, app_config, fflags,
+      lxc, drivers, platform, network, rootfs, app_config, fflags,
       settings,
     ]
 import pkg/[discord_rpc, shakar]
 import ../argparser
-import ../container/utils/[exec, mount]
+import ../container/utils/[exec, mount],
+       ../container/paths
 import ./event_manager/[types, dispatcher]
 import ./[discord_rpc, fflag_patches, roblox_logs, processes]
 
-proc showUI*(launch: bool = true) =
-  var platform = getIPlatformService()
+proc showUI*(user: string, launch: bool = true) =
+  var platform = getIPlatformService(user)
   if launch:
     platform.launchApp("com.roblox.client")
 
   platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
-proc startRobloxClient*(platform: var IPlatform) =
+proc startRobloxClient*(user: string, platform: var IPlatform) =
   while isEmptyOrWhitespace(&readOutput("pidof", "com.roblox.client")):
     # FIXME: please don't do this
     platform.launchApp("com.roblox.client")
     sleep(100)
 
-  startLogWatcher()
+  startLogWatcher(user)
 
 proc processEvents*(dispatcher: var EventDispatcher, rpc: DiscordRPC) =
   let pid = pidof("com.roblox.client")
@@ -63,9 +64,9 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   info "equinox: starting android runtime"
   debug "equinox: starting prep for android runtime"
 
-  destroyAllLogs()
-  mountRootfs(input, config.imagesPath)
-  probeBinderDriver()
+  destroyAllLogs(&input.flag("user"))
+  mountRootfs(input, getImagesPath())
+  discard probeBinderDriver()
 
   var settings = loadAppConfig(input)
 
@@ -77,8 +78,8 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   settings.fflags["FFlagUserFyosDetectionHorseFly"] = newJBool(true) # for shy :3
 
   applyFflagPatches(settings.fflags)
-  setFflags(settings.fflags)
-  generateSessionLxcConfig()
+  setFflags(input, settings.fflags)
+  generateSessionLxcConfig(input)
 
   var dispatcher = initEventDispatcher()
   dispatcher.running = true
@@ -89,7 +90,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   startLxcContainer(input)
   waitForContainerBoot()
 
-  var platform = getIPlatformService()
+  var platform = getIPlatformService(&input.flag("user"))
   platform.setProperty("waydroid.active_apps", "com.roblox.client")
 
   settingsPut("system", "dim_screen", false) # Don't dim the screen.
@@ -112,7 +113,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
   settingsPut("global", "policy_control", "immersive.status=*")
 
   if launchRoblox:
-    startRobloxClient(platform)
+    startRobloxClient(&input.flag("user"), platform)
     patchOutOSK()
 
     putEnv("XDG_RUNTIME_DIR", &input.flag("xdg-runtime-dir"))
@@ -145,7 +146,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     stopLogWatcher()
     stopNetworkService()
     stopLxcContainer()
-    umountAll(config.rootfs)
+    umountAll(getRootfsPath())
     info "equinox: app cleanup completed gracefully"
 
 type PlaceURI* = string
@@ -156,8 +157,8 @@ proc launchRobloxGame*(input: Input, id: PlaceURI | string) =
   if getLxcStatus() != "RUNNING":
     startAndroidRuntime(input, launchRoblox = false)
   else:
-    showUI(launch = false)
+    showUI(&input.flag("user"), launch = false)
 
-  var platform = getIPlatformService()
+  var platform = getIPlatformService(&input.flag("user"))
   platform.launchIntent("android.intent.action.VIEW", "roblox://placeId=" & $id)
   platform.setProperty("waydroid.active_apps", "com.roblox.client")

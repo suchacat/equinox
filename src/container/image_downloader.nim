@@ -1,7 +1,7 @@
 import std/[algorithm, logging, math, os, strutils, sequtils]
-import pkg/[curly, jsony, zip/zipfiles, pretty]
+import pkg/[curly, jsony, shakar, zip/zipfiles, pretty]
 import utils/http
-import ./[configuration, properties, sugar]
+import ./[paths, properties]
 
 type
   ImageFetchFailure* = object of Defect
@@ -73,9 +73,9 @@ proc downloadImages*() =
   info "container/image: downloading image pair"
 
   info "container/image: downloading system image: " & SystemImageURL
-  assert download(SystemImageURL, config.imagesPath / "system.img")
+  assert download(SystemImageURL, getImagesPath() / "system.img")
 
   info "container/image: downloading vendor image: " & VendorImageURL
-  assert download(VendorImageURL, config.imagesPath / "vendor.img")
+  assert download(VendorImageURL, getImagesPath() / "vendor.img")
 
   info "container/image: downloaded Android container images successfully!"
