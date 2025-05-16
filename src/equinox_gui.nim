@@ -1,7 +1,7 @@
 ## equinox gui integration
 import std/[os, osproc, logging, posix]
 import pkg/[colored_logger]
-import ./gui/[onboard, icons, launcher, envparser, desktop_files, apk_install]
+import ./gui/[onboard, icons, launcher, envparser, desktop_files, apk_install, settings]
 import ./core/[apk_fetcher]
 import ./[argparser]
 
@@ -63,6 +63,8 @@ proc main() {.inline.} =
         showLauncher(input)
   of "updater":
     showApkUpdater(input)
+  of "shell":
+    runSettingsMenu()
   else:
     error "equinox-gui: invalid command: " & input.command
 

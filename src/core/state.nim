@@ -1,8 +1,10 @@
 import std/[os]
 import pkg/[jsony]
+import ./[apk_fetcher]
 
 type AppState* = object
   promptGsm*: bool = true
+  robloxVer*: string = apk_fetcher.SelectedVersion
 
 proc save*(state: AppState) =
   var directory: string

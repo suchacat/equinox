@@ -1,4 +1,4 @@
-import std/[os, options, logging, strutils, tables]
+import std/[os, options, logging, strutils, json, tables]
 import pkg/[jsony, shakar]
 import ./[fflags]
 import ../[argparser]
@@ -56,16 +56,22 @@ const DefaultConfig* =
 
 var configCache: Option[ConfigData]
 
-proc loadAppConfig*(input: Input): ConfigData =
+proc save*(data: ConfigData) =
+  assert(not isAdmin(), "GUARD: Do NOT call ConfigData::save() from a root-level process! It'll make the user pull their hair out!")
+  let dir = getHomeDir() / ".config" / "equinox"
+  discard existsOrCreateDir(dir)
+
+  writeFile(
+    dir / "config.json",
+    pretty(%* data)
+  )
+
+proc loadAppConfig*(user: string): ConfigData =
   if *configCache:
     debug "equinox: using cached config"
     return &configCache
 
-  let path =
-    if not *input.flag("config"):
-      "/home" / &input.flag("user") / ".config" / "equinox" / "config.json"
-    else:
-      &input.flag("config")
+  let path = "/home" / user / ".config" / "equinox" / "config.json"
 
   debug "equinox: loading config from: " & path
 
@@ -78,3 +84,6 @@ proc loadAppConfig*(input: Input): ConfigData =
 
   configCache = some(conf)
   conf
+
+proc loadAppConfig*(input: Input): ConfigData =
+  loadAppConfig(&input.flag("user"))
