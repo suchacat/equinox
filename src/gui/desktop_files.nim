@@ -32,7 +32,7 @@ Terminal=false
 Type=Application
 Icon=equinox
 Categories=Game;Utility
-Exec=$1 settings
+Exec=$1 shell
     """
 
 proc ensureDirsExist*(): string {.sideEffect.} =

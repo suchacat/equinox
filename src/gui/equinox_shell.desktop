@@ -5,4 +5,4 @@ Terminal=false
 Type=Application
 Icon=equinox
 Categories=Game;Utility
-Exec=equinox_gui settings
+Exec=equinox_gui shell
