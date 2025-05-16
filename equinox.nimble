@@ -1,6 +1,6 @@
 # Package
 
-version = "0.1.31"
+version = "0.1.4"
 author = "xTrayambak"
 description = "Equinox is a runtime for Roblox on Linux."
 license = "MIT"
@@ -29,3 +29,4 @@ requires "shakar >= 0.1.0"
 requires "https://github.com/ferus-web/sanchar >= 2.0.2"
 requires "results >= 0.5.1"
 requires "libcurl >= 1.0.0"
+requires "libbacktrace >= 0.0.8"
