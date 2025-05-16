@@ -57,14 +57,14 @@ const DefaultConfig* =
 var configCache: Option[ConfigData]
 
 proc save*(data: ConfigData) =
-  assert(not isAdmin(), "GUARD: Do NOT call ConfigData::save() from a root-level process! It'll make the user pull their hair out!")
+  assert(
+    not isAdmin(),
+    "GUARD: Do NOT call ConfigData::save() from a root-level process! It'll make the user pull their hair out!",
+  )
   let dir = getHomeDir() / ".config" / "equinox"
   discard existsOrCreateDir(dir)
 
-  writeFile(
-    dir / "config.json",
-    pretty(%* data)
-  )
+  writeFile(dir / "config.json", pretty(%*data))
 
 proc loadAppConfig*(user: string): ConfigData =
   if *configCache:

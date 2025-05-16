@@ -127,9 +127,10 @@ method view(app: SettingsMenuState): Widget =
 
                   EditableLabel {.addSuffix.}:
                     text = app.config.allocator
-                    
+
                     proc changed(text: string) =
                       app.config.allocator = text
+
         else:
           discard
 
