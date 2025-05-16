@@ -8,15 +8,18 @@ type SettingsState* {.pure.} = enum
   Renderer
 
 viewable SettingsMenu:
-  collapsed: bool = true
-  config: ptr ConfigData
+  collapsed:
+    bool = true
+  config:
+    ptr ConfigData
 
-  state: SettingsState
+  state:
+    SettingsState
 
 proc setState(app: SettingsMenuState, state: SettingsState) =
   if app.state == state:
     return
-  
+
   debug "settings: state=" & $state
   app.collapsed = true
   app.state = state
@@ -38,14 +41,14 @@ method view(app: SettingsMenuState): Widget =
             debug "settings: collapsed: " & $app.collapsed
 
       OverlaySplitView:
-        collapsed = app.collapsed
+        collapsed = not app.collapsed
         enableHideGesture = true
         enableShowGesture = true
-        showSidebar = app.collapsed
+        showSidebar = not app.collapsed
         sensitive = true
         sizeRequest = (-1, -1)
         minSidebarWidth = 350f
-        
+
         Box {.addSidebar.}:
           orient = OrientY
           spacing = 8
@@ -55,7 +58,7 @@ method view(app: SettingsMenuState): Widget =
 
             proc clicked() =
               app.setState(SettingsState.General)
-          
+
           Button {.expand: false.}:
             text = "Renderer Settings"
 
@@ -77,20 +80,62 @@ method view(app: SettingsMenuState): Widget =
 
                 ActionRow:
                   title = "Show Discord RPC"
-                  subtitle = "When enabled, Equinox will display the current game you're playing on your Discord rich presence, if possible."
+                  subtitle =
+                    "When enabled, Equinox will display the current game you're playing on your Discord rich presence, if possible."
 
                   Switch() {.addSuffix.}:
                     state = app.config.discordRpc
 
                     proc changed(state: bool) =
                       app.config.discordRpc = state
-        else: discard
+
+        of SettingsState.Renderer:
+          Clamp:
+            maximumSize = 500
+            margin = 12
+            Box:
+              orient = OrientY
+              spacing = 12
+
+              PreferencesGroup {.expand: false.}:
+                title = "Renderer Settings"
+                description =
+                  "These settings control how rendering is handled by Equinox."
+
+                ActionRow:
+                  title = "Rendering Backend"
+                  subtitle =
+                    "This option decides whether Vulkan or OpenGL is used. If you have an old GPU, you might want to force Equinox to use OpenGL. This can affect your performance."
+
+                  Dropdown {.addSuffix.}:
+                    items = @["Vulkan", "OpenGL"]
+                    selected = 0
+
+                    proc select(index: int) =
+                      case index
+                      of 0:
+                        app.config.renderer = "vulkan"
+                      of 1:
+                        app.config.renderer = "opengl"
+                      else:
+                        unreachable
+
+                ActionRow:
+                  title = "GPU Memory Allocator"
+                  subtitle =
+                    "This decides which VRAM allocator the Android runtime will use. This can affect your performance. Do not change this unless you know what you're doing."
+
+                  EditableLabel {.addSuffix.}:
+                    text = app.config.allocator
+                    
+                    proc changed(text: string) =
+                      app.config.allocator = text
+        else:
+          discard
 
 proc runSettingsMenu*() =
   var config = loadAppConfig($getpwuid(getuid()).pwName)
-  adw.brew(gui(SettingsMenu(
-    config = config.addr
-  )))
+  adw.brew(gui(SettingsMenu(config = config.addr, collapsed = true)))
 
   info "equinox: saving configuration changes"
   config.save()
