@@ -1,7 +1,8 @@
 ## GUI shell
 import std/[logging, os, options, posix, json]
 import pkg/[owlkettle, shakar], pkg/owlkettle/adw
-import ../container/app_config
+import ../container/app_config,
+       ./common
 
 type SettingsState* {.pure.} = enum
   General
@@ -39,6 +40,25 @@ method view(app: SettingsMenuState): Widget =
           proc clicked() =
             app.collapsed = not app.collapsed
             debug "settings: collapsed: " & $app.collapsed
+
+        MenuButton {.addRight.}:
+          icon = "list-drag-handle-symbolic"
+          style = [ButtonFlat]
+
+          PopoverMenu:
+            sensitive = true
+            sizeRequest = (-1, -1)
+            position = PopoverBottom
+
+            Box {.name: "main".}:
+              orient = OrientY
+              margin = 4
+              spacing = 3
+
+              ModelButton:
+                text = "About Equinox"
+                proc clicked() =
+                  openAboutMenu(app)
 
       OverlaySplitView:
         collapsed = not app.collapsed

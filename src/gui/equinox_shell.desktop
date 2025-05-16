@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Equinox Settings
+Comment=Settings menu for Equinox
+Terminal=false
+Type=Application
+Icon=equinox
+Categories=Game;Utility
+Exec=equinox_gui settings

@@ -1,11 +1,7 @@
 ## Launcher GUI
 import std/[os, browsers, logging, options, osproc, posix, strutils]
 import pkg/owlkettle, pkg/owlkettle/[adw], pkg/[shakar]
-import ../container/network, ../core/[forked_ipc, state], ./envparser, ../argparser
-
-const
-  NimblePkgVersion {.strdefine.} = "???"
-  License = staticRead("../../LICENSE")
+import ../container/network, ../core/[forked_ipc, state], ./[common, envparser], ../argparser
 
 type LauncherMagic {.pure, size: sizeof(uint8).} = enum
   Launch = 0 ## Launch Equinox.
@@ -126,33 +122,7 @@ method view(app: LauncherState): Widget =
               ModelButton:
                 text = "About Equinox"
                 proc clicked() =
-                  discard app.open:
-                    gui:
-                      AboutWindow:
-                        applicationName = "Equinox"
-                        developerName = "The EquinoxHQ Team"
-                        version = NimblePkgVersion
-                        supportUrl = "https://discord.gg/Z5m3n9fjcU"
-                        issueUrl = "https://github.com/equinoxhq/equinox/issues"
-                        website = "https://equinoxhq.github.io"
-                        copyright =
-                          """
-Copyright (C) 2025 xTrayambak and the EquinoxHQ Team
-The Roblox logo and branding are registered trademarks of Roblox Corporation.
-                        """
-                        license = License
-                        licenseType = LicenseMIT_X11
-                        applicationIcon = "equinox"
-                        developers = @["Trayambak (xTrayambak)"]
-                        designers = @["Adrien (AshtakaOOf)"]
-                        artists = @[]
-                        documenters = @[]
-                        credits =
-                          @{
-                            "APK Fetching": @["Kirby (k1yrix)"],
-                            "Waydroid project developers (a special thanks!)":
-                              @["aleasto et. al"],
-                          }
+                  openAboutMenu(app)
 
       Clamp:
         maximumSize = 500

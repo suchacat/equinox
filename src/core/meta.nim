@@ -4,6 +4,7 @@ const
   CommitHash* = gorge("git describe --tags --long --dirty")
   Version* {.strdefine: "NimblePkgVersion".} = "<not defined at compile time>"
   LegalDisclaimerLong* = staticRead("../../legal/disclaimer.txt")
+  License* = staticRead("../../LICENSE")
   Splashes* = [
     "\"pc game support when\" bro im not even done installing my rootkits on your pc -tray",
     "all hail the NT flying horse",

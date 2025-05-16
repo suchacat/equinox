@@ -23,6 +23,18 @@ Icon=equinox
 Categories=Game;Utility
     """
 
+  DesktopEntryShell =
+    """
+[Desktop Entry]
+Name=Equinox Settings
+Comment=Settings menu for Equinox
+Terminal=false
+Type=Application
+Icon=equinox
+Categories=Game;Utility
+Exec=$1 settings
+    """
+
 proc ensureDirsExist*(): string {.sideEffect.} =
   var buf = newStringOfCap(32)
   buf &= getHomeDir()
@@ -43,4 +55,7 @@ proc createDesktopEntries*() =
   debug "desktop_files: creating desktop entry for equinox"
   writeFile(
     ensureDirsExist() / "equinox.desktop", DesktopEntryTemplate % [getAppFilename()]
+  )
+  writeFile(
+    ensureDirsExist() / "equinox_shell.desktop", DesktopEntryShell % [getAppFilename()]
   )
