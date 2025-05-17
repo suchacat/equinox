@@ -33,16 +33,18 @@ method view(app: SettingsMenuState): Widget =
 
       AdwHeaderBar {.addTitlebar.}:
         showTitle = true
+        style = HeaderBarFlat
 
         Button {.addLeft.}:
-          icon = "open-menu-symbolic"
+          icon = "sidebar-show-symbolic"
+          style = [ButtonFlat]
 
           proc clicked() =
             app.collapsed = not app.collapsed
             debug "settings: collapsed: " & $app.collapsed
 
         MenuButton {.addRight.}:
-          icon = "list-drag-handle-symbolic"
+          icon = "open-menu-symbolic"
           style = [ButtonFlat]
 
           PopoverMenu:
@@ -59,7 +61,7 @@ method view(app: SettingsMenuState): Widget =
                 text = "About Equinox"
                 proc clicked() =
                   openAboutMenu(app)
-      
+
       OverlaySplitView:
         collapsed = not app.collapsed
         enableHideGesture = true
@@ -76,16 +78,19 @@ method view(app: SettingsMenuState): Widget =
           Button {.expand: false.}:
             ButtonContent:
               label = "General Settings"
-              iconName = "image-loading-symbolic"
+              iconName = "user-home-symbolic"
+              style = ButtonFlat
               useUnderline = false
 
             proc clicked() =
               app.setState(SettingsState.General)
+              #app.showSidebar = not app.showSidebar
 
           Button {.expand: false.}:
             ButtonContent:
               label = "Renderer Settings"
               iconName = "video-display-symbolic"
+              style = ButtonFlat
               useUnderline = false
 
             proc clicked() =
@@ -151,7 +156,7 @@ method view(app: SettingsMenuState): Widget =
                   subtitle =
                     "This decides which VRAM allocator the Android runtime will use. This can affect your performance. Do not change this unless you know what you're doing."
 
-                  EditableLabel {.addSuffix.}:
+                  Entry {.addSuffix.}:
                     text = app.config.allocator
 
                     proc changed(text: string) =
@@ -161,14 +166,14 @@ method view(app: SettingsMenuState): Widget =
                   title = "Maximum FPS"
                   subtitle = "This can be used to change Roblox's FPS limit. If you have VSync enabled, this will be ignored."
 
-                  EditableLabel {.addSuffix.}:
+                  Entry {.addSuffix.}:
                     text = (
                       if *app.config.maxFps:
                         $(&app.config.maxFps)
                       else:
                         "60"
                     )
-                    
+
                     proc changed(text: string) =
                       try:
                         app.config.maxFps = some(parseUint(text).uint16)
