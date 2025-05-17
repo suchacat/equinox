@@ -11,6 +11,7 @@ proc initialize*(input: Input) =
     return
 
   discard existsOrCreateDir(getWorkPath())
+  discard existsOrCreateDir(getEquinoxLocalPath(&input.flag("user")))
   discard existsOrCreateDir(getEquinoxDataPath(&input.flag("user")))
   discard existsOrCreateDir(getHostPermsPath())
   discard existsOrCreateDir(getRootfsPath())
