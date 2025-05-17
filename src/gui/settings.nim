@@ -1,5 +1,5 @@
 ## GUI shell
-import std/[logging, os, options, posix, json]
+import std/[logging, os, options, posix, json, strutils]
 import pkg/[owlkettle, shakar], pkg/owlkettle/adw
 import ../container/app_config,
        ./common
@@ -59,7 +59,7 @@ method view(app: SettingsMenuState): Widget =
                 text = "About Equinox"
                 proc clicked() =
                   openAboutMenu(app)
-
+      
       OverlaySplitView:
         collapsed = not app.collapsed
         enableHideGesture = true
@@ -74,13 +74,19 @@ method view(app: SettingsMenuState): Widget =
           spacing = 8
           margin = 8
           Button {.expand: false.}:
-            text = "General Settings"
+            ButtonContent:
+              label = "General Settings"
+              iconName = "image-loading-symbolic"
+              useUnderline = false
 
             proc clicked() =
               app.setState(SettingsState.General)
 
           Button {.expand: false.}:
-            text = "Renderer Settings"
+            ButtonContent:
+              label = "Renderer Settings"
+              iconName = "video-display-symbolic"
+              useUnderline = false
 
             proc clicked() =
               app.setState(SettingsState.Renderer)
@@ -151,6 +157,22 @@ method view(app: SettingsMenuState): Widget =
                     proc changed(text: string) =
                       app.config.allocator = text
 
+                ActionRow:
+                  title = "Maximum FPS"
+                  subtitle = "This can be used to change Roblox's FPS limit. If you have VSync enabled, this will be ignored."
+
+                  EditableLabel {.addSuffix.}:
+                    text = (
+                      if *app.config.maxFps:
+                        $(&app.config.maxFps)
+                      else:
+                        "60"
+                    )
+                    
+                    proc changed(text: string) =
+                      try:
+                        app.config.maxFps = some(parseUint(text).uint16)
+                      except ValueError: discard
         else:
           discard
 
