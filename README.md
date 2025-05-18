@@ -1,8 +1,8 @@
 # <img width="36" src="assets/equinox.svg"> equinox
 Equinox is a runtime for Roblox on Linux that uses LXC containers to run (y)our beloved lego game.
 
-| | | |
-|-------------------|--------------------|------------------|
+| | | | |
+|-------------------|--------------------|------------------|-------------|
 |<img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox001.jpg"> | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox002.jpg"> | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox003.jpg">
 | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox004.jpg"> | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox005.jpg"> | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox007.png"> | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox006.jpg"> | <img src="https://raw.githubusercontent.com/equinoxhq/equinox/refs/heads/master/images/equinox008.jpg">
 
