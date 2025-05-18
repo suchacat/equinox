@@ -71,9 +71,18 @@ $ git clone https://github.com/mer-hybris/libgbinder.git /tmp/equinox-gbinder &&
 # Obtaining Nim
 Equinox require a Nim version beyond 2.2.2
 Run the following one-liner to get Nim and properly install it for your user:
-```
+```sh
 $ curl https://nim-lang.org/choosenim/init.sh -sSf | sh && echo "PATH=$HOME/.nimble/bin:$PATH" >> ~/.bashrc
 ```
+Note that the second half of this command will add the path to `.bashrc` only.
+
+## Or add nimble to your PATH manually
+You can add `:$HOME/.nimble/bin` to your `PATH` export in `.bashrc` or other shell config like the following:
+```sh
+export PATH="$HOME/.local/bin:$HOME/bin:$HOME/.nimble/bin:$PATH"
+```
+
+**Make sure you didn't mess up the config.** Then just reload your `.bashrc` or other shell config.
 
 # Compiling Equinox
 After following the above instructions, run:
@@ -88,3 +97,5 @@ To run Equinox, run this in your terminal:
 $ equinox_gui auto
 ```
 This is for the first run. After this, Equinox will create a desktop entry for you that'll let you launch it from your application launcher without the terminal.
+
+
