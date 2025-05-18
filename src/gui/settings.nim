@@ -64,6 +64,16 @@ method view(app: SettingsMenuState): Widget =
                 proc clicked() =
                   openAboutMenu(app)
 
+        Button {.addRight.}:
+          icon = "media-floppy-symbolic"
+          style = [ButtonFlat]
+
+          proc clicked() =
+            info "useless button rn pls fix this tray i'm too sleep deprived let me out of the basement"
+            #[ var config = loadAppConfig($getpwuid(getuid()).pwName)
+            info "equinox: saving configuration changes"
+            config.save()]#
+
       OverlaySplitView:
         collapsed = not app.collapsed
         enableHideGesture = true
