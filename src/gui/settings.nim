@@ -16,6 +16,8 @@ viewable SettingsMenu:
 
   state:
     SettingsState
+  selected:
+    int
 
 proc setState(app: SettingsMenuState, state: SettingsState) =
   if app.state == state:
@@ -59,6 +61,7 @@ method view(app: SettingsMenuState): Widget =
 
               ModelButton:
                 text = "About Equinox"
+
                 proc clicked() =
                   openAboutMenu(app)
 
@@ -79,18 +82,17 @@ method view(app: SettingsMenuState): Widget =
             ButtonContent:
               label = "General Settings"
               iconName = "user-home-symbolic"
-              style = ButtonFlat
+              style = [ButtonFlat]
               useUnderline = false
 
             proc clicked() =
               app.setState(SettingsState.General)
-              #app.showSidebar = not app.showSidebar
 
           Button {.expand: false.}:
             ButtonContent:
               label = "Renderer Settings"
               iconName = "video-display-symbolic"
-              style = ButtonFlat
+              style = [ButtonFlat]
               useUnderline = false
 
             proc clicked() =
@@ -112,7 +114,8 @@ method view(app: SettingsMenuState): Widget =
                 ActionRow:
                   title = "Show Discord RPC"
                   subtitle =
-                    "When enabled, Equinox will display the current game you're playing on your Discord rich presence, if possible."
+                    "When enabled, Equinox will display the current experience you're playing on Discord."
+                  tooltip = "This is enabled by default"
 
                   Switch() {.addSuffix.}:
                     state = app.config.discordRpc
@@ -129,42 +132,35 @@ method view(app: SettingsMenuState): Widget =
               spacing = 12
 
               PreferencesGroup {.expand: false.}:
-                title = "Renderer Settings"
+                title = "Rendering Parameters"
                 description =
                   "These settings control how rendering is handled by Equinox."
 
-                ActionRow:
+                ComboRow:
                   title = "Rendering Backend"
-                  subtitle =
-                    "This option decides whether Vulkan or OpenGL is used. If you have an old GPU, you might want to force Equinox to use OpenGL. This can affect your performance."
+                  subtitle = "Only modify if your GPU doesn't support Vulkan"
+                  tooltip = "Default is Vulkan"
 
-                  Dropdown {.addSuffix.}:
-                    items = @["Vulkan", "OpenGL"]
-                    selected = 0
+                  items = @["Vulkan", "OpenGL"]
+                  selected = app.selected
 
-                    proc select(index: int) =
-                      case index
-                      of 0:
-                        app.config.renderer = "vulkan"
-                      of 1:
-                        app.config.renderer = "opengl"
-                      else:
-                        unreachable
+                  proc select(index: int) =
+                    app.selected = index
 
-                ActionRow:
-                  title = "GPU Memory Allocator"
-                  subtitle =
-                    "This decides which VRAM allocator the Android runtime will use. This can affect your performance. Do not change this unless you know what you're doing."
-
-                  Entry {.addSuffix.}:
-                    text = app.config.allocator
-
-                    proc changed(text: string) =
-                      app.config.allocator = text
+                    case index
+                    of 0:
+                      app.config.renderer = "vulkan"
+                    of 1:
+                      app.config.renderer = "opengl"
+                    else:
+                      echo "Error: Invalid index from Rendering Backend ComboRow: ", index
+                      app.config.renderer = "vulkan"
+                      app.selected = 0
 
                 ActionRow:
                   title = "Maximum FPS"
-                  subtitle = "This can be used to change Roblox's FPS limit. If you have VSync enabled, this will be ignored."
+                  subtitle = "If you have VSync enabled, this will be ignored."
+                  tooltip = "Default is 60"
 
                   Entry {.addSuffix.}:
                     text = (
@@ -178,6 +174,23 @@ method view(app: SettingsMenuState): Widget =
                       try:
                         app.config.maxFps = some(parseUint(text).uint16)
                       except ValueError: discard
+
+              PreferencesGroup {.expand: true.}:
+                title = "Advanced Parameters"
+                description =
+                  "<b>Do not modify these settings if you aren't aware of what they do</b>."
+
+                ActionRow:
+                  title = "GPU Memory Allocator"
+                  subtitle =
+                    "This decides which VRAM allocator the Android runtime will use."
+                  tooltip = "Default is minigbm_gbm_mesa"
+
+                  Entry {.addSuffix.}:
+                    text = app.config.allocator
+
+                    proc changed(text: string) =
+                      app.config.allocator = text
         else:
           discard
 
