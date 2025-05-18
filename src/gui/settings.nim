@@ -69,10 +69,7 @@ method view(app: SettingsMenuState): Widget =
           style = [ButtonFlat]
 
           proc clicked() =
-            info "useless button rn pls fix this tray i'm too sleep deprived let me out of the basement"
-            #[ var config = loadAppConfig($getpwuid(getuid()).pwName)
-            info "equinox: saving configuration changes"
-            config.save()]#
+            app.config[].save()
 
       OverlaySplitView:
         collapsed = not app.collapsed
