@@ -1,8 +1,7 @@
 ## GUI shell
 import std/[logging, os, options, posix, json, strutils]
 import pkg/[owlkettle, shakar], pkg/owlkettle/adw
-import ../container/app_config,
-       ./common
+import ../container/app_config, ./common
 
 type SettingsState* {.pure.} = enum
   General
@@ -153,7 +152,8 @@ method view(app: SettingsMenuState): Widget =
                     of 1:
                       app.config.renderer = "opengl"
                     else:
-                      echo "Error: Invalid index from Rendering Backend ComboRow: ", index
+                      echo "Error: Invalid index from Rendering Backend ComboRow: ",
+                        index
                       app.config.renderer = "vulkan"
                       app.selected = 0
 
@@ -173,7 +173,8 @@ method view(app: SettingsMenuState): Widget =
                     proc changed(text: string) =
                       try:
                         app.config.maxFps = some(parseUint(text).uint16)
-                      except ValueError: discard
+                      except ValueError:
+                        discard
 
               PreferencesGroup {.expand: true.}:
                 title = "Advanced Parameters"
@@ -191,12 +192,26 @@ method view(app: SettingsMenuState): Widget =
 
                     proc changed(text: string) =
                       app.config.allocator = text
+
         else:
           discard
 
 proc runSettingsMenu*() =
   var config = loadAppConfig($getpwuid(getuid()).pwName)
-  adw.brew(gui(SettingsMenu(config = config.addr, collapsed = true)))
+  adw.brew(
+    gui(
+      SettingsMenu(
+        config = config.addr,
+        collapsed = true,
+        selected =
+          (
+            case config.renderer.toRenderingBackend() # FIXME: terrible, ugly and awful hack that'll break if you reorder shit in the menu :^)
+            of RenderingBackend.Vulkan: 0
+            of RenderingBackend.OpenGL: 1
+          )
+      )
+    )
+  )
 
   info "equinox: saving configuration changes"
   config.save()
