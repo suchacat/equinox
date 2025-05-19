@@ -1,7 +1,7 @@
 ## equinox gui integration
 import std/[os, osproc, logging, posix]
 import pkg/[colored_logger]
-import ./gui/[onboard, icons, launcher, envparser, desktop_files, apk_install, settings]
+import ./gui/[onboard, icons, launcher, envparser, desktop_files, apk_install, settings, x11warning]
 import ./core/[apk_fetcher]
 import ./[argparser]
 
@@ -24,6 +24,14 @@ proc showApkUpdater(input: Input) =
   debug "gui: apk updater spawned"
   runApkFetcher(input)
 
+proc showX11Notice(input: Input) =
+  if input.enabled("bypass-x11-warning", "X"):
+    return # If you ever feel useless, remember that this exists for no reason. You'll feel better afterwards. :^)
+
+  debug "gui: x11 warning spawned"
+  runX11Notice()
+  quit(1)
+
 proc main() {.inline.} =
   addHandler(newColoredLogger())
   setLogFilter(lvlInfo)
@@ -34,6 +42,9 @@ proc main() {.inline.} =
   installIcons()
   createDesktopEntries()
   createMimeHandlerEntry()
+
+  if getEnv("XDG_SESSION_TYPE") != "wayland":
+    showX11Notice(input)
 
   case input.command
   of "onboarding":

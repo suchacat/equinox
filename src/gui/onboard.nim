@@ -124,7 +124,7 @@ method view(app: OnboardingAppState): Widget =
               orient = OrientY
               Box {.hAlign: AlignCenter, vAlign: AlignStart.}:
                 Icon:
-                  name = "abrt-symbolic"
+                  name = "zoom-out-symbolic"
                   pixelSize = 200
 
               Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
