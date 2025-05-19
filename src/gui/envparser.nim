@@ -1,4 +1,5 @@
-import std/[os, options]
+import std/[strformat, os, options]
+import pkg/[colored_logger]
 import ../[argparser]
 
 type XdgEnv* = object
@@ -7,22 +8,26 @@ type XdgEnv* = object
   user*: string
   equinoxPath*: string
 
-const AppImageRoot* {.strdefine.} = ""
+const equinoxBin* {.strdefine.} = ""
 
+# TODO: refactor to remove input
 proc getXdgEnv*(input: Input): XdgEnv =
   let equinoxPath =
-    if (let flag = input.flag("appimage-build-root"); flag.isSome):
-      let path = flag.get() / "usr" / "bin" / "equinox"
-      assert fileExists(path),
-        "PACKAGING BUG: EQUINOX WAS NOT BUNDLED WITH THE APPIMAGE!"
-
-      path
-    elif defined(packagedInstall):
-      findExe("equinox")
-    elif not defined(release):
-      getCurrentDir() / "equinox"
+    if (let env = getEnv("EQUINOX_BIN"); env != ""):
+      if not fileExists(env):
+        error &"equinox: EQUINOX_BIN environment variable is defined, but '{env}' is not exist"
+        quit(1)
+      env
+    elif equinoxBin != "":
+      if not fileExists(equinoxBin):
+        error &"equinox: equinox path is defined at compile-time, but '{equinoxBin}' is not exist"
+        quit(1)
+      equinoxBin
+    elif (let bin = findExe("equinox"); exe != ""):
+      bin
     else:
-      getHomeDir() / ".nimble" / "bin" / "equinox" # FIXME: stupid hack
+      error &"equinox: cannot find equinox bin, is your installation broken?"
+      quit(1)
 
   XdgEnv(
     runtimeDir: getEnv("XDG_RUNTIME_DIR"),
