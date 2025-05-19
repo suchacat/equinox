@@ -44,7 +44,9 @@ method view(app: SettingsMenuState): Widget =
             app.collapsed = not app.collapsed
             debug "settings: collapsed: " & $app.collapsed
 
-        MenuButton {.addRight.}:
+        # Unless we add more options in here I'm commenting it out
+        # Also added a save and quit if you ever want to use it
+        #[ MenuButton {.addRight.}:
           icon = "open-menu-symbolic"
           style = [ButtonFlat]
 
@@ -64,11 +66,32 @@ method view(app: SettingsMenuState): Widget =
                 proc clicked() =
                   openAboutMenu(app)
 
+              Separator()
+
+              ModelButton:
+                text = "Save and Quit"
+
+                proc clicked() =
+                  info "equinox: saving configuration changes"
+                  app.config[].save()
+                  info "equinox: closing settings app..."
+                  quit()]#
+
         Button {.addRight.}:
-          icon = "media-floppy-symbolic"
+          icon = "help-about-symbolic"
+          tooltip = "Open the About Window"
           style = [ButtonFlat]
 
           proc clicked() =
+            openAboutMenu(app)
+
+        Button {.addRight.}:
+          icon = "media-floppy-symbolic"
+          tooltip = "Save changes"
+          style = [ButtonFlat]
+
+          proc clicked() =
+            info "equinox: saving configuration changes"
             app.config[].save()
 
       OverlaySplitView:
