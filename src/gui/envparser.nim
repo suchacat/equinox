@@ -1,4 +1,4 @@
-import std/[strformat, os, options]
+import std/[strformat, os, options, logging]
 import pkg/[colored_logger]
 import ../[argparser]
 
@@ -23,7 +23,7 @@ proc getXdgEnv*(input: Input): XdgEnv =
         error &"equinox: equinox path is defined at compile-time, but '{equinoxBin}' is not exist"
         quit(1)
       equinoxBin
-    elif (let bin = findExe("equinox"); exe != ""):
+    elif (let bin = findExe("equinox"); bin.len > 0):
       bin
     else:
       error &"equinox: cannot find equinox bin, is your installation broken?"
