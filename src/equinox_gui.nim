@@ -60,7 +60,7 @@ proc main() {.inline.} =
   of "mime-handler":
     let env = getXdgEnv(input)
     discard execCmd(
-      "pkexec " & env.equinoxPath & " launch-game-uri " & input.arguments[0] & " --user:" &
+      "pkexec".findExe & ' ' & env.equinoxPath & " launch-game-uri " & input.arguments[0] & " --user:" &
         env.user & " --uid:" & $getuid() & " --gid:" & $getgid() & " --wayland-display:" &
         env.waylandDisplay & " --xdg-runtime-dir:" & env.runtimeDir
     )

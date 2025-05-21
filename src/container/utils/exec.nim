@@ -1,5 +1,5 @@
 ## All the utilities for executing commands
-import std/[osproc, options, logging, strutils]
+import std/[os, osproc, options, logging, strutils]
 
 proc readOutput*(bin: string, cmd: string): Option[string] =
   let command = bin & ' ' & cmd
@@ -9,8 +9,8 @@ proc readOutput*(bin: string, cmd: string): Option[string] =
 
   some(res.output.strip())
 
-proc runCmd*(bin: string, cmd: string): bool {.discardable.} =
-  let command = bin & ' ' & cmd
+proc runCmd*(bin: string, cmd: string, resolve: bool = false): bool {.discardable.} =
+  let command = (if resolve: findExe(bin) else: bin) & ' ' & cmd
   debug "runCmd(" & command & ')'
 
   execCmd(command) == 0

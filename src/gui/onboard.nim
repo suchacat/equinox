@@ -222,6 +222,7 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
         env.equinoxPath & " init --xdg-runtime-dir:" & env.runtimeDir &
           " --wayland-display:" & env.waylandDisplay & " --user:" & env.user & " --uid:" &
           $getuid() & " --gid:" & $getgid(),
+        resolve = true
       ):
         fd.send(OnboardMagic.InitSuccess)
       else:
@@ -236,9 +237,10 @@ proc waitForCommands*(env: XdgEnv, fd: cint) =
         env.equinoxPath & " run --warmup --user:" & env.user & " --uid:" & $getuid() &
           " --gid:" & $getgid() & " --wayland-display:" & env.waylandDisplay &
           " --xdg-runtime-dir:" & getEnv("XDG_RUNTIME_DIR"),
+        resolve = true
       )
     of OnboardMagic.StopContainer:
-      discard runCmd("pkexec", env.equinoxPath & " halt --force")
+      discard runCmd("pkexec", env.equinoxPath & " halt --force", resolve = true)
 
 proc runOnboardingApp*(input: Input) =
   let pair = initIpcFds()
