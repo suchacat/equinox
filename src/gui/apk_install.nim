@@ -98,11 +98,6 @@ method view(app: APKFetcherState): Widget =
           spacing = 12
 
           PreferencesGroup {.expand: false.}:
-            ActionRow:
-              title =
-                "By installing Roblox, you agree to the Google Play Terms of Service."
-              subtitle = "The Equinox team is not responsible for any damages."
-
             Label:
               text = "Installing Roblox"
               style = [StyleClass("install-label")]
