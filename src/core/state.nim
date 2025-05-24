@@ -32,5 +32,6 @@ proc getAppState*(): AppState =
 
   if not stateExists:
     writeFile(directory / "state.json", toJson(state))
-
+  
+  state.robloxVer = apk_fetcher.SelectedVersion
   state
