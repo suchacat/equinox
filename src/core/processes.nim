@@ -8,7 +8,7 @@ proc pidof*(name: string): Option[uint] =
       continue
 
     let target = readFile(dir / "cmdline")
-    debug "equinox: " & dir & ": " & target
+    # debug "equinox: " & dir & ": " & target
 
     if target.contains(name):
       let pid = splitPath(dir).tail.parseUint()

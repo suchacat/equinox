@@ -134,7 +134,7 @@ proc startAndroidRuntime*(input: Input, launchRoblox: bool = true) =
     rpc.handleIdleRPC()
 
     while dispatcher.running:
-      sleep(100)
+      sleep(350)
       processEvents(dispatcher, rpc)
 
     info "equinox: app deinit started"
