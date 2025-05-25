@@ -1,4 +1,4 @@
-import std/[logging, options, terminal, math, json, times, posix]
+import std/[os, logging, options, terminal, math, json, times, posix]
 import pkg/[libcurl, curly]
 
 var curl {.global.} = newCurly()
@@ -146,3 +146,13 @@ proc download*(url: string, dest: string): bool =
     return false
 
   true
+
+proc downloadVerify*(url, dest: string) =
+  var numRetry: uint8
+
+  while numRetry < 3'u8 and getFileSize(dest) < 1:
+    debug "http: downloadVerify(): dest=" & dest & "; url=" & url & "; numRetry=" & $numRetry
+    discard download(url, dest)
+
+  if getFileSize(dest) < 1:
+    raise newException(Defect, "Failed to download file in " & $numRetry & " attempts. (url=" & url & "; dest=" & dest & ')')

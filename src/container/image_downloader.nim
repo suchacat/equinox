@@ -72,9 +72,9 @@ proc downloadImages*() =
   info "container/image: downloading image pair"
 
   info "container/image: downloading system image: " & SystemImageURL
-  assert download(SystemImageURL, getImagesPath() / "system.img")
+  downloadVerify(SystemImageURL, getImagesPath() / "system.img")
 
   info "container/image: downloading vendor image: " & VendorImageURL
-  assert download(VendorImageURL, getImagesPath() / "vendor.img")
+  downloadVerify(VendorImageURL, getImagesPath() / "vendor.img")
 
   info "container/image: downloaded Android container images successfully!"

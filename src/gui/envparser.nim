@@ -25,6 +25,8 @@ proc getXdgEnv*(input: Input): XdgEnv =
       equinoxBin
     elif (let bin = findExe("equinox"); bin.len > 0):
       bin
+    elif (let bin = getCurrentDir() / "equinox"; fileExists(bin)):
+      getCurrentDir() / "equinox"
     else:
       error &"equinox: cannot find equinox bin, is your installation broken?"
       quit(1)

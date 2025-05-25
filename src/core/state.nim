@@ -22,16 +22,15 @@ proc getAppState*(): AppState =
     directory &= parts & '/'
     discard existsOrCreateDir(directory)
 
-  let
-    stateExists = fileExists(directory / "state.json")
-    state =
-      if stateExists:
-        readFile(directory / "state.json").fromJson(AppState)
-      else:
-        default(AppState)
+  let stateExists = fileExists(directory / "state.json")
+  var state =
+    if stateExists:
+      readFile(directory / "state.json").fromJson(AppState)
+    else:
+      default(AppState)
 
   if not stateExists:
     writeFile(directory / "state.json", toJson(state))
-  
+
   state.robloxVer = apk_fetcher.SelectedVersion
   state
