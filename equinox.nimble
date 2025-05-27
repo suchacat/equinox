@@ -9,7 +9,7 @@ bin = @["equinox", "equinox_gui"]
 
 # Dependencies
 
-requires "nim >= 2.2.2"
+requires "nim >= 2.0.0"
 requires "colored_logger >= 0.1.0"
 requires "nimsimd >= 1.3.2"
 requires "curly >= 1.1.1"
