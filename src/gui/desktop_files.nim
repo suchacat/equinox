@@ -1,4 +1,5 @@
 import std/[logging, os, strutils]
+import ./envparser
 
 const
   MimeTemplate =
@@ -36,26 +37,29 @@ Exec=$1 shell
     """
 
 proc ensureDirsExist*(): string {.sideEffect.} =
-  var buf = newStringOfCap(32)
-  buf &= getHomeDir()
+  if equinoxBin.len < 1:
+    var buf = newStringOfCap(32)
+    buf &= getHomeDir()
 
-  for path in [".local", "share", "applications"]:
-    buf &= '/' & path
-    discard existsOrCreateDir(buf)
+    for path in [".local", "share", "applications"]:
+      buf &= '/' & path
+      discard existsOrCreateDir(buf)
 
-  ensureMove(buf)
+    return ensureMove(buf)
 
 proc createMimeHandlerEntry*() =
-  debug "desktop_files: creating MIME handler entry"
-  writeFile(
-    ensureDirsExist() / "equinox-mime.desktop", MimeTemplate % [getAppFilename()]
-  )
+  if equinoxBin.len < 1:
+    debug "desktop_files: creating MIME handler entry"
+    writeFile(
+      ensureDirsExist() / "equinox-mime.desktop", MimeTemplate % [getAppFilename()]
+    )
 
 proc createDesktopEntries*() =
-  debug "desktop_files: creating desktop entry for equinox"
-  writeFile(
-    ensureDirsExist() / "equinox.desktop", DesktopEntryTemplate % [getAppFilename()]
-  )
-  writeFile(
-    ensureDirsExist() / "equinox_shell.desktop", DesktopEntryShell % [getAppFilename()]
-  )
+  if equinoxBin.len < 1:
+    debug "desktop_files: creating desktop entry for equinox"
+    writeFile(
+      ensureDirsExist() / "equinox.desktop", DesktopEntryTemplate % [getAppFilename()]
+    )
+    writeFile(
+      ensureDirsExist() / "equinox_shell.desktop", DesktopEntryShell % [getAppFilename()]
+    )
