@@ -12,3 +12,6 @@ tmp/
 *.if
 *.pp
 *.fc
+
+build/arch/*
+!build/arch/PKGBUILD
