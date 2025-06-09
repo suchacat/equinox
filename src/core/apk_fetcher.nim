@@ -31,7 +31,7 @@ proc fetchRobloxApk*(): APKVersion =
 proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion) =
   debug "apk: downloading packages"
   assert(
-    pkg.expired,
+    not pkg.expired,
     "Cannot download expired APK! It'll probably just cause Roblox to not work.",
   )
 
