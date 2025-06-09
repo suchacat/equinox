@@ -172,7 +172,7 @@ method view(app: OnboardingAppState): Widget =
             ActionRow:
               title = "Privacy Policy"
               subtitle =
-                "Equinox is libre software and does NOT collect any data about you, excluding crash dumps. The different services it interacts with might, though."
+                "Equinox is open source software and does NOT collect any data about you, excluding crash dumps. The different services it interacts with might, though."
 
           if app.showSpinner:
             AdwSpinner()
