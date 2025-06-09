@@ -20,7 +20,7 @@ proc getXdgEnv*(input: Input): XdgEnv =
       env
     elif equinoxBin != "":
       if not fileExists(equinoxBin):
-        error &"equinox: equinox path is defined at compile-time, but '{equinoxBin}' is not exist"
+        error &"equinox: equinox path is defined at compile-time, but '{equinoxBin}' does not exist"
         quit(1)
       equinoxBin
     elif (let bin = findExe("equinox"); bin.len > 0):

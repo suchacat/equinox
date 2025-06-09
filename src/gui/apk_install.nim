@@ -1,5 +1,5 @@
 ## APK fetcher GUI
-import std/[logging, options, osproc, posix]
+import std/[logging, options, osproc, posix, strutils]
 import pkg/[shakar, owlkettle], pkg/owlkettle/adw
 import ../bindings/[libadwaita], ../core/[forked_ipc], ../argparser, ./envparser
 
@@ -8,6 +8,8 @@ type FetcherMagic {.pure, size: sizeof(uint8).} = enum
   Success = 1 ## Successful fetch
   Fail = 2 ## Failed fetch
   Die = 3 ## Kill yourself.
+
+  OutdatedAPK = 4 ## The Roblox APK is outdated.
 
 viewable APKFetcher:
   title:
@@ -49,8 +51,13 @@ method view(app: APKFetcherState): Widget =
         info "install: Installed Roblox APK successfully"
         app.closeWindow()
         return false
-      of FetcherMagic.Fail:
+      of { FetcherMagic.OutdatedAPK, FetcherMagic.Fail }:
         error "install: Failed to install Roblox APK"
+        let reason =
+          case op
+          of FetcherMagic.OutdatedAPK: "This version of Equinox targets an outdated Roblox version. Please upgrade Equinox using your package manager or recompile the newest version from source."
+          else: "An unknown error occurred."
+
         discard app.open:
           gui:
             Window:
@@ -69,7 +76,7 @@ method view(app: APKFetcherState): Widget =
 
                 Box {.hAlign: AlignCenter, vAlign: AlignCenter.}:
                   Label:
-                    text = "Failed to install the Roblox APK."
+                    text = reason
                     margin = 24
 
         app.closeWindow()
@@ -118,7 +125,7 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
     of FetcherMagic.Die:
       running = false
     of FetcherMagic.Fetch:
-      let code = execCmd(
+      let (output, code) = execCmdEx(
         "pkexec " & env.equinoxPath & " install --user:" & env.user & " --uid:" &
           $getuid() & " --gid:" & $getgid() & " --xdg-runtime-dir:" & env.runtimeDir &
           " --wayland-display:" & env.waylandDisplay & " --consented"
@@ -127,7 +134,11 @@ proc waitForCommands*(env: XdgEnv, fd: cint) {.noReturn.} =
       if code == 0:
         fd.send(FetcherMagic.Success)
       else:
-        fd.send(FetcherMagic.Fail)
+        echo output
+        if output.contains("expired"):
+          fd.send(FetcherMagic.OutdatedAPK)
+        else:
+          fd.send(FetcherMagic.Fail)
     else:
       discard
 
