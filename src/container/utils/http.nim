@@ -151,6 +151,9 @@ proc downloadVerify*(url, dest: string) =
   var numRetry: uint8
 
   while numRetry < 3'u8 and getFileSize(dest) < 1:
+    if not fileExists(dest):
+      continue
+
     debug "http: downloadVerify(): dest=" & dest & "; url=" & url & "; numRetry=" & $numRetry
     discard download(url, dest)
 
