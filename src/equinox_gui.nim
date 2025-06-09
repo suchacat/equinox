@@ -65,7 +65,7 @@ proc main() {.inline.} =
         env.waylandDisplay & " --xdg-runtime-dir:" & env.runtimeDir
     )
   of "auto":
-    if not dirExists(getHomeDir() / ".local" / "share" / "equinox"):
+    if not dirExists("/var" / "lib" / "equinox") or not dirExists(getHomeDir() / ".local" / "share" / "equinox"):
       showOnboardingGui(input)
     else:
       if needsApkUpdate() and not input.enabled("skip-apk-updates", "X"):
