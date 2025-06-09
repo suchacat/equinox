@@ -12,4 +12,5 @@ const
     "compiled with the full clanger soyboy toolchain, complete with mimalloc",
     "eternal hunger", "iltam zumra rashupti elatim", "total soong death",
     "never forget the april 2025 chmod incident", "who up flingin they surfaces rn",
+    "SPIN SPIN SPIN SPIN SPIN"
   ]
