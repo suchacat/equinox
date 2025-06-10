@@ -9,7 +9,7 @@ type
   INotifyInitFail* = object of Defect
   WatcherInitFail* = object of Defect
 
-const EquinoxLogPreallocBufferSize {.intdefine.} = 512
+const EquinoxLogPreallocBufferSize {.intdefine.} = 1024
 
 var watcher {.threadvar.}: Thread[string]
 var running: Atomic[bool]
@@ -21,7 +21,7 @@ proc getLogDir(user: string): string =
   getAppDataPath(user, "com.roblox.client") / "files" / "appData" / "logs"
 
 proc destroyAllLogs*(user: string) =
-  info "Clearing all previous logs"
+  info "logs: clearing all previous logs"
   for kind, path in walkDir(getLogDir(user)):
     if kind != pcFile:
       continue
@@ -163,7 +163,7 @@ proc watcherFunc(target: string) =
   debug "watcher: thread is exiting loop"
 
 proc startLogWatcher*(user: string) =
-  info "Starting log watcher thread"
+  info "logs: starting log watcher thread"
   try:
     let target = findTargetLog(user)
     running.store(true)
