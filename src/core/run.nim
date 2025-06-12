@@ -155,5 +155,6 @@ proc launchRobloxGame*(input: Input, id: PlaceURI | string) =
     showUI(&input.flag("user"), launch = false)
 
   var platform = getIPlatformService(&input.flag("user"))
+  startRobloxClient(&input.flag("user"), platform)
   platform.launchIntent("android.intent.action.VIEW", "roblox://placeId=" & $id)
   platform.setProperty("waydroid.active_apps", "com.roblox.client")
