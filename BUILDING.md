@@ -38,13 +38,7 @@ Some users have reported that the following command fails. If it does, run this 
 ## Fedora
 Run the following command to gather all dependencies needed by Equinox on Fedora.
 ```
-# dnf install build-essential clang gtk4 gtk4-devel libadwaita libadwaita-devel pcre2 pcre2-devel glib2 glib2-devel lxc dnsmasq
-```
-
-Now, unfortunately, Fedora does not have a libgbinder package in its repositories. You'll need to manually clone the repository and compile it instead. 
-The following one-liner will do it for you:
-```
-$ git clone https://github.com/mer-hybris/libgbinder.git /tmp/equinox-gbinder && cd /tmp/equinox-gbinder && make -j$(nproc) && sudo make install
+# dnf install libgbinder-devel libgbinder libglibutil-devel clang gtk4 gtk4-devel libadwaita libadwaita-devel pcre2 pcre2-devel glib2 glib2-devel lxc dnsmasq
 ```
 
 **NOTICE**: Fedora uses [SELinux](https://en.wikipedia.org/wiki/Security-Enhanced_Linux) by default. Equinox cannot work with it yet. Hence, you'll need to disable SELinux.
