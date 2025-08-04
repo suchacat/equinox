@@ -28,30 +28,37 @@ proc fetchRobloxApk*(): APKVersion =
 
   return resp.version[SelectedVersion]
 
-proc downloadApks*(pkg: APKVersion, input: Input, ver: string = SelectedVersion) =
-  debug "apk: downloading packages"
+proc downloadApks*(
+  pkg: APKVersion,
+  input: Input,
+  ver: string = SelectedVersion,
+  customBase: string = "",
+  customSplit: string = ""
+) =
+  debug "apk: preparing APK installation"
+
   assert(
     not pkg.expired,
     "Cannot download expired APK! It'll probably just cause Roblox to not work.",
   )
 
   discard existsOrCreateDir(getApkStorePath())
-
   let apkDir = getApkStorePathForVersion(ver)
   discard existsOrCreateDir(apkDir)
 
   let
-    baseApkPath = apkDir / "base.apk"
-    splitApkPath = apkDir / "split.apk"
+    baseApkPath = if customBase.len > 0: customBase else: apkDir / "base.apk"
+    splitApkPath = if customSplit.len > 0: customSplit else: apkDir / "split.apk"
 
-  let baseApk = download(pkg.base, baseApkPath)
+  if customBase.len == 0:
+    let baseApk = download(pkg.base, baseApkPath)
+    if not baseApk:
+      raise newException(APKDownloadFailed, "Failed to download base APK")
 
-  if not baseApk:
-    raise newException(APKDownloadFailed, "Failed to download base APK")
-
-  let splitApk = download(pkg.split, splitApkPath)
-
-  if not splitApk:
-    raise newException(APKDownloadFailed, "Failed to download split APK")
+  if customSplit.len == 0:
+    let splitApk = download(pkg.split, splitApkPath)
+    if not splitApk:
+      raise newException(APKDownloadFailed, "Failed to download split APK")
 
   installSplitApp(baseApkPath, splitApkPath, &input.flag("user"))
+
