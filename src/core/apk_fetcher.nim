@@ -32,8 +32,8 @@ proc downloadApks*(
   pkg: APKVersion,
   input: Input,
   ver: string = SelectedVersion,
-  customBase: string = "",
-  customSplit: string = ""
+  customBase: string = "/home/cat/Downloads/new roblox/base.apk",
+  customSplit: string = "/home/cat/Downloads/new roblox/split.apk"
 ) =
   debug "apk: preparing APK installation"
 
